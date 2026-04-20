@@ -1,11 +1,11 @@
 // src/App.jsx
-import React from "react";
-import Navbar from "./Navbar";
+import React from 'react';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <div>
-      <Navbar />
+      <Navbar/>
       <h1>Welcome to my app</h1>
     </div>
   );
