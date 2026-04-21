@@ -1,14 +1,11 @@
-// src/App.jsx
 import React from 'react';
-import Navbar from './components/Navbar';
+import { RouterProvider } from 'react-router-dom';
+import { route } from './app/router/Router';
 
-function App() {
+export default function App() {
   return (
     <div>
-      <Navbar/>
-      <h1>Welcome to my app</h1>
+      <RouterProvider router={route} />
     </div>
   );
 }
-
-export default App;
