@@ -17,14 +17,16 @@ export const customAxios = axios.create({
 });
 
 customAxios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    const cookie = await cookieStore.get('jwt_token');
+    if (cookie && cookie.value) {
+      config.headers.Authorization = `Bearer ${cookie.value}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 customAxios.interceptors.response.use(
