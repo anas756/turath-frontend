@@ -1,19 +1,5 @@
-<<<<<<< HEAD
-// src/App.jsx
-import React from "react";
-import Navbar from "./Navbar";
 
-function App() {
-  return (
-    <div>
-      <Navbar />
-      <h1>Welcome to my app</h1>
-    </div>
-  );
-}
 
-export default App;
-=======
 import React, { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { route } from './app/router/Router';
@@ -39,4 +25,4 @@ export default function App() {
     </div>
   );
 }
->>>>>>> aitmoulay
+
