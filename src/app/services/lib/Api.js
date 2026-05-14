@@ -1,7 +1,7 @@
 import { customAxios } from './axios';
 
 export const api = {
-  // AUTH 
+  // AUTH
   login: (data) => customAxios.post('/login', data),
   logout: () => customAxios.post('/logout'),
   register: (data) => customAxios.post('/register', data),
@@ -11,15 +11,22 @@ export const api = {
   resendConfirmation: (data) =>
     customAxios.post('/auth/resend-confirmation', data),
 
-  // PASSWORD 
+  // PASSWORD
   sendResetLink: (emailData) =>
     customAxios.post('/auth/forgot-password', emailData),
   verifyResetToken: (email, token) =>
     customAxios.get(`/auth/verify-reset-token/${email}`, { params: { token } }),
   updatePassword: (data) => customAxios.post('/auth/reset-password', data),
 
-  //  USER CRUD
+  //  user
   getAllUsers: () => customAxios.get('/users'),
   updateUser: (id, data) => customAxios.put(`/users/${id}`, data),
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
+
+  // Categories
+  getCategories: () => customAxios.get('/categories'),
+  getCategory: (id) => customAxios.get(`/categories/${id}`),
+  createCategory: (data) => customAxios.post('/categories', data),
+  updateCategory: (id, data) => customAxios.put(`/categories/${id}`, data),
+  deleteCategory: (id) => customAxios.delete(`/categories/${id}`),
 };

@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 const backEndUrl = import.meta.env.VITE_BACK_END_URL;
+const secret_key = import.meta.env.VITE_API_SECRET;
 
-if (!backEndUrl) {
+if (!backEndUrl && !secret_key) {
   throw new Error('VITE_BACK_END_URL is not defined in environment variables');
 }
 
@@ -22,6 +23,7 @@ customAxios.interceptors.request.use(
     if (cookie && cookie.value) {
       config.headers.Authorization = `Bearer ${cookie.value}`;
     }
+    config.headers['X-App-Secret'] = secret_key;
     return config;
   },
   (error) => {
