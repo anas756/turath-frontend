@@ -25,8 +25,15 @@ export const api = {
 
   // Categories
   getCategories: () => customAxios.get('/categories'),
-  getCategory: (id) => customAxios.get(`/categories/${id}`),
-  createCategory: (data) => customAxios.post('/categories', data),
-  updateCategory: (id, data) => customAxios.put(`/categories/${id}`, data),
-  deleteCategory: (id) => customAxios.delete(`/categories/${id}`),
+  getCategorie: (id) => customAxios.get(`/categories/${id}`),
+  createCategorie: (data) => customAxios.post('/categories', data),
+  updateCategorie: (id, data) => customAxios.put(`/categories/${id}`, data),
+  deleteCategorie: (id) => customAxios.delete(`/categories/${id}`),
+
+  // books
+  getBooks: () => customAxios.get('/book'),
+  getBook: (id) => customAxios.get(`/book/${id}`),
+  createBook: (data) => customAxios.post('/book', data),
+  updateBook: (id, data) => customAxios.put(`/book/${id}`, data),
+  deleteBook: (id) => customAxios.delete(`/book/${id}`),
 };
