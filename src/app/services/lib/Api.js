@@ -1,17 +1,16 @@
 import { customAxios } from './axios';
 
 export const api = {
-  // AUTH
+  // auth
   login: (data) => customAxios.post('/login', data),
   logout: () => customAxios.post('/logout'),
   register: (data) => customAxios.post('/register', data),
 
-  // ACOUNT CONFIRMATION
+  // account confirmation
   confirmEmail: (email) => customAxios.get(`/auth/email-confirm/${email}`),
-  resendConfirmation: (data) =>
-    customAxios.post('/auth/resend-confirmation', data),
+  resendConfirmation: (data) => customAxios.post('/auth/resend-confirmation', data),
 
-  // PASSWORD
+  // password
   sendResetLink: (emailData) =>
     customAxios.post('/auth/forgot-password', emailData),
   verifyResetToken: (email, token) =>
@@ -36,4 +35,9 @@ export const api = {
   createBook: (data) => customAxios.post('/book', data),
   updateBook: (id, data) => customAxios.put(`/book/${id}`, data),
   deleteBook: (id) => customAxios.delete(`/book/${id}`),
+  getBookContent: (book_id, page = 1) => customAxios.get(`/books/${book_id}/pages`, { params: { page: page } }),
+
+  // search
+  searchInsideBook: (keyWord, book_id) => customAxios.get(`/books/${book_id}/search`, {params: { key_word: keyWord },}),
+  searchAbookUsingWord: (keyWord) =>customAxios.get('search/library', { params: { key_word: keyWord },}),
 };
