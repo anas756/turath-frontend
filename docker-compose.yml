@@ -1,0 +1,13 @@
+services:
+  turath-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: turath_react_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules # Prevents Docker from overwriting your packages
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Ensures live reload works perfectly on Windows
