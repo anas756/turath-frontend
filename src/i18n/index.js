@@ -1,0 +1,106 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const resources = {
+  en: {
+    translation: {
+      // Login
+      brandLabel: 'Turath Digital',
+      welcomeBack: 'Welcome back\nto Turath',
+      emailAddress: 'Email Address',
+      emailPlaceholder: 'Enter your email',
+      password: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      forgot: 'Forgot?',
+      signIn: 'Sign In →',
+      signingIn: 'Signing In...',
+      createAccount: 'Create an account',
+      // SignUp
+      joinTitle: 'Join Turath\nDigital',
+      joinSubtitle: 'Become a curator of heritage.',
+      fullName: 'Full Name',
+      fullNamePlaceholder: 'e.g. Tariq Ibn Ziyad',
+      username: 'Username',
+      usernamePlaceholder: 'e.g. tariq_92',
+      confirmPassword: 'Confirm Password',
+      createAccountBtn: 'Create Account →',
+      creatingAccount: 'Creating Account...',
+      alreadyHave: 'Already have an account? Log in',
+      termsNote: 'By joining, you agree to our',
+      terms: 'Terms of Service',
+      and: 'and',
+      privacy: 'Privacy Policy',
+      // Photo caption
+      photoCaption: 'Where history lives on — explore, discover, and connect with centuries of Moroccan heritage.',
+    },
+  },
+  fr: {
+    translation: {
+      brandLabel: 'Turath Digital',
+      welcomeBack: 'Bon retour\nsur Turath',
+      emailAddress: 'Adresse e-mail',
+      emailPlaceholder: 'Entrez votre e-mail',
+      password: 'Mot de passe',
+      passwordPlaceholder: 'Entrez votre mot de passe',
+      forgot: 'Oublié ?',
+      signIn: 'Se connecter →',
+      signingIn: 'Connexion...',
+      createAccount: 'Créer un compte',
+      joinTitle: 'Rejoindre\nTurath Digital',
+      joinSubtitle: 'Devenez gardien du patrimoine.',
+      fullName: 'Nom complet',
+      fullNamePlaceholder: 'ex. Tariq Ibn Ziyad',
+      username: "Nom d'utilisateur",
+      usernamePlaceholder: 'ex. tariq_92',
+      confirmPassword: 'Confirmer le mot de passe',
+      createAccountBtn: 'Créer le compte →',
+      creatingAccount: 'Création en cours...',
+      alreadyHave: 'Déjà un compte ? Se connecter',
+      termsNote: 'En vous inscrivant, vous acceptez nos',
+      terms: "Conditions d'utilisation",
+      and: 'et',
+      privacy: 'Politique de confidentialité',
+      photoCaption: "Là où l'histoire perdure — explorez des siècles de patrimoine marocain.",
+    },
+  },
+  ar: {
+    translation: {
+      brandLabel: 'Turath Digital',
+      welcomeBack: 'مرحباً بعودتك\nإلى Turath',
+      emailAddress: 'البريد الإلكتروني',
+      emailPlaceholder: 'أدخل بريدك الإلكتروني',
+      password: 'كلمة المرور',
+      passwordPlaceholder: 'أدخل كلمة المرور',
+      forgot: 'نسيت؟',
+      signIn: '← تسجيل الدخول',
+      signingIn: 'جارٍ الدخول...',
+      createAccount: 'إنشاء حساب',
+      joinTitle: 'انضم إلى\nTurath Digital',
+      joinSubtitle: 'كن حارساً للتراث.',
+      fullName: 'الاسم الكامل',
+      fullNamePlaceholder: 'مثال: طارق بن زياد',
+      username: 'اسم المستخدم',
+      usernamePlaceholder: 'مثال: tariq_92',
+      confirmPassword: 'تأكيد كلمة المرور',
+      createAccountBtn: '← إنشاء الحساب',
+      creatingAccount: 'جارٍ الإنشاء...',
+      alreadyHave: 'لديك حساب بالفعل؟ تسجيل الدخول',
+      termsNote: 'بالانضمام، أنت توافق على',
+      terms: 'شروط الخدمة',
+      and: 'و',
+      privacy: 'سياسة الخصوصية',
+      photoCaption: 'حيث يحيا التاريخ — اكتشف قروناً من التراث المغربي.',
+    },
+  },
+};
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: 'en',
+    fallbackLng: 'en',
+    interpolation: { escapeValue: false },
+  });
+
+export default i18n;

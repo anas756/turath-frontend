@@ -245,3 +245,231 @@ html, body, #root { height: 100%; }
     transform: translateY(0);
   }
 }
+
+/* ── Language Switcher ── */
+.lang-switcher {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.5rem;
+  z-index: 100;
+}
+
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #e2ddd6;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lang-trigger:hover {
+  border-color: #1e4d8c;
+  box-shadow: 0 2px 12px rgba(30,77,140,0.1);
+}
+
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2ddd6;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  min-width: 140px;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: #333;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.lang-option:hover { background: #f5f2ed; }
+
+.lang-option.active {
+  color: #1e4d8c;
+  font-weight: 500;
+  background: #eef2f8;
+}
+
+.lang-code {
+  font-weight: 600;
+  width: 22px;
+}
+
+.lang-full {
+  color: #888;
+  font-size: 0.78rem;
+}
+
+.lang-option.active .lang-full { color: #1e4d8c; }
+
+/* ── Verify Email page ── */
+.verify-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.verify-icon {
+  width: 80px;
+  height: 80px;
+  background: #eef2f8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.verify-title {
+  margin-bottom: 1rem;
+}
+
+.verify-desc {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  max-width: 280px;
+}
+
+.verify-waiting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0f4fb;
+  border: 1px solid #d0ddf0;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin-bottom: 2rem;
+}
+
+.waiting-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e4d8c;
+  opacity: 0.3;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.waiting-dot:nth-child(2) { animation-delay: 0.2s; }
+.waiting-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+.verify-waiting-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #1e4d8c;
+  letter-spacing: 0.02em;
+  min-width: 180px;
+  text-align: left;
+}
+
+.verify-divider {
+  width: 100%;
+  height: 1px;
+  background: #e2ddd6;
+  margin-bottom: 1.5rem;
+}
+
+.verify-hint {
+  font-size: 0.78rem;
+  font-weight: 300;
+  color: #999;
+  margin-bottom: 0.75rem;
+}
+
+.btn-resend {
+  background: none;
+  border: 1px solid #1e4d8c;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #1e4d8c;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-resend:hover {
+  background: #1e4d8c;
+  color: #fff;
+}
+.btn-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Email Confirmed page ── */
+.confirmed-spinner {
+  width: 52px;
+  height: 52px;
+  border: 3px solid #e2ddd6;
+  border-top-color: #1e4d8c;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.confirmed-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-icon { background: #eef2f8; }
+.error-icon   { background: #fdf0ee; }
+
+.confirmed-progress {
+  width: 100%;
+  height: 3px;
+  background: #e2ddd6;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+}
+
+.confirmed-progress-bar {
+  height: 100%;
+  background: #1e4d8c;
+  border-radius: 2px;
+  animation: progress 4s linear forwards;
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}

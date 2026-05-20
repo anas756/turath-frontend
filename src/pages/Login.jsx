@@ -8,6 +8,8 @@ import loginPhoto from '../assets/arch-login.png';
 import { useDispatch } from 'react-redux';
 import { login } from '../app/services/reduxTollkit/asyncThunks/AuthThunk';
 import { clearMessages } from '../app/services/reduxTollkit/Slices/MessageSlice';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 //  Define the Validation Schema using Yup
 const loginSchema = yup.object().shape({
@@ -51,9 +53,11 @@ export default function Login() {
       console.error('Login action rejected:', error);
     }
   };
+  const { t } = useTranslation();
 
   return (
     <div className="auth-page">
+      <LanguageSwitcher />
       <div
         className="auth-photo"
         style={{ backgroundImage: `url(${loginPhoto})` }}
@@ -66,17 +70,15 @@ export default function Login() {
           className="form-inner"
           noValidate
         >
-          <p className="brand-label">Turath Digital</p>
+          <p className="brand-label">{t('brandLabel')}</p>
           <h1 className="auth-title">
-            Welcome back
-            <br />
-            to Turath
+            {t('welcomeBack').split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
           </h1>
 
           <div className="fields">
             {/* EMAIL FIELD */}
             <div className={`field-group ${errors.email ? 'has-error' : ''}`}>
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">{t('emailAddress')}</label>
               <div className="input-wrap">
                 <span className="input-icon">
                   <svg
@@ -94,7 +96,7 @@ export default function Login() {
                 <input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('emailPlaceholder')}
                   {...register('email')} // Registers the input field
                 />
               </div>
@@ -108,9 +110,9 @@ export default function Login() {
               className={`field-group ${errors.password ? 'has-error' : ''}`}
             >
               <div className="label-row">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">{t('password')}</label>
                 <Link to="/forgot-password" className="forgot-link">
-                  Forgot?
+                  {t('forgot')}
                 </Link>
               </div>
               <div className="input-wrap">
@@ -130,7 +132,7 @@ export default function Login() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder={t('passwordPlaceholder')}
                   {...register('password')} // Registers the input field
                 />
                 <button
@@ -174,11 +176,11 @@ export default function Login() {
 
           {/* Changed to type="submit" so it hooks into HTML form validation safely */}
           <button type="submit" className="btn-cta" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing In...' : 'Sign In →'}
+            {isSubmitting ? t('signingIn') : t('signIn')}
           </button>
 
           <div className="switch-line">
-            <Link to="/signup">Create an account</Link>
+            <Link to="/signup">{t('createAccount')}</Link>
           </div>
         </form>
       </div>

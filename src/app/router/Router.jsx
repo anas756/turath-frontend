@@ -6,6 +6,8 @@ import Home from '../../pages/Home';
 import SignUp from '../../pages/SignUp';
 import UserHome from '../../pages/user/UserHome';
 import Dashboard from '../../pages/admin/Dashboard';
+import VerifyEmail from '../../pages/VerifyEmail';
+import EmailConfirmed from '../../pages/EmailConfirmed';
 
 export const route = createBrowserRouter([
   {
@@ -38,4 +40,6 @@ export const route = createBrowserRouter([
   },
   { path: '/signup', element: <SignUp /> },
   { path: '/', element: <Login /> },
+  { path: '/verify-email', element: <VerifyEmail /> },
+  { path: '/email-confirmed', element: <EmailConfirmed /> },
 ]);

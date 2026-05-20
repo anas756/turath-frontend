@@ -9,6 +9,8 @@ import { clearMessages } from '../app/services/reduxTollkit/Slices/MessageSlice'
 import AlertBanner from '../components/AlertBanner';
 import '../styles/auth.css';
 import signupPhoto from '../assets/arch-signup.png';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // 1. Define the Registration Validation Schema
 const signupSchema = yup.object().shape({
@@ -61,24 +63,25 @@ export default function SignUp() {
       console.log(data);
       const res = await dispatch(registerUser(data)).unwrap();
       console.log(res);
-      navigate('/');
+      navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
       console.error('Registration action rejected:', error);
     }
   };
+  const { t } = useTranslation();
 
   return (
     <div className="auth-page">
+      <LanguageSwitcher />
       <div
         className="auth-photo"
         style={{ backgroundImage: `url(${signupPhoto})` }}
       >
         <div className="photo-overlay" />
         <div className="photo-caption">
-          <p className="photo-brand">Turath Digital</p>
+          <p className="photo-brand">{t('brandLabel')}</p>
           <p className="photo-tagline">
-            Preserving the legacy of the Makhzen through curated digital
-            archives.
+            {t('photoCaption')}
           </p>
         </div>
       </div>
@@ -90,22 +93,20 @@ export default function SignUp() {
           noValidate
         >
           <h1 className="auth-title signup-title">
-            Join Turath
-            <br />
-            Digital
+            {t('joinTitle').split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
           </h1>
-          <p className="auth-subtitle">Become a curator of heritage.</p>
+          <p className="auth-subtitle">{t('joinSubtitle')}</p>
 
           <AlertBanner />
 
           <div className="fields">
             {/* FULL NAME FIELD */}
             <div className={`field-group ${errors.name ? 'has-error' : ''}`}>
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name">{t('fullName')}</label>
               <input
                 id="name"
                 type="text"
-                placeholder="e.g. Tariq Ibn Ziyad"
+                placeholder={t('fullNamePlaceholder')}
                 {...register('name')}
               />
               {errors.name && (
@@ -117,11 +118,11 @@ export default function SignUp() {
             <div
               className={`field-group ${errors.userName ? 'has-error' : ''}`}
             >
-              <label htmlFor="userName">Username</label>
+              <label htmlFor="userName">{t('username')}</label>
               <input
                 id="userName"
                 type="text"
-                placeholder="e.g. tariq_92"
+                placeholder={t('usernamePlaceholder')}
                 autoCapitalize="none"
                 autoCorrect="off"
                 {...register('userName')}
@@ -133,7 +134,7 @@ export default function SignUp() {
 
             {/* EMAIL FIELD */}
             <div className={`field-group ${errors.email ? 'has-error' : ''}`}>
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">{t('emailAddress')}</label>
               <input
                 id="email"
                 type="email"
@@ -150,7 +151,7 @@ export default function SignUp() {
             <div
               className={`field-group ${errors.password ? 'has-error' : ''}`}
             >
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('password')}</label>
               <input
                 id="password"
                 type="password"
@@ -167,7 +168,7 @@ export default function SignUp() {
             <div
               className={`field-group ${errors.password_confirmation ? 'has-error' : ''}`}
             >
-              <label htmlFor="password_confirmation">Confirm Password</label>
+              <label htmlFor="password_confirmation">{t('confirmPassword')}</label>
               <input
                 id="password_confirmation"
                 type="password"
@@ -184,16 +185,16 @@ export default function SignUp() {
           </div>
 
           <button type="submit" className="btn-cta" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Create Account →'}
+            {isSubmitting ? t('creatingAccount') : t('createAccountBtn')}
           </button>
 
           <div className="switch-line">
-            <Link to="/login">Already have an account? Log in</Link>
+            <Link to="/login">{t('alreadyHave')}</Link>
           </div>
 
           <p className="legal-note">
-            By joining, you agree to our <a href="#">Terms of Service</a> and{' '}
-            <a href="#">Privacy Policy</a>
+            {t('termsNote')} <a href="#">{t('terms')}</a> {t('and')}{' '}
+            <a href="#">{t('privacy')}</a>
           </p>
         </form>
       </div>
