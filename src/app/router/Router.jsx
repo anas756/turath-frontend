@@ -3,6 +3,7 @@ import UserLayout from './UserLayout';
 import AdminLayout from './AdminLayout';
 import Login from '../../pages/Login';
 import Home from '../../pages/Home';
+import SignUp from '../../pages/SignUp';
 
 export const route = createBrowserRouter([
   {
@@ -23,4 +24,6 @@ export const route = createBrowserRouter([
     path: '/home',
     element: <Home />,
   },
+  { path: '/signup', element: <SignUp /> },
+  { path: '/', element: <Login /> },
 ]);
