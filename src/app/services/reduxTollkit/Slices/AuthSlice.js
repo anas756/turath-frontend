@@ -1,15 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login } from '../asyncThunks/AuthThunk';
+import Cookies from 'js-cookie';
 
 const initialState = {
   user: null,
   jwt_token: null,
   isAuthenticated: false,
   loading: false,
-  message: {
-    success: null,
-    error: null,
-  },
 };
 
 export const AuthSlice = createSlice({
@@ -24,34 +21,34 @@ export const AuthSlice = createSlice({
       state.user = null;
       state.jwt_token = null;
       state.isAuthenticated = false;
-      state.message.success = null;
-      state.message.error = null;
-
-      cookieStore.delete('jwt_token');
+      Cookies.remove('jwt_token', { path: '/' });
     },
   },
   extraReducers: (builder) => {
     builder
+      // --- LOGIN HANDLERS ---
       .addCase(login.pending, (state) => {
         state.loading = true;
-        state.message.error = null;
-        state.message.success = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.data;
-        state.jwt_token = action.payload.token;
-        state.message.success = action.payload.message;
+        state.user = action.payload?.data || null;
+        state.jwt_token = action.payload?.token || null;
 
-        cookieStore.set('jwt_token', action.payload.token);
+        if (action.payload?.token) {
+          Cookies.set('jwt_token', action.payload.token, {
+            expires: 7,
+            path: '/',
+          });
+        }
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(login.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
-        state.message.error = action.payload || 'Login failed';
       });
   },
 });
 
 export const { setTokenFromCookie, logout } = AuthSlice.actions;
+export default AuthSlice.reducer;

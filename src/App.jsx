@@ -3,13 +3,15 @@ import { RouterProvider } from 'react-router-dom';
 import { route } from './app/router/Router';
 import { useDispatch } from 'react-redux';
 import { setTokenFromCookie } from './app/services/reduxTollkit/Slices/AuthSlice';
+import AlertBanner from './components/AlertBanner';
+import  Cookies  from 'js-cookie';
 
 export default function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
     const checkCookie = async () => {
-      const cookie = await cookieStore.get('jwt_token');
+      const cookie = await Cookies.get('jwt_token');
       if (cookie) {
         dispatch(setTokenFromCookie(cookie.value));
       }
@@ -20,6 +22,7 @@ export default function App() {
   return (
     <div>
       <RouterProvider router={route} />
+      <AlertBanner />
     </div>
   );
 }

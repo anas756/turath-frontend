@@ -4,17 +4,29 @@ import AdminLayout from './AdminLayout';
 import Login from '../../pages/Login';
 import Home from '../../pages/Home';
 import SignUp from '../../pages/SignUp';
+import UserHome from '../../pages/user/UserHome';
+import Dashboard from '../../pages/admin/Dashboard';
 
 export const route = createBrowserRouter([
   {
-    path: '/users',
+    path: '/user/',
     element: <UserLayout />,
-    children: [],
+    children: [
+      {
+        path: 'home',
+        element: <UserHome />,
+      },
+    ],
   },
   {
-    path: '/admin',
+    path: '/admin/',
     element: <AdminLayout />,
-    children: [],
+    children: [
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+      },
+    ],
   },
   {
     path: '/login',
