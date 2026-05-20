@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { route } from './app/router/Router';
