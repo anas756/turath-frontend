@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
-import { registerUser } from './../app/services/reduxTollkit/asyncThunks/UserThunk';
-import { clearMessages } from '../app/services/reduxTollkit/Slices/MessageSlice';
-import AlertBanner from '../components/AlertBanner';
-import '../styles/auth.css';
-import signupPhoto from '../assets/arch-signup.png';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import { registerUser } from '../../app/services/reduxTollkit/asyncThunks/UserThunk';
+import { clearMessages } from '../../app/services/reduxTollkit/Slices/MessageSlice';
+import AlertBanner from '../../components/AlertBanner';
+import '../../styles/auth.css';
+import signupPhoto from '../../assets/arch-signup.png';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
 // 1. Define the Registration Validation Schema
@@ -80,9 +80,7 @@ export default function SignUp() {
         <div className="photo-overlay" />
         <div className="photo-caption">
           <p className="photo-brand">{t('brandLabel')}</p>
-          <p className="photo-tagline">
-            {t('photoCaption')}
-          </p>
+          <p className="photo-tagline">{t('photoCaption')}</p>
         </div>
       </div>
 
@@ -93,7 +91,14 @@ export default function SignUp() {
           noValidate
         >
           <h1 className="auth-title signup-title">
-            {t('joinTitle').split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
+            {t('joinTitle')
+              .split('\n')
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
           <p className="auth-subtitle">{t('joinSubtitle')}</p>
 
@@ -168,7 +173,9 @@ export default function SignUp() {
             <div
               className={`field-group ${errors.password_confirmation ? 'has-error' : ''}`}
             >
-              <label htmlFor="password_confirmation">{t('confirmPassword')}</label>
+              <label htmlFor="password_confirmation">
+                {t('confirmPassword')}
+              </label>
               <input
                 id="password_confirmation"
                 type="password"

@@ -3,12 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import '../styles/auth.css';
-import loginPhoto from '../assets/arch-login.png';
+import '../../styles/auth.css';
+import loginPhoto from '../../assets/arch-login.png';
 import { useDispatch } from 'react-redux';
-import { login } from '../app/services/reduxTollkit/asyncThunks/AuthThunk';
-import { clearMessages } from '../app/services/reduxTollkit/Slices/MessageSlice';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import { login } from '../../app/services/reduxTollkit/asyncThunks/AuthThunk';
+import { clearMessages } from '../../app/services/reduxTollkit/Slices/MessageSlice';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
 //  Define the Validation Schema using Yup

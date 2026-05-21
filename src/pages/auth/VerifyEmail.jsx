@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '../components/LanguageSwitcher';
-import loginPhoto from '../assets/arch-login.png';
-import '../styles/auth.css';
-import { api } from '../app/services/lib/Api';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import loginPhoto from '../../assets/arch-login.png';
+import '../../styles/auth.css';
+import { api } from '../../app/services/lib/Api';
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ export default function VerifyEmail() {
         setResendStatus(response?.data?.message || 'Error occurred.');
       }
     } catch (e) {
-      // Catch blocks manage 4xx/5xx responses sent by Axios interceptors
+      // Catch blocks manage responses sent by Axios interceptors
       const errorMessage =
         e?.response?.data?.message || 'Could not reach the server.';
       setResendStatus(errorMessage);

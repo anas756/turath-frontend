@@ -31,7 +31,13 @@ const resources = {
       and: 'and',
       privacy: 'Privacy Policy',
       // Photo caption
-      photoCaption: 'Where history lives on — explore, discover, and connect with centuries of Moroccan heritage.',
+      photoCaption:
+        'Where history lives on — explore, discover, and connect with centuries of Moroccan heritage.',
+      forgotPasswordTitle: 'Reset your\nPassword',
+      checkInformation: 'Send Link →',
+      checkingInformation: 'Sending Link...',
+      backToLogin: 'Back to Log In',
+      createNewPasswordTitle: 'Create New\nPassword',
     },
   },
   fr: {
@@ -60,7 +66,13 @@ const resources = {
       terms: "Conditions d'utilisation",
       and: 'et',
       privacy: 'Politique de confidentialité',
-      photoCaption: "Là où l'histoire perdure — explorez des siècles de patrimoine marocain.",
+      photoCaption:
+        "Là où l'histoire perdure — explorez des siècles de patrimoine marocain.",
+      forgotPasswordTitle: 'Réinitialiser\nvotre mot de passe',
+      checkInformation: 'Envoyer le lien →',
+      checkingInformation: 'Envoi en cours...',
+      backToLogin: 'Retour à la connexion',
+      createNewPasswordTitle: 'Nouveau\nmot de passe',
     },
   },
   ar: {
@@ -90,17 +102,20 @@ const resources = {
       and: 'و',
       privacy: 'سياسة الخصوصية',
       photoCaption: 'حيث يحيا التاريخ — اكتشف قروناً من التراث المغربي.',
+      forgotPasswordTitle: 'إعادة تعيين\nكلمة المرور',
+      checkInformation: '← إرسال الرابط',
+      checkingInformation: 'جارٍ الإرسال...',
+      backToLogin: 'العودة لتسجيل الدخول',
+      createNewPasswordTitle: 'إنشاء كلمة\nمرور جديدة',
     },
   },
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: 'en',
-    fallbackLng: 'en',
-    interpolation: { escapeValue: false },
-  });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+});
 
 export default i18n;
