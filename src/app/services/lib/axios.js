@@ -31,32 +31,3 @@ customAxios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-customAxios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (!error.response) {
-      console.error('Network error or server unreachable:', error.message);
-      return Promise.reject(
-        new Error('Network error. Please check your connection.')
-      );
-    }
-
-    const { status } = error.response;
-
-    if (status === 401) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
-    }
-
-    if (status === 403) {
-      console.warn('Access forbidden.');
-    }
-
-    if (status >= 500) {
-      console.error('Server error:', error.response.data);
-    }
-
-    return Promise.reject(error);
-  }
-);

@@ -39,7 +39,6 @@ export const route = createBrowserRouter([
     element: <Home />,
   },
   { path: '/signup', element: <SignUp /> },
-  { path: '/', element: <Login /> },
   { path: '/verify-email', element: <VerifyEmail /> },
   { path: '/email-confirmed', element: <EmailConfirmed /> },
 ]);

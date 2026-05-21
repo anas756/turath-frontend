@@ -27,6 +27,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -37,23 +38,44 @@ export default function Login() {
   });
 
   // Handle Form Submission
+  // Handle Form Submission
   const onSubmit = async (data) => {
     // Clear any previous error message state right away
     dispatch(clearMessages());
 
     try {
       const response = await dispatch(login(data)).unwrap();
+      console.log('Login successful payload:', response);
 
       if (response?.data?.role === 'user') {
         navigate('/user/home');
-      } else {
+      } else if (response?.data?.role === 'admin') {
         navigate('/admin/dashboard');
+      } else {
+        navigate('/user/home');
       }
     } catch (error) {
-      console.error('Login action rejected:', error);
+      console.error('Full Login Error Object:', error);
+
+      // 1. Check if the unwrapped string message matches your email confirmation condition
+      const isUnconfirmedEmail =
+        typeof error === 'string' &&
+        error.includes('confirm your email address first');
+
+      if (isUnconfirmedEmail) {
+        // 2. Since the payload is just a text string, pull the email straight from the form input fields
+        const targetEmail = data.email;
+
+        console.log(
+          'Verification required. Navigating with email:',
+          targetEmail
+        );
+
+        // 3. Trigger your navigation path update
+        navigate(`/verify-email?email=${encodeURIComponent(targetEmail)}`);
+      }
     }
   };
-  const { t } = useTranslation();
 
   return (
     <div className="auth-page">
@@ -72,7 +94,14 @@ export default function Login() {
         >
           <p className="brand-label">{t('brandLabel')}</p>
           <h1 className="auth-title">
-            {t('welcomeBack').split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
+            {t('welcomeBack')
+              .split('\n')
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
 
           <div className="fields">
