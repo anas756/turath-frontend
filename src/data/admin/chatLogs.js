@@ -1,0 +1,38 @@
+export const chatLogs = [
+  {
+    id: 1,
+    user: { name: 'Fatima Benali', initials: 'FB' },
+    query: 'What manuscripts are available from the Marinid dynasty?',
+    response: 'Found 14 documents related to the Marinid period in the Royal Archives collection.',
+    tokens: 312,
+    timestamp: 'Oct 12, 2023 — 09:22',
+    status: 'Resolved',
+  },
+  {
+    id: 2,
+    user: { name: 'Tariq Ibn Ziyad', initials: 'TZ' },
+    query: 'Translate the introduction of Al-Qarawiyyin Manuscript 042',
+    response: 'Translation completed. Classical Arabic to English. 3 paragraphs.',
+    tokens: 890,
+    timestamp: 'Oct 11, 2023 — 14:05',
+    status: 'Resolved',
+  },
+  {
+    id: 3,
+    user: { name: 'Laila Chraibi', initials: 'LC' },
+    query: 'Show me all Zellige pattern images from Fes',
+    response: 'Returned 8 media assets tagged with Zellige + Fes.',
+    tokens: 145,
+    timestamp: 'Oct 10, 2023 — 17:31',
+    status: 'Resolved',
+  },
+  {
+    id: 4,
+    user: { name: 'Youssef Alaoui', initials: 'YA' },
+    query: 'Summarize the Saadian Tombs Survey document',
+    response: 'Error: Document still under review and access restricted.',
+    tokens: 0,
+    timestamp: 'Oct 09, 2023 — 11:00',
+    status: 'Failed',
+  },
+];

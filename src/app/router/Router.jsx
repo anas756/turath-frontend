@@ -11,6 +11,12 @@ import EmailConfirmed from '../../pages/auth/EmailConfirmed';
 import ForgotPassword from '../../pages/auth/ForgotPassword';
 import ResetPassword from '../../pages/auth/ResetPassword';
 import ResetTokenConfirmed from '../../pages/auth/ResetTokenConfirmed';
+import DigitalLibrary from '../../pages/admin/DigitalLibrary';
+import MediaLibrary from '../../pages/admin/MediaLibrary';
+import UserManagement from '../../pages/admin/UserManagement';
+import ChatLogs from '../../pages/admin/ChatLogs';
+
+
 
 export const route = createBrowserRouter([
   {
@@ -27,10 +33,11 @@ export const route = createBrowserRouter([
     path: '/admin/',
     element: <AdminLayout />,
     children: [
-      {
-        path: 'dashboard',
-        element: <Dashboard />,
-      },
+      { path: 'dashboard', element: <Dashboard /> },
+      { path: 'library', element: <DigitalLibrary /> },
+      { path: 'media', element: <MediaLibrary /> },
+      { path: 'users', element: <UserManagement /> },
+      { path: 'chat-logs', element: <ChatLogs /> },
     ],
   },
   {

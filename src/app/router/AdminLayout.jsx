@@ -1,16 +1,19 @@
 import React from 'react';
-import SaidBar from '../../components/admin/SaidBar';
 import { Outlet } from 'react-router-dom';
-import Footer from '../../components/admin/Footer';
-import AlertBanner from '../../components/AlertBanner';
+import Sidebar from '../../components/admin/Sidebar';
+import '../../styles/admin.css';
 
 export default function AdminLayout() {
   return (
-    <div>
-      <SaidBar />
-    
-      <Outlet />
-      <Footer />
+    <div className="admin-shell">
+      <Sidebar />
+      <div className="admin-main">
+
+        {/* Page content */}
+        <main className="admin-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
