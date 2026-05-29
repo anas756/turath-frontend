@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login } from '../asyncThunks/AuthThunk';
-import { registerUser } from '../asyncThunks/UserThunk';
-
-const initialState = {
-  success: null,
-  error: null,
-};
+import {
+  deleteUser,
+  getAllusers,
+  registerUser,
+  updateUser,
+} from '../asyncThunks/UserThunk';
+import { initialState } from './InitialState';
 
 export const MessageSlice = createSlice({
   name: 'message',
@@ -47,6 +48,31 @@ export const MessageSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.error =
           action.payload || 'Registration failed. Please try again.';
+        state.success = null;
+      })
+      // users
+      .addCase(getAllusers.fulfilled, (state, action) => {
+        state.success = action.payload?.message || 'users fetched succesfuly';
+        state.error = null;
+      })
+      .addCase(getAllusers.rejected, (state, action) => {
+        state.error = action.payload || 'fetch  failed. Please try again.';
+        state.success = null;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.success = action.payload?.message || 'user updated succesfuly';
+        state.error = null;
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.error = action.payload || 'updated  failed. Please try again.';
+        state.success = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.success = action.payload?.message || 'user deleted succesfuly';
+        state.error = null;
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.error = action.payload || 'deleted  failed. Please try again.';
         state.success = null;
       });
   },

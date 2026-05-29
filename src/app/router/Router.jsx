@@ -13,10 +13,11 @@ import ResetPassword from '../../pages/auth/ResetPassword';
 import ResetTokenConfirmed from '../../pages/auth/ResetTokenConfirmed';
 import DigitalLibrary from '../../pages/admin/DigitalLibrary';
 import MediaLibrary from '../../pages/admin/MediaLibrary';
-import UserManagement from '../../pages/admin/UserManagement';
+
 import ChatLogs from '../../pages/admin/ChatLogs';
-
-
+import StoreUser from '../../pages/admin/userManagment/StoreUser';
+import Users from '../../pages/admin/userManagment/Users';
+import UpdateUser from '../../pages/admin/userManagment/UpdateUser';
 
 export const route = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ export const route = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'library', element: <DigitalLibrary /> },
       { path: 'media', element: <MediaLibrary /> },
-      { path: 'users', element: <UserManagement /> },
+      { path: 'users', element: <Users /> },
       { path: 'chat-logs', element: <ChatLogs /> },
     ],
   },

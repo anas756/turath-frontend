@@ -21,8 +21,9 @@ export const api = {
 
   //  user
   getAllUsers: () => customAxios.get('/users'),
-  updateUser: (id, data) => customAxios.put(`/users/${id}`, data),
+  updateUser: ({id, data}) => customAxios.put(`/users/${id}`, data),
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
+  getUser : (id) => customAxios.get(`/users/${id}`),
 
   // Categories
   getCategories: () => customAxios.get('/categories'),
