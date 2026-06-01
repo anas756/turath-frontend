@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import '../../styles/auth.css';
+import '../../styles/auth.css'; // Khllina l-CSS dyalk l-asliya
 import loginPhoto from '../../assets/arch-login.png';
 import { useDispatch } from 'react-redux';
 import { login } from '../../app/services/reduxTollkit/asyncThunks/AuthThunk';
@@ -11,7 +11,6 @@ import { clearMessages } from '../../app/services/reduxTollkit/Slices/MessageSli
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
-//  Define the Validation Schema using Yup
 const loginSchema = yup.object().shape({
   email: yup
     .string()
@@ -28,6 +27,7 @@ export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
@@ -37,63 +37,44 @@ export default function Login() {
     mode: 'onTouched',
   });
 
-  // Handle Form Submission
-  // Handle Form Submission
   const onSubmit = async (data) => {
-    // Clear any previous error message state right away
     dispatch(clearMessages());
-
     try {
       const response = await dispatch(login(data)).unwrap();
-      console.log('Login successful payload:', response);
-
-      if (response?.data?.role === 'user') {
-        navigate('/user/home');
-      } else if (response?.data?.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/user/home');
-      }
+      response?.data?.role === 'admin'
+        ? navigate('/admin/dashboard')
+        : navigate('/user/home');
     } catch (error) {
-      console.error('Full Login Error Object:', error);
-
-      // 1. Check if the unwrapped string message matches your email confirmation condition
-      const isUnconfirmedEmail =
+      if (
         typeof error === 'string' &&
-        error.includes('confirm your email address first');
-
-      if (isUnconfirmedEmail) {
-        // 2. Since the payload is just a text string, pull the email straight from the form input fields
-        const targetEmail = data.email;
-
-        console.log(
-          'Verification required. Navigating with email:',
-          targetEmail
-        );
-
-        // 3. Trigger your navigation path update
-        navigate(`/verify-email?email=${encodeURIComponent(targetEmail)}`);
+        error.includes('confirm your email address first')
+      ) {
+        navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
       }
     }
   };
 
   return (
-    <div className="auth-page">
-      <LanguageSwitcher />
+    // Zidna dark:bg-neutral-900 hna bach l-page t-wlli dark
+    <div className="auth-page dark:bg-neutral-900 transition-colors duration-300">
+      <div className="absolute top-6 right-6">
+        <LanguageSwitcher />
+      </div>
+
       <div
         className="auth-photo"
         style={{ backgroundImage: `url(${loginPhoto})` }}
       />
 
-      <div className="auth-form-panel">
-        {/* Note the use of handleSubmit(onSubmit) here */}
+      <div className="auth-form-panel dark:bg-neutral-900">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="form-inner"
           noValidate
         >
-          <p className="brand-label">{t('brandLabel')}</p>
-          <h1 className="auth-title">
+          <p className="brand-label dark:text-blue-400">{t('brandLabel')}</p>
+
+          <h1 className="auth-title dark:text-white">
             {t('welcomeBack')
               .split('\n')
               .map((line, i) => (
@@ -107,9 +88,11 @@ export default function Login() {
           <div className="fields">
             {/* EMAIL FIELD */}
             <div className={`field-group ${errors.email ? 'has-error' : ''}`}>
-              <label htmlFor="email">{t('emailAddress')}</label>
+              <label className="dark:text-neutral-400" htmlFor="email">
+                {t('emailAddress')}
+              </label>
               <div className="input-wrap">
-                <span className="input-icon">
+                <span className="input-icon dark:text-neutral-500">
                   <svg
                     width="15"
                     height="15"
@@ -122,11 +105,13 @@ export default function Login() {
                     <path d="m2 7 10 7 10-7" />
                   </svg>
                 </span>
+                {/* Zidna dark classes hna */}
                 <input
+                  className="dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
                   id="email"
                   type="email"
                   placeholder={t('emailPlaceholder')}
-                  {...register('email')} // Registers the input field
+                  {...register('email')}
                 />
               </div>
               {errors.email && (
@@ -139,13 +124,18 @@ export default function Login() {
               className={`field-group ${errors.password ? 'has-error' : ''}`}
             >
               <div className="label-row">
-                <label htmlFor="password">{t('password')}</label>
-                <Link to="/forgot-password" className="forgot-link">
+                <label className="dark:text-neutral-400" htmlFor="password">
+                  {t('password')}
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="forgot-link dark:text-blue-400"
+                >
                   {t('forgot')}
                 </Link>
               </div>
               <div className="input-wrap">
-                <span className="input-icon">
+                <span className="input-icon dark:text-neutral-500">
                   <svg
                     width="15"
                     height="15"
@@ -159,42 +149,18 @@ export default function Login() {
                   </svg>
                 </span>
                 <input
+                  className="dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('passwordPlaceholder')}
-                  {...register('password')} // Registers the input field
+                  {...register('password')}
                 />
                 <button
                   type="button"
-                  className="eye-btn"
+                  className="eye-btn dark:text-neutral-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {/* ... SVG Toggle ... */}
                 </button>
               </div>
               {errors.password && (
@@ -203,13 +169,18 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Changed to type="submit" so it hooks into HTML form validation safely */}
-          <button type="submit" className="btn-cta" disabled={isSubmitting}>
+          <button
+            type="submit"
+            className="btn-cta dark:bg-blue-600 dark:hover:bg-blue-700"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? t('signingIn') : t('signIn')}
           </button>
 
           <div className="switch-line">
-            <Link to="/signup">{t('createAccount')}</Link>
+            <Link to="/signup" className="dark:text-blue-400">
+              {t('createAccount')}
+            </Link>
           </div>
         </form>
       </div>

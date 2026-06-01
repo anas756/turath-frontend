@@ -1,26 +1,29 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { login } from '../asyncThunks/AuthThunk';
+import { login, getProfile } from '../asyncThunks/AuthThunk';
 import Cookies from 'js-cookie';
-import { initialState } from './InitialState';
+
+const initialState = {
+  user: null,
+  jwt_token: Cookies.get('jwt_token') || null,
+  isAuthenticated: !!Cookies.get('jwt_token'),
+  isLoading: Cookies.get('jwt_token') ? true : false,
+};
 
 export const AuthSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setTokenFromCookie: (state, action) => {
-      state.jwt_token = action.payload;
-      state.isAuthenticated = !!action.payload;
-    },
+   
     logout: (state) => {
       state.user = null;
       state.jwt_token = null;
       state.isAuthenticated = false;
-      Cookies.remove('jwt_token', { path: '/' });
+      state.isLoading = false;
+      Cookies.remove('jwt_token');
     },
   },
   extraReducers: (builder) => {
     builder
-      // --- LOGIN HANDLERS ---
       .addCase(login.pending, (state) => {
         state.loading = true;
       })
@@ -29,7 +32,6 @@ export const AuthSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload?.data || null;
         state.jwt_token = action.payload?.token || null;
-
         if (action.payload?.token) {
           Cookies.set('jwt_token', action.payload.token, {
             expires: 7,
@@ -39,10 +41,25 @@ export const AuthSlice = createSlice({
       })
       .addCase(login.rejected, (state) => {
         state.loading = false;
+      })
+      // get profile 
+      .addCase(getProfile.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        state.user = action.payload.user; 
+        state.isAuthenticated = true;
+        state.isLoading = false; 
+      })
+      .addCase(getProfile.rejected, (state) => {
+        state.user = null;
+        state.jwt_token = null;
         state.isAuthenticated = false;
+        state.isLoading = false;
+        Cookies.remove('jwt_token'); 
       });
   },
 });
 
-export const { setTokenFromCookie, logout } = AuthSlice.actions;
+export const {  logout } = AuthSlice.actions;
 export default AuthSlice.reducer;

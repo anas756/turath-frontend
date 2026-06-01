@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -6,13 +6,11 @@ import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { registerUser } from '../../app/services/reduxTollkit/asyncThunks/UserThunk';
 import { clearMessages } from '../../app/services/reduxTollkit/Slices/MessageSlice';
-import AlertBanner from '../../components/AlertBanner';
 import '../../styles/auth.css';
 import signupPhoto from '../../assets/arch-signup.png';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
-// 1. Define the Registration Validation Schema
 const signupSchema = yup.object().shape({
   name: yup
     .string()
@@ -44,8 +42,8 @@ const signupSchema = yup.object().shape({
 export default function SignUp() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  // Initialize React Hook Form
   const {
     register,
     handleSubmit,
@@ -55,20 +53,16 @@ export default function SignUp() {
     mode: 'onTouched',
   });
 
-  // Handle Form Submission
   const onSubmit = async (data) => {
     dispatch(clearMessages());
     try {
       data.role = 'user';
-      console.log(data);
-      const res = await dispatch(registerUser(data)).unwrap();
-      console.log(res);
+      await dispatch(registerUser(data)).unwrap();
       navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error) {
       console.error('Registration action rejected:', error);
     }
   };
-  const { t } = useTranslation();
 
   return (
     <div className="auth-page">
@@ -101,8 +95,6 @@ export default function SignUp() {
               ))}
           </h1>
           <p className="auth-subtitle">{t('joinSubtitle')}</p>
-
-          <AlertBanner />
 
           <div className="fields">
             {/* FULL NAME FIELD */}

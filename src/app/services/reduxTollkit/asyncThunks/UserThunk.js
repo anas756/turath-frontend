@@ -6,59 +6,58 @@ export const registerUser = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const res = await api.register(data);
-
       return res.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Registration failed'
       );
     }
   }
 );
-// get all users
 
 export const getAllusers = createAsyncThunk(
   'user/all',
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.getAllUsers();
-
       return res.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Failed to fetch users'
       );
     }
   }
 );
+
 export const selectUser = createAsyncThunk(
   'user/selectUser',
   async (id, { rejectWithValue }) => {
     try {
       const res = await api.getUser(id);
-
       return res.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Failed to fetch user details'
       );
     }
   }
 );
+
 export const updateUser = createAsyncThunk(
   'user/update',
-  async ({id, data}, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const res = await api.updateUser({id, data});
+      const res = await api.updateUser({ id, data });
       return res.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Failed to update user'
       );
     }
   }
 );
-export const deleteUser  = createAsyncThunk(
+
+export const deleteUser = createAsyncThunk(
   'user/delete',
   async (id, { rejectWithValue }) => {
     try {
@@ -66,7 +65,7 @@ export const deleteUser  = createAsyncThunk(
       return res.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Failed to delete user'
       );
     }
   }

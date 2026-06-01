@@ -15,3 +15,17 @@ export const login = createAsyncThunk(
     }
   }
 );
+export const getProfile = createAsyncThunk(
+  'auth/getProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.getProfile();
+
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'An error occurred during login'
+      );
+    }
+  }
+);

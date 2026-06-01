@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import loginPhoto from '../../assets/arch-login.png';
@@ -15,20 +15,19 @@ const MESSAGES = {
 export default function EmailConfirmed() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const status = searchParams.get('status');
   const reason = searchParams.get('reason');
 
-  const [phase, setPhase] = useState('loading'); // loading | success | error
+  const [phase, setPhase] = useState('loading');
 
   useEffect(() => {
-    // Brief loading phase for UX polish
     const timer = setTimeout(() => {
       setPhase(status === 'success' ? 'success' : 'error');
     }, 1800);
     return () => clearTimeout(timer);
   }, [status]);
 
-  // Auto-redirect to login after success
   useEffect(() => {
     if (phase !== 'success') return;
     const timer = setTimeout(() => navigate('/login'), 4000);
@@ -50,7 +49,7 @@ export default function EmailConfirmed() {
             <>
               <div className="confirmed-spinner" />
               <p className="brand-label" style={{ marginTop: '1.5rem' }}>
-                Turath Digital
+                {t('brandLabel', 'Turath Digital')}
               </p>
               <h1 className="auth-title verify-title">
                 Verifying
@@ -77,7 +76,7 @@ export default function EmailConfirmed() {
                 </svg>
               </div>
               <p className="brand-label" style={{ marginTop: '1.5rem' }}>
-                Turath Digital
+                {t('brandLabel', 'Turath Digital')}
               </p>
               <h1 className="auth-title verify-title">
                 Email
@@ -119,7 +118,7 @@ export default function EmailConfirmed() {
                 </svg>
               </div>
               <p className="brand-label" style={{ marginTop: '1.5rem' }}>
-                Turath Digital
+                {t('brandLabel', 'Turath Digital')}
               </p>
               <h1
                 className="auth-title verify-title"
@@ -136,7 +135,7 @@ export default function EmailConfirmed() {
                 Back to Sign Up →
               </button>
               <div className="switch-line" style={{ marginTop: '1rem' }}>
-                <a href="/login">Already confirmed? Log in</a>
+                <Link to="/login">Already confirmed? Log in</Link>
               </div>
             </>
           )}

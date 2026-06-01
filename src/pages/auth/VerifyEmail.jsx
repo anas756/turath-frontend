@@ -11,11 +11,11 @@ export default function VerifyEmail() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email');
+
   const [checking, setChecking] = useState(false);
   const [dots, setDots] = useState('');
-  const [resendStatus, setResendStatus] = useState(''); // add this with the other useState lines at the top
+  const [resendStatus, setResendStatus] = useState('');
 
-  // Animate the waiting dots
   useEffect(() => {
     const interval = setInterval(() => {
       setDots((d) => (d.length >= 3 ? '' : d + '.'));
@@ -25,41 +25,37 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     if (!email) return;
+    let isMounted = true;
 
     const poll = setInterval(async () => {
       try {
-        // Axios processes responses directly. URL segments pass encoded string fragments
         const response = await api.confirmEmail(encodeURIComponent(email));
-
-        // Axios maps backend JSON payload variables directly inside the response.data object
-        if (response?.data?.verified) {
+        if (response?.data?.verified && isMounted) {
           clearInterval(poll);
           navigate('/login');
         }
       } catch (e) {
-        console.log(e);
+        console.error('Email verification polling error:', e);
       }
     }, 4000);
 
-    return () => clearInterval(poll);
+    return () => {
+      isMounted = false;
+      clearInterval(poll);
+    };
   }, [email, navigate]);
 
-  //  Resend confirmation logic using api.resendConfirmation()
   const handleResend = async () => {
     setChecking(true);
     setResendStatus('');
     try {
-      // Axios sends data payload objects straight through the second function parameter
       const response = await api.resendConfirmation({ email });
-
-      // Axios treats successful requests (HTTP status codes 2xx) as valid response objects
       if (response?.data?.success || response?.status === 200) {
         setResendStatus('success');
       } else {
         setResendStatus(response?.data?.message || 'Error occurred.');
       }
     } catch (e) {
-      // Catch blocks manage responses sent by Axios interceptors
       const errorMessage =
         e?.response?.data?.message || 'Could not reach the server.';
       setResendStatus(errorMessage);
@@ -67,10 +63,10 @@ export default function VerifyEmail() {
       setChecking(false);
     }
   };
+
   return (
     <div className="auth-page">
       <LanguageSwitcher />
-
       <div
         className="auth-photo"
         style={{ backgroundImage: `url(${loginPhoto})` }}
@@ -92,7 +88,7 @@ export default function VerifyEmail() {
             </svg>
           </div>
 
-          <p className="brand-label">Turath Digital</p>
+          <p className="brand-label">{t('brandLabel', 'Turath Digital')}</p>
           <h1 className="auth-title verify-title">
             Check your
             <br />
@@ -125,6 +121,7 @@ export default function VerifyEmail() {
           >
             {checking ? 'Sending...' : 'Resend verification email'}
           </button>
+
           {resendStatus === 'success' && (
             <p
               style={{

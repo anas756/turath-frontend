@@ -36,7 +36,7 @@ const Schema = yup.object().shape({
   role: yup
     .string()
     .required('Please select a system role')
-    .oneOf(['admin', 'user'], 'Invalid role selected'),
+    .oneOf(['Admin', 'user', 'admin'], 'Invalid role selected'),
 });
 
 export default function StoreUser({ setShowStore }) {
@@ -59,8 +59,8 @@ export default function StoreUser({ setShowStore }) {
     try {
       console.log('Submitting data:', data);
       await dispatch(registerUser(data)).unwrap();
-      // Close modal and refresh parent
-      setShowStore(true); // Pass true to indicate success and refresh
+
+      setShowStore(false);
     } catch (error) {
       console.error('Registration action rejected:', error);
       alert(error.message || 'Failed to create user. Please try again.');
@@ -123,7 +123,7 @@ export default function StoreUser({ setShowStore }) {
         <div>
           <label htmlFor="email">Email Address</label>
           <input
-            type="email"
+            type="email" // ✅ FIX: type="email" machi type="type"
             id="email"
             {...register('email')}
             disabled={isSubmitting}
@@ -180,7 +180,7 @@ export default function StoreUser({ setShowStore }) {
             <label>
               <input
                 type="radio"
-                value="admin"
+                value="Admin"
                 {...register('role')}
                 disabled={isSubmitting}
               />

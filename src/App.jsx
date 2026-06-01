@@ -1,24 +1,22 @@
 import React, { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { route } from './app/router/Router';
-import { useDispatch } from 'react-redux';
-import { setTokenFromCookie } from './app/services/reduxTollkit/Slices/AuthSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import AlertBanner from './components/AlertBanner';
-import  Cookies  from 'js-cookie';
+import Cookies from 'js-cookie';
+import { getProfile } from './app/services/reduxTollkit/asyncThunks/AuthThunk';
+import './index.css'
 
 export default function App() {
   const dispatch = useDispatch();
+  const { jwt_token } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const checkCookie = async () => {
-      const cookie = await Cookies.get('jwt_token');
-      if (cookie) {
-        dispatch(setTokenFromCookie(cookie.value));
-      }
-    };
+    if (jwt_token) {
+      dispatch(getProfile());
+    }
+  }, [dispatch, jwt_token]);
 
-    checkCookie();
-  }, [dispatch]);
   return (
     <div>
       <RouterProvider router={route} />
@@ -26,4 +24,3 @@ export default function App() {
     </div>
   );
 }
-

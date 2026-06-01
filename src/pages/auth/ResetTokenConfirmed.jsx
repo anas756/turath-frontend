@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import loginPhoto from '../../assets/arch-login.png';
@@ -10,33 +10,26 @@ export default function ResetTokenConfirmed() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Extract variables passed from Laravel Redirect
   const status = searchParams.get('status');
-  const email = searchParams.get('email');
-  const token = searchParams.get('token');
-  const reason = searchParams.get('reason'); // Decodes the custom string messages seamlessly
+  const email = searchParams.get('email') || '';
+  const token = searchParams.get('token') || '';
+  const reason = searchParams.get('reason');
 
-  const [phase, setPhase] = useState('loading'); // loading | success | error
+  const [phase, setPhase] = useState('loading');
 
   useEffect(() => {
-    // Elegant temporary loading buffer to match your interface pacing
     const timer = setTimeout(() => {
       setPhase(status === 'success' ? 'success' : 'error');
     }, 1800);
     return () => clearTimeout(timer);
   }, [status]);
 
-  // Handle successful validation transition forward
   useEffect(() => {
     if (phase !== 'success') return;
 
     const timer = setTimeout(() => {
-      // Directs seamlessly to your change form layout while packing state properties safely
       navigate('/update-password', {
-        state: {
-          email: decodeURIComponent(email),
-          token: decodeURIComponent(token),
-        },
+        state: { email, token },
       });
     }, 3500);
 
@@ -53,7 +46,6 @@ export default function ResetTokenConfirmed() {
 
       <div className="auth-form-panel">
         <div className="form-inner verify-inner">
-          {/* ── PHASE 1: LOADING STATE ── */}
           {phase === 'loading' && (
             <>
               <div className="confirmed-spinner" />
@@ -67,7 +59,6 @@ export default function ResetTokenConfirmed() {
             </>
           )}
 
-          {/* ── PHASE 2: SUCCESS STATE ── */}
           {phase === 'success' && (
             <>
               <div className="confirmed-icon success-icon">
@@ -91,8 +82,7 @@ export default function ResetTokenConfirmed() {
                 Verified!
               </h1>
               <p className="verify-desc">
-                Your reset token is valid. Preparing your secure password update
-                terminal...
+                Your reset token is valid. Preparing password update terminal...
               </p>
               <div className="confirmed-progress">
                 <div className="confirmed-progress-bar" />
@@ -109,7 +99,6 @@ export default function ResetTokenConfirmed() {
             </>
           )}
 
-          {/* ── PHASE 3: ERROR STATE ── */}
           {phase === 'error' && (
             <>
               <div className="confirmed-icon error-icon">
@@ -138,7 +127,6 @@ export default function ResetTokenConfirmed() {
                 Rejected
               </h1>
               <p className="verify-desc">
-                {/* Dynamically fallback to server text parameters directly passed by Laravel code */}
                 {reason || 'This reset link has expired or is invalid.'}
               </p>
               <button

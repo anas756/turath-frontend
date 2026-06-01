@@ -75,17 +75,16 @@ export default function UpdateUser({ setShowUpdate, user, onUpdate }) {
     setIsUpdating(true);
 
     try {
-      // Clean up data - remove password fields if empty
       const updateData = { ...data };
       if (!updateData.password) {
         delete updateData.password;
         delete updateData.password_confirmation;
       }
 
-      // Call parent's update function (asynchronous in background)
-      await onUpdate(user.id, updateData);
+      const userId = user._id || user.id;
 
-      // Close modal after successful update
+      await onUpdate(userId, updateData);
+
       setShowUpdate(false);
     } catch (error) {
       console.error('Update failed:', error);
@@ -152,7 +151,7 @@ export default function UpdateUser({ setShowUpdate, user, onUpdate }) {
         <div>
           <label htmlFor="email">Email Address</label>
           <input
-            type="email"
+            type="type"
             id="email"
             {...register('email')}
             disabled={isUpdating}

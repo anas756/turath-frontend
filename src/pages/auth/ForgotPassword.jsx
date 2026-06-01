@@ -15,7 +15,7 @@ import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../app/services/lib/Api';
 
-const loginSchema = yup.object().shape({
+const forgotPasswordSchema = yup.object().shape({
   email: yup
     .string()
     .required('Email address is required')
@@ -26,23 +26,21 @@ export default function ForgotPassword() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(forgotPasswordSchema),
     mode: 'onTouched',
   });
 
-  // Handle Form Submission
   const onSubmit = async (data) => {
     dispatch(clearMessages());
     try {
-      // Sends payload object
       const response = await api.sendResetLink(data);
 
-      //  Rely directly on the explicit boolean flag returned by the API response
       if (response?.data?.success) {
         dispatch(setSuccessMessage(response.data.message));
         navigate('/login');
@@ -51,8 +49,6 @@ export default function ForgotPassword() {
       }
     } catch (error) {
       console.error('Reset password request failed:', error);
-
-      //  Safely read 404/500 error messages returned by your Axios interceptors
       const backendErrorMessage =
         error?.response?.data?.message || 'Could not reach the server.';
       dispatch(setErrorMessage(backendErrorMessage));
@@ -75,7 +71,6 @@ export default function ForgotPassword() {
         >
           <p className="brand-label">{t('brandLabel')}</p>
 
-          {/* FIX 1: Replaced login text with dedicated forgot password title text key */}
           <h1 className="auth-title">
             {(t('forgotPasswordTitle') || 'Reset your\nPassword')
               .split('\n')
@@ -88,7 +83,6 @@ export default function ForgotPassword() {
           </h1>
 
           <div className="fields">
-            {/* EMAIL FIELD */}
             <div className={`field-group ${errors.email ? 'has-error' : ''}`}>
               <label htmlFor="email">{t('emailAddress')}</label>
               <div className="input-wrap">
@@ -118,12 +112,10 @@ export default function ForgotPassword() {
             </div>
           </div>
 
-          {/* FIX 2: Corrected matching translation keys for CTA action states */}
           <button type="submit" className="btn-cta" disabled={isSubmitting}>
             {isSubmitting ? t('checkingInformation') : t('checkInformation')}
           </button>
 
-          {/* FIX 3: Replaced raw 'signIn' placeholder link string with 'backToLogin' style tag */}
           <div className="switch-line">
             <Link to="/login">{t('backToLogin')}</Link>
           </div>

@@ -1,15 +1,19 @@
 import React from 'react';
-import Navbar from '../../components/user/Navbar';
 import { Outlet } from 'react-router-dom';
+import Navbar from '../../components/user/Navbar';
 import Footer from '../../components/user/Footer';
-import AlertBanner from '../../components/AlertBanner';
 
 export default function UserLayout() {
   return (
-    <div>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
+    >
       <Navbar />
-   
-      <Outlet />
+
+      <main style={{ flex: 1 }}>
+        <Outlet />
+      </main>
+
       <Footer />
     </div>
   );

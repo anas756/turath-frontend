@@ -15,7 +15,6 @@ import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../app/services/lib/Api';
 
-// 1. Validation Schema ensuring passwords are safe and match perfectly
 const resetPasswordSchema = yup.object().shape({
   password: yup
     .string()
@@ -36,7 +35,6 @@ export default function ResetPassword() {
   const location = useLocation();
   const { t } = useTranslation();
 
-  // 2. Safely capture the validated tracking keys from history routing memory
   const { email, token } = location.state || {};
 
   const {
@@ -48,19 +46,16 @@ export default function ResetPassword() {
     mode: 'onTouched',
   });
 
-  // 3. Form Submission Handler
   const onSubmit = async (data) => {
     dispatch(clearMessages());
     try {
-      // Package the parameters together to matching your backend target signatures
       const payload = {
-        email: decodeURIComponent(email),
-        token: decodeURIComponent(token),
+        email,
+        token,
         password: data.password,
-        password_confirmation: data.confirmPassword, // Matches native Laravel conventions
+        password_confirmation: data.confirmPassword,
       };
 
-      // Assuming an endpoint handling final password storage updates
       const response = await api.updatePassword(payload);
 
       if (response?.data?.success) {
@@ -126,7 +121,6 @@ export default function ResetPassword() {
           </p>
 
           <div className="fields">
-            {/* NEW PASSWORD FIELD */}
             <div
               className={`field-group ${errors.password ? 'has-error' : ''}`}
             >
@@ -189,7 +183,6 @@ export default function ResetPassword() {
               )}
             </div>
 
-            {/* CONFIRM PASSWORD FIELD */}
             <div
               className={`field-group ${errors.confirmPassword ? 'has-error' : ''}`}
             >

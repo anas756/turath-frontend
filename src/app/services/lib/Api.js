@@ -5,10 +5,10 @@ export const api = {
   login: (data) => customAxios.post('/login', data),
   logout: () => customAxios.post('/logout'),
   register: (data) => customAxios.post('/register', data),
+  getProfile: () => customAxios.get('/auth/profile'),
 
   // account confirmation
-  confirmEmail: (email) =>
-    customAxios.get(`/auth/email-verified/${email}`),
+  confirmEmail: (email) => customAxios.get(`/auth/email-verified/${email}`),
   resendConfirmation: (data) =>
     customAxios.post('/auth/resend-confirmation', data),
 
@@ -21,9 +21,9 @@ export const api = {
 
   //  user
   getAllUsers: () => customAxios.get('/users'),
-  updateUser: ({id, data}) => customAxios.put(`/users/${id}`, data),
+  updateUser: ({ id, data }) => customAxios.put(`/users/${id}`, data),
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
-  getUser : (id) => customAxios.get(`/users/${id}`),
+  getUser: (id) => customAxios.get(`/users/${id}`),
 
   // Categories
   getCategories: () => customAxios.get('/categories'),

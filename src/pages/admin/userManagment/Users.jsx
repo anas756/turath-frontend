@@ -34,7 +34,13 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  // Caching Guard to prevent over-triggering API calls on page navigation
+  const fetchUsers = async (forceRefresh = false) => {
+    if (!forceRefresh && users && users.length > 0) {
+      console.log('Users already loaded in Redux cache. Skipping API call.');
+      return;
+    }
+
     try {
       await dispatch(getAllusers());
     } catch (error) {
@@ -42,9 +48,12 @@ export default function Users() {
     }
   };
 
-  // Handle clicking outside of open menus to close them automatically
+  // Outside click wrapper targeting specific action buttons safely
   useEffect(() => {
-    const handleOutsideClick = () => setActiveMenuId(null);
+    const handleOutsideClick = (e) => {
+      if (e.target.closest('.action-btn')) return;
+      setActiveMenuId(null);
+    };
     window.addEventListener('click', handleOutsideClick);
     return () => window.removeEventListener('click', handleOutsideClick);
   }, []);
@@ -65,36 +74,37 @@ export default function Users() {
     });
   };
 
-  // Action Menu Handlers
   const handleShowDetails = (user) => {
     setUserTransform(user);
     setShowDetails(true);
+    setActiveMenuId(null);
   };
 
   const handleUpdateUser = (user) => {
     setUserTransform(user);
     setShowUpdate(true);
+    setActiveMenuId(null);
   };
 
   const handleDeleteUser = async (user) => {
+    const userId = user._id || user.id;
     const confirmDelete = window.confirm(
       `Are you sure you want to delete ${user.name}?`
     );
     if (confirmDelete) {
-      // Set loading state for this specific row
-      setLoadingRows((prev) => ({ ...prev, [user.id]: 'deleting' }));
+      setLoadingRows((prev) => ({ ...prev, [userId]: 'deleting' }));
       try {
-        await dispatch(deleteUser(user.id));
+        await dispatch(deleteUser(userId));
+        setActiveMenuId(null);
       } catch (error) {
         console.error('Delete failed:', error);
         alert('Failed to delete user. Please try again.');
       } finally {
-        setLoadingRows((prev) => ({ ...prev, [user.id]: false }));
+        setLoadingRows((prev) => ({ ...prev, [userId]: false }));
       }
     }
   };
 
-  // Background update function passed to child component
   const handleBackgroundUpdate = async (userId, updatedData) => {
     setLoadingRows((prev) => ({ ...prev, [userId]: 'updating' }));
     try {
@@ -102,7 +112,6 @@ export default function Users() {
         updateUser({ id: userId, data: updatedData })
       );
 
-      // Close the modal
       setShowUpdate(false);
       setUserTransform(null);
 
@@ -115,12 +124,9 @@ export default function Users() {
     }
   };
 
-  // Handle store user close and refresh
-  const handleStoreClose = async (shouldRefresh = true) => {
+  // ✅ FIX: No parameters, No server refetch loop!
+  const handleStoreClose = () => {
     setShowStore(false);
-    if (shouldRefresh) {
-      await fetchUsers();
-    }
   };
 
   // Handle details close
@@ -136,7 +142,8 @@ export default function Users() {
 
     const matchesSearch =
       u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase());
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.userName?.toLowerCase().includes(search.toLowerCase());
 
     return matchesRole && matchesSearch;
   });
@@ -216,155 +223,165 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className={loadingRows[user.id] ? 'row-loading' : ''}
-                  >
-                    <td>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                        }}
-                      >
-                        <div className="curator-avatar">
-                          {getInitials(user.name)}
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontWeight: 500,
-                              textTransform: 'capitalize',
-                            }}
-                          >
-                            {user.name}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '0.72rem',
-                              color: 'var(--on-surface-muted)',
-                            }}
-                          >
-                            @{user.userName}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`chip ${
-                          user.role === 'Admin' || user.role === 'admin'
-                            ? 'chip-manuscript'
-                            : 'chip-media'
-                        }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="date-text">{user.email}</td>
-                    <td className="date-text">{formatDate(user.last_login)}</td>
-                    <td className="date-text">{formatDate(user.created_at)}</td>
-                    <td>
-                      <StatusBadge
-                        status={user.confirmed ? 'Active' : 'Pending'}
-                      />
-                    </td>
-
-                    {/* Actions Column */}
-                    <td style={{ position: 'relative' }}>
-                      <button
-                        className="action-btn"
-                        disabled={!!loadingRows[user.id]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenuId(
-                            activeMenuId === user.id ? null : user.id
-                          );
-                        }}
-                      >
-                        {loadingRows[user.id] ? (
-                          <div className="loading-spinner-small"></div>
-                        ) : (
-                          <svg
-                            width="15"
-                            height="15"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="12" cy="5" r="1" />
-                            <circle cx="12" cy="12" r="1" />
-                            <circle cx="12" cy="19" r="1" />
-                          </svg>
-                        )}
-                      </button>
-
-                      {/* Context Action Dropdown Layer */}
-                      {activeMenuId === user.id && !loadingRows[user.id] && (
+                {filteredUsers.map((user) => {
+                  const currentId = user._id || user.id;
+                  return (
+                    <tr
+                      key={currentId}
+                      className={loadingRows[currentId] ? 'row-loading' : ''}
+                    >
+                      <td>
                         <div
                           style={{
-                            position: 'absolute',
-                            right: '10px',
-                            top: '40px',
-                            backgroundColor: '#ffffff',
-                            border: '1px solid #ccc',
-                            borderRadius: '4px',
-                            boxShadow: '0px 2px 8px rgba(0,0,0,0.15)',
-                            zIndex: 100,
-                            minWidth: '120px',
                             display: 'flex',
-                            flexDirection: 'column',
-                            padding: '4px 0',
+                            alignItems: 'center',
+                            gap: 10,
                           }}
                         >
-                          <button
-                            onClick={() => handleShowDetails(user)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: '8px 12px',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              fontSize: '0.85rem',
-                            }}
-                          >
-                            Show Details
-                          </button>
-                          <button
-                            onClick={() => handleUpdateUser(user)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: '8px 12px',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              fontSize: '0.85rem',
-                            }}
-                          >
-                            Update
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: '8px 12px',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              fontSize: '0.85rem',
-                              color: 'red',
-                            }}
-                          >
-                            Delete
-                          </button>
+                          <div className="curator-avatar">
+                            {getInitials(user.name)}
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontWeight: 500,
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {user.name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '0.72rem',
+                                color: 'var(--on-surface-muted)',
+                              }}
+                            >
+                              @{user.userName}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>
+                        <span
+                          className={`chip ${
+                            user.role?.toLowerCase() === 'admin'
+                              ? 'chip-manuscript'
+                              : 'chip-media'
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="date-text">{user.email}</td>
+                      <td className="date-text">
+                        {formatDate(user.last_login)}
+                      </td>
+                      <td className="date-text">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={user.confirmed ? 'Active' : 'Pending'}
+                        />
+                      </td>
+
+                      {/* Actions Column */}
+                      <td style={{ position: 'relative' }}>
+                        <button
+                          className="action-btn"
+                          disabled={!!loadingRows[currentId]}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuId(
+                              activeMenuId === currentId ? null : currentId
+                            );
+                          }}
+                        >
+                          {loadingRows[currentId] ? (
+                            <div className="loading-spinner-small"></div>
+                          ) : (
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <circle cx="12" cy="5" r="1" />
+                              <circle cx="12" cy="12" r="1" />
+                              <circle cx="12" cy="19" r="1" />
+                            </svg>
+                          )}
+                        </button>
+
+                        {/* Context Action Dropdown Layer */}
+                        {activeMenuId === currentId &&
+                          !loadingRows[currentId] && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                right: '10px',
+                                top: '40px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #ccc',
+                                borderRadius: '4px',
+                                boxShadow: '0px 2px 8px rgba(0,0,0,0.15)',
+                                zIndex: 100,
+                                minWidth: '120px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                padding: '4px 0',
+                              }}
+                            >
+                              <button
+                                onClick={() => handleShowDetails(user)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: '8px 12px',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  color: '#333',
+                                }}
+                              >
+                                Show Details
+                              </button>
+                              <button
+                                onClick={() => handleUpdateUser(user)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: '8px 12px',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  color: '#333',
+                                }}
+                              >
+                                Update
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(user)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: '8px 12px',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  color: 'red',
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -375,7 +392,8 @@ export default function Users() {
       {showStore && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <StoreUser setShowStore={handleStoreClose} />
+            {/* ✅ FIX SAFE: Explicit arrow callback parameter encapsulation */}
+            <StoreUser setShowStore={() => handleStoreClose()} />
           </div>
         </div>
       )}

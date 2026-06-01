@@ -1040,3 +1040,31 @@ body { font-family: var(--sans); background: var(--surface-low); color: var(--on
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Loading Screen Styles */
+.admin-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--surface-low);
+}
+
+.admin-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-text {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--on-surface-muted);
+  letter-spacing: 0.1em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
