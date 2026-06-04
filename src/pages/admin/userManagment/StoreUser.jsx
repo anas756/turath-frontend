@@ -1,205 +1,106 @@
+// StoreUser.jsx (inline styles version)
 import React from 'react';
-import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
-import { clearMessages } from '../../../app/services/reduxTollkit/Slices/MessageSlice';
 import { registerUser } from '../../../app/services/reduxTollkit/asyncThunks/UserThunk';
-import PageHeader from '../../../components/admin/PageHeader';
+import { clearMessages } from '../../../app/services/reduxTollkit/Slices/MessageSlice';
 
 const Schema = yup.object().shape({
-  name: yup
-    .string()
-    .required('Full name is required')
-    .min(3, 'Name must be at least 3 characters'),
-  userName: yup
-    .string()
-    .required('Username is required')
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username cannot exceed 20 characters')
-    .matches(
-      /^[a-zA-Z0-9_]+$/,
-      'Username can only contain letters, numbers, and underscores (no spaces)'
-    ),
-  email: yup
-    .string()
-    .required('Email address is required')
-    .email('Please enter a valid email address'),
-  password: yup
-    .string()
-    .required('Password is required')
-    .min(8, 'Password must be at least 8 characters'),
-  password_confirmation: yup
-    .string()
-    .required('Please confirm your password')
-    .oneOf([yup.ref('password')], 'Passwords must match'),
-  role: yup
-    .string()
-    .required('Please select a system role')
-    .oneOf(['Admin', 'user', 'admin'], 'Invalid role selected'),
+  name: yup.string().required('Full name required').min(3),
+  userName: yup.string().required('Username required').min(3).max(20).matches(/^[a-zA-Z0-9_]+$/),
+  email: yup.string().required('Email required').email(),
+  password: yup.string().required('Password required').min(8),
+  password_confirmation: yup.string().required('Confirm password').oneOf([yup.ref('password')], 'Passwords must match'),
+  role: yup.string().required('Select role').oneOf(['Admin', 'user', 'admin']),
 });
 
 export default function StoreUser({ setShowStore }) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(Schema),
-    mode: 'onTouched',
-    defaultValues: {
-      role: 'user',
-    },
+    defaultValues: { role: 'user' },
   });
-
   const dispatch = useDispatch();
 
   const onSubmit = async (data) => {
     dispatch(clearMessages());
     try {
-      console.log('Submitting data:', data);
       await dispatch(registerUser(data)).unwrap();
-
       setShowStore(false);
-    } catch (error) {
-      console.error('Registration action rejected:', error);
-      alert(error.message || 'Failed to create user. Please try again.');
+    } catch (err) {
+      alert(err.message || 'Creation failed');
     }
   };
 
+  const modalStyles = {
+    container: { padding: '2rem' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' },
+    title: { fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
+    subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
+    closeBtn: { background: 'var(--surface-low)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem' },
+    form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+    fullWidth: { gridColumn: 'span 2' },
+    inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
+    label: { fontSize: '0.85rem', fontWeight: 500, color: 'var(--on-surface)' },
+    input: { padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--surface-low)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.2s' },
+    error: { color: 'var(--secondary)', fontSize: '0.7rem', marginTop: '0.25rem' },
+    radioGroup: { display: 'flex', gap: '1.5rem', marginTop: '0.5rem' },
+    actions: { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' },
+    cancelBtn: { padding: '0.5rem 1.25rem', borderRadius: '9999px', background: 'var(--surface-high)', border: 'none', cursor: 'pointer' },
+    submitBtn: { padding: '0.5rem 1.5rem', borderRadius: '9999px', background: 'var(--primary-gradient)', border: 'none', color: 'white', fontWeight: 600, cursor: 'pointer' },
+  };
+
   return (
-    <div>
-      <PageHeader
-        title="Store User"
-        subtitle="Storing new user"
-        action={
-          <button
-            onClick={() => setShowStore(false)}
-            className="btn-add-doc"
-            style={{ cursor: 'pointer' }}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              style={{ marginRight: '5px', verticalAlign: 'middle' }}
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back
-          </button>
-        }
-      />
-
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <div style={modalStyles.container}>
+      <div style={modalStyles.header}>
         <div>
-          <label htmlFor="name">Full Name</label>
-          <input
-            type="text"
-            id="name"
-            {...register('name')}
-            disabled={isSubmitting}
-          />
-          {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
+          <h2 style={modalStyles.title}>Create New User</h2>
+          <p style={modalStyles.subtitle}>Add a new member to Turath Digital</p>
         </div>
-
-        <div>
-          <label htmlFor="userName">Username</label>
-          <input
-            type="text"
-            id="userName"
-            {...register('userName')}
-            disabled={isSubmitting}
-          />
-          {errors.userName && (
-            <p style={{ color: 'red' }}>{errors.userName.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="email">Email Address</label>
-          <input
-            type="email" // ✅ FIX: type="email" machi type="type"
-            id="email"
-            {...register('email')}
-            disabled={isSubmitting}
-          />
-          {errors.email && (
-            <p style={{ color: 'red' }}>{errors.email.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            {...register('password')}
-            disabled={isSubmitting}
-          />
-          {errors.password && (
-            <p style={{ color: 'red' }}>{errors.password.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="password_confirmation">Confirm Password</label>
-          <input
-            type="password"
-            id="password_confirmation"
-            {...register('password_confirmation')}
-            disabled={isSubmitting}
-          />
-          {errors.password_confirmation && (
-            <p style={{ color: 'red' }}>
-              {errors.password_confirmation.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            style={{ fontWeight: 'bold', display: 'block', marginTop: '10px' }}
-          >
-            Account Role
-          </label>
-          <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
-            <label>
-              <input
-                type="radio"
-                value="user"
-                {...register('role')}
-                disabled={isSubmitting}
-              />
-              User
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="Admin"
-                {...register('role')}
-                disabled={isSubmitting}
-              />
-              Admin
-            </label>
+        <button onClick={() => setShowStore(false)} style={modalStyles.closeBtn}>✕</button>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} style={modalStyles.form}>
+        <div style={modalStyles.grid}>
+          <div style={modalStyles.inputGroup}>
+            <label style={modalStyles.label}>Full Name</label>
+            <input {...register('name')} style={modalStyles.input} />
+            {errors.name && <span style={modalStyles.error}>{errors.name.message}</span>}
           </div>
-          {errors.role && <p style={{ color: 'red' }}>{errors.role.message}</p>}
+          <div style={modalStyles.inputGroup}>
+            <label style={modalStyles.label}>Username</label>
+            <input {...register('userName')} style={modalStyles.input} />
+            {errors.userName && <span style={modalStyles.error}>{errors.userName.message}</span>}
+          </div>
+          <div style={{ ...modalStyles.inputGroup, ...modalStyles.fullWidth }}>
+            <label style={modalStyles.label}>Email Address</label>
+            <input type="email" {...register('email')} style={modalStyles.input} />
+            {errors.email && <span style={modalStyles.error}>{errors.email.message}</span>}
+          </div>
+          <div style={modalStyles.inputGroup}>
+            <label style={modalStyles.label}>Password</label>
+            <input type="password" {...register('password')} style={modalStyles.input} />
+            {errors.password && <span style={modalStyles.error}>{errors.password.message}</span>}
+          </div>
+          <div style={modalStyles.inputGroup}>
+            <label style={modalStyles.label}>Confirm Password</label>
+            <input type="password" {...register('password_confirmation')} style={modalStyles.input} />
+            {errors.password_confirmation && <span style={modalStyles.error}>{errors.password_confirmation.message}</span>}
+          </div>
+          <div style={{ ...modalStyles.inputGroup, ...modalStyles.fullWidth }}>
+            <label style={modalStyles.label}>Account Role</label>
+            <div style={modalStyles.radioGroup}>
+              <label><input type="radio" value="user" {...register('role')} /> User</label>
+              <label><input type="radio" value="Admin" {...register('role')} /> Admin</label>
+            </div>
+            {errors.role && <span style={modalStyles.error}>{errors.role.message}</span>}
+          </div>
         </div>
-
-        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setShowStore(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating User...' : 'Save User'}
+        <div style={modalStyles.actions}>
+          <button type="button" onClick={() => setShowStore(false)} style={modalStyles.cancelBtn}>Cancel</button>
+          <button type="submit" disabled={isSubmitting} style={modalStyles.submitBtn}>
+            {isSubmitting ? 'Creating...' : 'Save User'}
           </button>
         </div>
       </form>

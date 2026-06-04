@@ -1,54 +1,21 @@
+// src/pages/admin/userManagement/UpdateUser.jsx
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { clearMessages } from '../../../app/services/reduxTollkit/Slices/MessageSlice';
-import PageHeader from '../../../components/admin/PageHeader';
+import * as yup from 'yup';
 
 const Schema = yup.object().shape({
-  name: yup
-    .string()
-    .required('Full name is required')
-    .min(3, 'Name must be at least 3 characters'),
-  userName: yup
-    .string()
-    .required('Username is required')
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username cannot exceed 20 characters')
-    .matches(
-      /^[a-zA-Z0-9_]+$/,
-      'Username can only contain letters, numbers, and underscores (no spaces)'
-    ),
-  email: yup
-    .string()
-    .required('Email address is required')
-    .email('Please enter a valid email address'),
-  password: yup
-    .string()
-    .transform((value) => (value === '' ? undefined : value))
-    .notRequired()
-    .min(8, 'Password must be at least 8 characters'),
-  password_confirmation: yup
-    .string()
-    .transform((value) => (value === '' ? undefined : value))
-    .notRequired()
-    .oneOf([yup.ref('password'), undefined], 'Passwords must match'),
-  role: yup
-    .string()
-    .required('Please select a system role')
-    .oneOf(['user', 'admin'], 'Invalid role selected'),
+  name: yup.string().required('Full name required').min(3),
+  userName: yup.string().required('Username required').min(3).max(20).matches(/^[a-zA-Z0-9_]+$/),
+  email: yup.string().required('Email required').email(),
+  password: yup.string().transform(v => v === '' ? undefined : v).notRequired().min(8, 'Min 8 characters'),
+  password_confirmation: yup.string().transform(v => v === '' ? undefined : v).notRequired().oneOf([yup.ref('password'), undefined], 'Passwords must match'),
+  role: yup.string().required('Role required').oneOf(['user', 'admin']),
 });
 
 export default function UpdateUser({ setShowUpdate, user, onUpdate }) {
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(Schema),
     mode: 'onTouched',
   });
@@ -67,169 +34,93 @@ export default function UpdateUser({ setShowUpdate, user, onUpdate }) {
   }, [user, reset]);
 
   const onSubmit = async (data) => {
-    if (!onUpdate) {
-      console.error('onUpdate function is not provided');
-      return;
-    }
-
+    if (!onUpdate) return;
     setIsUpdating(true);
-
     try {
       const updateData = { ...data };
       if (!updateData.password) {
         delete updateData.password;
         delete updateData.password_confirmation;
       }
-
-      const userId = user._id || user.id;
-
-      await onUpdate(userId, updateData);
-
+      await onUpdate(user._id || user.id, updateData);
       setShowUpdate(false);
-    } catch (error) {
-      console.error('Update failed:', error);
-      alert(error.message || 'Failed to update user. Please try again.');
+    } catch (err) {
+      alert(err.message || 'Update failed');
     } finally {
       setIsUpdating(false);
     }
   };
 
+  // Styles
+  const styles = {
+    container: { padding: '2rem' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' },
+    title: { fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
+    subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
+    closeBtn: { background: 'var(--surface-low)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+    fullWidth: { gridColumn: 'span 2' },
+    inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
+    label: { fontSize: '0.85rem', fontWeight: 500, color: 'var(--on-surface)' },
+    optional: { fontWeight: 'normal', fontSize: '0.7rem', color: 'var(--on-surface-muted)' },
+    input: { padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--surface-low)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.2s' },
+    error: { color: 'var(--secondary)', fontSize: '0.7rem', marginTop: '0.25rem' },
+    radioGroup: { display: 'flex', gap: '1.5rem', marginTop: '0.5rem' },
+    actions: { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' },
+    cancelBtn: { padding: '0.5rem 1.25rem', borderRadius: '9999px', background: 'var(--surface-high)', border: 'none', cursor: 'pointer', color: 'var(--on-surface-muted)' },
+    submitBtn: { padding: '0.5rem 1.5rem', borderRadius: '9999px', background: 'var(--primary-gradient)', border: 'none', color: 'white', fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.2s' },
+  };
+
   return (
-    <div>
-      <PageHeader
-        title="Edit User Profile"
-        subtitle={`Updating settings and system permissions for @${user?.userName || 'user'}`}
-        action={
-          <button
-            onClick={() => setShowUpdate(false)}
-            className="btn-add-doc"
-            style={{ cursor: 'pointer' }}
-            disabled={isUpdating}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              style={{ marginRight: '5px', verticalAlign: 'middle' }}
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back
-          </button>
-        }
-      />
-
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <div style={styles.container}>
+      <div style={styles.header}>
         <div>
-          <label htmlFor="name">Full Name</label>
-          <input
-            type="text"
-            id="name"
-            {...register('name')}
-            disabled={isUpdating}
-          />
-          {errors.name && <p style={{ color: 'red' }}>{errors.name.message}</p>}
+          <h2 style={styles.title}>Edit User Profile</h2>
+          <p style={styles.subtitle}>Update settings for @{user?.userName}</p>
         </div>
-
-        <div>
-          <label htmlFor="userName">Username</label>
-          <input
-            type="text"
-            id="userName"
-            {...register('userName')}
-            disabled={isUpdating}
-          />
-          {errors.userName && (
-            <p style={{ color: 'red' }}>{errors.userName.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="email">Email Address</label>
-          <input
-            type="type"
-            id="email"
-            {...register('email')}
-            disabled={isUpdating}
-          />
-          {errors.email && (
-            <p style={{ color: 'red' }}>{errors.email.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="password">
-            New Password (Leave blank to keep current)
-          </label>
-          <input
-            type="password"
-            id="password"
-            {...register('password')}
-            disabled={isUpdating}
-          />
-          {errors.password && (
-            <p style={{ color: 'red' }}>{errors.password.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="password_confirmation">Confirm New Password</label>
-          <input
-            type="password"
-            id="password_confirmation"
-            {...register('password_confirmation')}
-            disabled={isUpdating}
-          />
-          {errors.password_confirmation && (
-            <p style={{ color: 'red' }}>
-              {errors.password_confirmation.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            style={{ fontWeight: 'bold', display: 'block', marginTop: '10px' }}
-          >
-            Account Role
-          </label>
-          <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
-            <label>
-              <input
-                type="radio"
-                value="user"
-                {...register('role')}
-                disabled={isUpdating}
-              />
-              User
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="admin"
-                {...register('role')}
-                disabled={isUpdating}
-              />
-              Admin
-            </label>
+        <button onClick={() => setShowUpdate(false)} style={styles.closeBtn}>✕</button>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} style={styles.form}>
+        <div style={styles.grid}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Full Name</label>
+            <input {...register('name')} style={styles.input} />
+            {errors.name && <span style={styles.error}>{errors.name.message}</span>}
           </div>
-          {errors.role && <p style={{ color: 'red' }}>{errors.role.message}</p>}
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Username</label>
+            <input {...register('userName')} style={styles.input} />
+            {errors.userName && <span style={styles.error}>{errors.userName.message}</span>}
+          </div>
+          <div style={{ ...styles.inputGroup, ...styles.fullWidth }}>
+            <label style={styles.label}>Email Address</label>
+            <input type="email" {...register('email')} style={styles.input} />
+            {errors.email && <span style={styles.error}>{errors.email.message}</span>}
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>New Password <span style={styles.optional}>(optional)</span></label>
+            <input type="password" {...register('password')} style={styles.input} />
+            {errors.password && <span style={styles.error}>{errors.password.message}</span>}
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Confirm Password</label>
+            <input type="password" {...register('password_confirmation')} style={styles.input} />
+            {errors.password_confirmation && <span style={styles.error}>{errors.password_confirmation.message}</span>}
+          </div>
+          <div style={{ ...styles.inputGroup, ...styles.fullWidth }}>
+            <label style={styles.label}>Account Role</label>
+            <div style={styles.radioGroup}>
+              <label><input type="radio" value="user" {...register('role')} /> 👤 User</label>
+              <label><input type="radio" value="admin" {...register('role')} /> 🛡️ Admin</label>
+            </div>
+            {errors.role && <span style={styles.error}>{errors.role.message}</span>}
+          </div>
         </div>
-
-        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setShowUpdate(false)}
-            disabled={isUpdating}
-          >
-            Cancel
-          </button>
-          <button type="submit" disabled={isUpdating}>
-            {isUpdating ? 'Updating...' : 'Update Changes'}
+        <div style={styles.actions}>
+          <button type="button" onClick={() => setShowUpdate(false)} style={styles.cancelBtn}>Cancel</button>
+          <button type="submit" disabled={isUpdating} style={styles.submitBtn}>
+            {isUpdating ? 'Saving...' : 'Update Changes'}
           </button>
         </div>
       </form>
