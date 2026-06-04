@@ -1,51 +1,53 @@
 import { customAxios } from './axios';
 
 export const api = {
-  // auth
+  // --- Auth & Account ---
   login: (data) => customAxios.post('/login', data),
   logout: () => customAxios.post('/logout'),
   register: (data) => customAxios.post('/register', data),
   getProfile: () => customAxios.get('/auth/profile'),
 
-  // account confirmation
   confirmEmail: (email) => customAxios.get(`/auth/email-verified/${email}`),
   resendConfirmation: (data) =>
     customAxios.post('/auth/resend-confirmation', data),
 
-  // password
+  // --- Password ---
   sendResetLink: (emailData) =>
     customAxios.post('/auth/forgot-password', emailData),
   verifyResetToken: (email, token) =>
     customAxios.get(`/auth/verify-reset-token/${email}`, { params: { token } }),
   updatePassword: (data) => customAxios.post('/auth/reset-password', data),
 
-  //  user
+  // --- Users ---
   getAllUsers: () => customAxios.get('/users'),
+  getUser: (id) => customAxios.get(`/users/${id}`),
   updateUser: ({ id, data }) => customAxios.put(`/users/${id}`, data),
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
-  getUser: (id) => customAxios.get(`/users/${id}`),
 
-  // Categories
+  // --- Categories ---
   getCategories: () => customAxios.get('/categories'),
   getCategorie: (id) => customAxios.get(`/categories/${id}`),
   createCategorie: (data) => customAxios.post('/categories', data),
   updateCategorie: (id, data) => customAxios.put(`/categories/${id}`, data),
   deleteCategorie: (id) => customAxios.delete(`/categories/${id}`),
 
-  // books
-  getBooks: () => customAxios.get('/book'),
-  getBook: (id) => customAxios.get(`/book/${id}`),
-  createBook: (data) => customAxios.post('/book', data),
-  updateBook: (id, data) => customAxios.put(`/book/${id}`, data),
-  deleteBook: (id) => customAxios.delete(`/book/${id}`),
-  getBookContent: (book_id, page = 1) =>
-    customAxios.get(`/books/${book_id}/pages`, { params: { page: page } }),
+  // --- Books (Fixed routes) ---
+  getDocs: () => customAxios.get('/library/docs'),
+  getDoc: (id) => customAxios.get(`/library/docs/${id}`),
 
-  // search
-  searchInsideBook: (keyWord, book_id) =>
-    customAxios.get(`/books/${book_id}/search`, {
+  createDoc: (data) => customAxios.post('/library/docs', data), 
+  updateDoc: (id, data) => customAxios.put(`/library/docs/${id}`, data),
+  deleteDoc: (id) => customAxios.delete(`/library/docs/${id}`),
+
+  // Content & Search
+  getDocContent: (id, page = 1) =>
+    customAxios.get(`/library/docs/${id}/pages`, { params: { page } }),
+
+  searchInsideDoc: (keyWord, id) =>
+    customAxios.get(`/library/docs/${id}/search`, {
       params: { key_word: keyWord },
     }),
+
   searchAbookUsingWord: (keyWord) =>
-    customAxios.get('search/library', { params: { key_word: keyWord } }),
+    customAxios.get('/search/library', { params: { key_word: keyWord } }),
 };

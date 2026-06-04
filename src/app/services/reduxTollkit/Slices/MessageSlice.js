@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { login } from '../asyncThunks/AuthThunk';
+import { login, logout } from '../asyncThunks/AuthThunk';
 import { deleteUser, registerUser, updateUser } from '../asyncThunks/UserThunk';
+import { getAllDocs } from '../asyncThunks/LibraryThunk';
 
 const initialState = {
   success: null,
@@ -35,6 +36,13 @@ export const MessageSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.error = action.payload;
       })
+      // logout
+      .addCase(logout.fulfilled, (state, action) => {
+        state.success = action.payload?.message || 'logout success';
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.error = action.payload;
+      })
       // Register
       .addCase(registerUser.fulfilled, (state, action) => {
         state.success =
@@ -55,6 +63,14 @@ export const MessageSlice = createSlice({
         state.success = action.payload?.message || 'User deleted successfully!';
       })
       .addCase(deleteUser.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // books
+      .addCase(getAllDocs.fulfilled, (state, action) => {
+        state.success = action.payload?.message || 'data fetched success!';
+      })
+      .addCase(getAllDocs.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

@@ -17,7 +17,6 @@ export default function ShowUserDetails({ user, onClose }) {
     });
   };
 
-  // ✅ FIX: Clean initials extractor for better dynamic UI presentation
   const getInitials = (name) => {
     if (!name) return '??';
     const parts = name.trim().split(' ');

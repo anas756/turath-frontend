@@ -35,14 +35,14 @@ export default function Users() {
   }, []);
 
   // Caching Guard to prevent over-triggering API calls on page navigation
-  const fetchUsers = async (forceRefresh = false) => {
+  const fetchUsers =  (forceRefresh = false) => {
     if (!forceRefresh && users && users.length > 0) {
       console.log('Users already loaded in Redux cache. Skipping API call.');
       return;
     }
 
     try {
-      await dispatch(getAllusers());
+       dispatch(getAllusers());
     } catch (error) {
       console.log(error);
     }

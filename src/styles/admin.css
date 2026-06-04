@@ -381,7 +381,7 @@ body { font-family: var(--sans); background: var(--surface-low); color: var(--on
 .section-card {
   background: var(--surface-white);
   border-radius: var(--radius-lg);
-  padding: 1.75rem;
+  padding: 2rem;
 }
 
 .section-header {

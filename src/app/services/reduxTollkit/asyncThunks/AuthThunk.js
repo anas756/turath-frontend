@@ -15,6 +15,20 @@ export const login = createAsyncThunk(
     }
   }
 );
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.logout();
+
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'An error occurred during login'
+      );
+    }
+  }
+);
 export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {

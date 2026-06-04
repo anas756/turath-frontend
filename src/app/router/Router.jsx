@@ -7,7 +7,9 @@ import AdminLoading from '../../components/admin/AdminLoading';
 import AdminMiddleware from './middleware/AdminMiddleware';
 
 const Dashboard = lazy(() => import('../../pages/admin/Dashboard'));
-const DigitalLibrary = lazy(() => import('../../pages/admin/DigitalLibrary'));
+const DigitalLibrary = lazy(
+  () => import('../../pages/admin/LibraryManagment/DigitalLibrary')
+);
 const MediaLibrary = lazy(() => import('../../pages/admin/MediaLibrary'));
 const Users = lazy(() => import('../../pages/admin/userManagment/Users'));
 const ChatLogs = lazy(() => import('../../pages/admin/ChatLogs'));
