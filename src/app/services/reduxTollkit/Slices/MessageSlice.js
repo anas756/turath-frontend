@@ -1,8 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login, logout } from '../asyncThunks/AuthThunk';
 import { deleteUser, registerUser, updateUser } from '../asyncThunks/UserThunk';
-import { getAllDocs } from '../asyncThunks/LibraryThunk';
-
+import {
+  createDoc,
+  deleteDoc,
+  createCategory,
+  deleteCategory,
+} from '../asyncThunks/LibraryThunk';
 const initialState = {
   success: null,
   error: null,
@@ -66,12 +70,40 @@ export const MessageSlice = createSlice({
         state.error = action.payload;
       })
 
-      // books
-      .addCase(getAllDocs.fulfilled, (state, action) => {
-        state.success = action.payload?.message || 'data fetched success!';
+      // Create Doc
+      .addCase(createDoc.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Document created successfully!';
       })
-      .addCase(getAllDocs.rejected, (state, action) => {
-        state.error = action.payload;
+      .addCase(createDoc.rejected, (state, action) => {
+        state.error = action.payload || 'Failed to create document';
+      })
+
+      // Delete Doc
+      .addCase(deleteDoc.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Document deleted successfully!';
+      })
+      .addCase(deleteDoc.rejected, (state, action) => {
+        state.error = action.payload || 'Failed to delete document';
+      })
+
+      // Create Category
+      .addCase(createCategory.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Category created successfully!';
+      })
+      .addCase(createCategory.rejected, (state, action) => {
+        state.error = action.payload || 'Failed to create category';
+      })
+
+      // Delete Category
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Category deleted successfully!';
+      })
+      .addCase(deleteCategory.rejected, (state, action) => {
+        state.error = action.payload || 'Failed to delete category';
       });
   },
 });

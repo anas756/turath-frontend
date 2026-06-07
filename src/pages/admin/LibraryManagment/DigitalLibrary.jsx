@@ -1,244 +1,291 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getAllDocs,
   getAllCategoris,
+  deleteDoc,
 } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
-import CuratorAvatar from '../../../components/admin/CuratorAvatar';
 import AdminLoading from '../../../components/admin/AdminLoading';
+import StoreDocument from './StoreDocument';
+import StoreCategories from './StoreCategories'; // تأكدي من المسار الصحيح
 
 export default function DigitalLibrary() {
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
   const dispatch = useDispatch();
-  const hasFetched = useRef(false); // Ref pour éviter les doubles appels
-
   const {
     documents = [],
     categories = [],
     loading = false,
   } = useSelector((state) => state.library || {});
 
-  // Correction 1: useEffect avec dispatch conditionnel
+  const [activeTab, setActiveTab] = useState('documents');
+  const [showStore, setShowStore] = useState(false);
+  const [showStoreCategory, setShowStoreCategory] = useState(false);
+  const [search, setSearch] = useState('');
+
   useEffect(() => {
-    // Utiliser un ref pour ne faire l'appel qu'une seule fois
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      dispatch(getAllDocs());
-      dispatch(getAllCategoris());
-    }
-  }, [dispatch]); // dispatch est stable, n'exécute qu'une fois
-
-  // Correction 2: Si vous voulez pouvoir rafraîchir manuellement
-  const fetchLibrary = useCallback(
-    (forceRefresh = false) => {
-      if (forceRefresh) {
-        dispatch(getAllDocs());
-        dispatch(getAllCategoris());
-      }
-    },
-    [dispatch]
-  );
-
-  const filtered = (documents || []).filter((doc) => {
-    const matchesCategory =
-      activeCategory === 'All' || doc.category?.name === activeCategory;
-    const matchesSearch =
-      doc.title?.toLowerCase().includes(search.toLowerCase()) ||
-      doc.language?.toLowerCase().includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+    dispatch(getAllDocs());
+    dispatch(getAllCategoris());
+  }, [dispatch]);
 
   return (
-    <div className="turath-library-management">
+    <div style={{ padding: '2rem' }}>
       <PageHeader
         title="Digital Library"
-        subtitle="Browse and manage all archived documents."
+        subtitle="Manage heritage documents and categories"
         action={
-          <button
-            className="btn-add-doc"
-            onClick={() => {
-              /* Ajoutez votre logique */
-            }}
-            style={{
-              background: 'var(--primary-gradient)',
-              border: 'none',
-              padding: '8px 20px',
-              borderRadius: '0.375rem',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              color: 'white',
-              cursor: 'pointer',
-            }}
-          >
-            Add Document
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => setShowStoreCategory(true)}
+              style={styles.btnSecondary}
+            >
+              + Add Category
+            </button>
+            <button
+              onClick={() => setShowStore(true)}
+              style={styles.btnPrimary}
+            >
+              + Add Document
+            </button>
+          </div>
         }
       />
+
+      <div style={styles.tabsContainer}>
+        <button
+          onClick={() => setActiveTab('documents')}
+          style={activeTab === 'documents' ? styles.activeTab : styles.tab}
+        >
+          Documents
+        </button>
+        <button
+          onClick={() => setActiveTab('categories')}
+          style={activeTab === 'categories' ? styles.activeTab : styles.tab}
+        >
+          Categories
+        </button>
+      </div>
 
       {loading ? (
         <AdminLoading />
       ) : (
-        <>
-          {/* Reste de votre JSX identique */}
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '2rem',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setActiveCategory('All')}
-                style={chipStyle(activeCategory === 'All')}
-              >
-                All
-              </button>
-              {categories?.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.name)}
-                  style={chipStyle(activeCategory === cat.name)}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                backgroundColor: 'var(--surface-high)',
-                borderRadius: '9999px',
-                padding: '0.25rem 1rem',
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Search documents…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  padding: '0.5rem 0',
-                  fontSize: '0.85rem',
-                  width: '200px',
-                }}
-              />
-            </div>
-          </div>
+        <div style={styles.tableContainer}>
+          {activeTab === 'documents' ? (
+            <DocumentsTable
+              data={documents.filter((d) =>
+                d.title.toLowerCase().includes(search.toLowerCase())
+              )}
+              search={search}
+              setSearch={setSearch}
+            />
+          ) : (
+            <CategoriesTable data={categories} />
+          )}
+        </div>
+      )}
 
-          <div
-            style={{
-              backgroundColor: 'var(--surface-white)',
-              borderRadius: '1rem',
-              boxShadow: 'var(--shadow-lift)',
-              overflowX: 'auto',
-            }}
-          >
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: '700px',
-              }}
-            >
-              <thead style={{ backgroundColor: 'var(--surface-low)' }}>
-                <tr style={{ textAlign: 'left' }}>
-                  {[
-                    'Title',
-                    'Category',
-                    'Language',
-                    'Curator',
-                    'Status',
-                    '',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: '1rem',
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        color: 'var(--on-surface-muted)',
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((doc) => (
-                  <tr
-                    key={doc.id}
-                    style={{ borderTop: '1px solid var(--surface-low)' }}
-                  >
-                    <td style={{ padding: '1rem', fontWeight: 500 }}>
-                      {doc.title}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span
-                        className="chip"
-                        style={{
-                          fontSize: '0.75rem',
-                          padding: '0.25rem 0.5rem',
-                          background: 'var(--surface-low)',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        {doc.category?.name}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', fontSize: '0.85rem' }}>
-                      {doc.language}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <CuratorAvatar name={doc.curator?.name} />
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <StatusBadge status={doc.status} />
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <button
-                        className="action-btn"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ⋮
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Modals */}
+      {showStore && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <StoreDocument setShowStore={setShowStore} />
           </div>
-        </>
+        </div>
+      )}
+
+      {showStoreCategory && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <StoreCategories setShowStore={setShowStoreCategory} />
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-const chipStyle = (isActive) => ({
-  padding: '0.5rem 1.25rem',
-  borderRadius: '9999px',
-  fontSize: '0.85rem',
-  fontWeight: 500,
-  backgroundColor: isActive ? 'var(--primary)' : 'var(--surface-high)',
-  color: isActive ? 'white' : 'var(--on-surface-muted)',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-});
+// --- TABLEAU DOCUMENTS ---
+const DocumentsTable = ({ data, search, setSearch }) => (
+  <>
+    <input
+      placeholder="Search documents..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      style={styles.input}
+    />
+    <table style={styles.table}>
+      <thead style={{ backgroundColor: 'var(--surface-low)' }}>
+        <tr>
+          <th style={styles.th}>Document</th>
+          <th style={styles.th}>Category</th>
+          <th style={styles.th}>Status</th>
+          <th style={styles.th}>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((doc) => (
+          <tr key={doc.id} style={styles.tr}>
+            <td style={styles.td}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.85rem',
+                }}
+              >
+                <div style={styles.docIcon}>📄</div>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{doc.title}</div>
+                  <div style={{ fontSize: '0.75rem' }}>{doc.author}</div>
+                </div>
+              </div>
+            </td>
+            <td style={styles.td}>
+              <span style={styles.badge}>{doc.category?.name || '---'}</span>
+            </td>
+            <td style={styles.td}>
+              <StatusBadge status={doc.status} />
+            </td>
+            <td style={styles.td}>•••</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </>
+);
+
+// --- TABLEAU CATEGORIES ---
+const CategoriesTable = ({ data }) => (
+  <table style={styles.table}>
+    <thead style={{ backgroundColor: 'var(--surface-low)' }}>
+      <tr>
+        <th style={styles.th}>Name</th>
+        <th style={styles.th}>Slug</th>
+        <th style={styles.th}>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {data.map((cat) => (
+        <tr key={cat.id} style={styles.tr}>
+          <td style={styles.td}>{cat.name}</td>
+          <td style={styles.td}>{cat.slug}</td>
+          <td style={styles.td}>
+            <button
+              style={{
+                border: 'none',
+                background: 'none',
+                color: 'var(--secondary)',
+              }}
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+// --- STYLES ---
+const styles = {
+  tableContainer: {
+    backgroundColor: 'var(--surface-white)',
+    borderRadius: '1rem',
+    boxShadow: 'var(--shadow-lift)',
+    padding: '1rem',
+  },
+  tabsContainer: {
+    display: 'flex',
+    gap: '2rem',
+    marginBottom: '2rem',
+    borderBottom: '1px solid var(--surface-high)',
+  },
+  tab: {
+    padding: '0.5rem 0',
+    background: 'none',
+    border: 'none',
+    color: 'var(--on-surface-muted)',
+    cursor: 'pointer',
+    fontWeight: 600,
+  },
+  activeTab: {
+    padding: '0.5rem 0',
+    background: 'none',
+    border: 'none',
+    borderBottom: '2px solid var(--primary)',
+    color: 'var(--primary)',
+    cursor: 'pointer',
+    fontWeight: 600,
+  },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: {
+    padding: '1rem',
+    textAlign: 'left',
+    fontSize: '0.7rem',
+    textTransform: 'uppercase',
+    color: 'var(--on-surface-muted)',
+  },
+  tr: { borderTop: '1px solid var(--surface-low)' },
+  td: { padding: '1rem', fontSize: '0.85rem' },
+  docIcon: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '0.5rem',
+    background:
+      'linear-gradient(135deg, var(--primary), var(--primary-container))',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+  },
+  badge: {
+    padding: '0.25rem 0.75rem',
+    borderRadius: '9999px',
+    fontSize: '0.7rem',
+    backgroundColor: 'rgba(99,70,29,0.08)',
+    color: 'var(--tertiary)',
+    fontWeight: 600,
+  },
+  btnPrimary: {
+    background: 'var(--primary-gradient)',
+    color: 'white',
+    border: 'none',
+    padding: '8px 20px',
+    borderRadius: '0.375rem',
+    cursor: 'pointer',
+  },
+  btnSecondary: {
+    background: 'var(--surface-high)',
+    color: 'var(--on-surface)',
+    border: 'none',
+    padding: '8px 20px',
+    borderRadius: '0.375rem',
+    cursor: 'pointer',
+  },
+  input: {
+    padding: '0.6rem',
+    marginBottom: '1rem',
+    width: '100%',
+    borderRadius: '0.5rem',
+    border: '1px solid var(--surface-low)',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.3)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    background: 'var(--surface-white)',
+    borderRadius: '1rem',
+    width: '90%',
+    maxWidth: '600px',
+    maxHeight: '80vh',
+    overflow: 'auto',
+  },
+};
