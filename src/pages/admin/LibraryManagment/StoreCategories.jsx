@@ -2,6 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useDispatch } from 'react-redux';
+import { createCategory } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 
 const schema = yup.object().shape({
   name: yup.string().required('Category name is required').min(3, 'Too short!'),
@@ -16,15 +18,20 @@ export default function StoreCategories({ setShowStore }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const dispatch = useDispatch();
 
-  const onSubmit = (data) => {
-    console.log('Valid data:', data);
-    setShowStore(false);
-  };
+ const onSubmit = async (data) => {
+   try {
+     await dispatch(createCategory(data)).unwrap();
+     setShowStore(false);
+   } catch (err) {
+     alert(err?.message || 'Failed to create category');
+   }
+ };
 
   return (
     <div style={m.container}>
@@ -72,17 +79,17 @@ export default function StoreCategories({ setShowStore }) {
           )}
         </div>
 
-        <div
+        <button
+          type="submit"
+          disabled={isSubmitting}
           style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            marginTop: '1rem',
+            ...m.submitBtn,
+            opacity: isSubmitting ? 0.6 : 1,
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
           }}
         >
-          <button type="submit" style={m.submitBtn}>
-            Save Category
-          </button>
-        </div>
+          {isSubmitting ? 'Saving...' : 'Save Category'}
+        </button>
       </form>
     </div>
   );

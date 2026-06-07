@@ -5,7 +5,6 @@ import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { createDoc } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 
-// Schéma de validation
 const Schema = yup.object().shape({
   title: yup.string().required('Title is required').min(3),
   authors: yup.string().required('Authors are required'),
@@ -14,7 +13,7 @@ const Schema = yup.object().shape({
   tags: yup.string().optional(),
   description: yup.string().optional(),
   file: yup.mixed().required('Document file is required'),
-  cover_image: yup.mixed().required('Cover image is required'),
+  cover_image: yup.mixed().optional(),
 });
 
 const m = {
@@ -56,12 +55,23 @@ const m = {
     color: 'var(--on-surface)',
     textTransform: 'uppercase',
   },
+  optionalLabel: {
+    fontWeight: 400,
+    textTransform: 'none',
+    fontSize: '0.72rem',
+    color: 'var(--on-surface-muted)',
+  },
   input: {
     padding: '0.6rem 0.85rem',
     borderRadius: '0.5rem',
     border: 'none',
     backgroundColor: 'var(--surface-low)',
     width: '100%',
+  },
+  hint: {
+    fontSize: '0.7rem',
+    color: 'var(--on-surface-muted)',
+    marginTop: '0.15rem',
   },
   error: { color: 'var(--secondary)', fontSize: '0.72rem' },
   submitBtn: {
@@ -89,13 +99,27 @@ export default function StoreDocument({ setShowStore }) {
   const onSubmit = async (data) => {
     const formData = new FormData();
     formData.append('title', data.title);
-    formData.append('authors', data.authors);
     formData.append('categorie_id', data.categorie_id);
-    formData.append('source', data.source);
-    formData.append('tags', data.tags);
-    formData.append('description', data.description);
-    formData.append('file', data.file[0]);
-    formData.append('cover_image', data.cover_image[0]);
+    formData.append('description', data.description || '');
+    formData.append('source', data.source || '');
+
+    // authors → array
+    formData.append('authors[]', data.authors);
+
+    // tags → split by comma into array
+    if (data.tags) {
+      data.tags
+        .split(',')
+        .forEach((tag) => formData.append('tags[]', tag.trim()));
+    }
+
+    // file_path → backend field name
+    formData.append('file_path', data.file[0]);
+
+    // cover → optional
+    if (data.cover_image?.[0]) {
+      formData.append('cover', data.cover_image[0]);
+    }
 
     try {
       await dispatch(createDoc(formData)).unwrap();
@@ -114,7 +138,6 @@ export default function StoreDocument({ setShowStore }) {
             Archive a new heritage document to the library
           </p>
         </div>
-        {/* Bouton X avec type="button" pour éviter la soumission accidentelle */}
         <button
           type="button"
           onClick={() => setShowStore(false)}
@@ -126,7 +149,8 @@ export default function StoreDocument({ setShowStore }) {
 
       <form onSubmit={handleSubmit(onSubmit)} style={m.form}>
         <div style={m.grid}>
-          <div style={{ gridColumn: 'span 2' }} style={m.inputGroup}>
+          {/* Title - full width */}
+          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
             <label style={m.label}>Document Title</label>
             <input {...register('title')} style={m.input} />
             {errors.title && (
@@ -134,11 +158,21 @@ export default function StoreDocument({ setShowStore }) {
             )}
           </div>
 
+          {/* Authors */}
           <div style={m.inputGroup}>
             <label style={m.label}>Authors</label>
-            <input {...register('authors')} style={m.input} />
+            <input
+              {...register('authors')}
+              style={m.input}
+              placeholder="e.g. Ibn Battuta"
+            />
+            <span style={m.hint}>Single author or comma-separated</span>
+            {errors.authors && (
+              <span style={m.error}>{errors.authors.message}</span>
+            )}
           </div>
 
+          {/* Category */}
           <div style={m.inputGroup}>
             <label style={m.label}>Category</label>
             <select {...register('categorie_id')} style={m.input}>
@@ -149,8 +183,12 @@ export default function StoreDocument({ setShowStore }) {
                 </option>
               ))}
             </select>
+            {errors.categorie_id && (
+              <span style={m.error}>{errors.categorie_id.message}</span>
+            )}
           </div>
 
+          {/* Document File */}
           <div style={m.inputGroup}>
             <label style={m.label}>Document File (PDF)</label>
             <input
@@ -162,21 +200,49 @@ export default function StoreDocument({ setShowStore }) {
             {errors.file && <span style={m.error}>{errors.file.message}</span>}
           </div>
 
+          {/* Cover Image */}
           <div style={m.inputGroup}>
-            <label style={m.label}>Cover Image</label>
+            <label style={m.label}>
+              Cover Image <span style={m.optionalLabel}>(optional)</span>
+            </label>
             <input
               type="file"
               {...register('cover_image')}
               accept="image/*"
               style={m.input}
             />
-            {errors.cover_image && (
-              <span style={m.error}>{errors.cover_image.message}</span>
-            )}
           </div>
 
-          <div style={{ gridColumn: 'span 2' }} style={m.inputGroup}>
-            <label style={m.label}>Description</label>
+          {/* Source */}
+          <div style={m.inputGroup}>
+            <label style={m.label}>
+              Source <span style={m.optionalLabel}>(optional)</span>
+            </label>
+            <input
+              {...register('source')}
+              style={m.input}
+              placeholder="e.g. National Library"
+            />
+          </div>
+
+          {/* Tags */}
+          <div style={m.inputGroup}>
+            <label style={m.label}>
+              Tags <span style={m.optionalLabel}>(optional)</span>
+            </label>
+            <input
+              {...register('tags')}
+              style={m.input}
+              placeholder="e.g. history, Morocco"
+            />
+            <span style={m.hint}>Comma-separated</span>
+          </div>
+
+          {/* Description - full width */}
+          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+            <label style={m.label}>
+              Description <span style={m.optionalLabel}>(optional)</span>
+            </label>
             <textarea
               {...register('description')}
               style={{ ...m.input, minHeight: '80px' }}
@@ -184,9 +250,19 @@ export default function StoreDocument({ setShowStore }) {
           </div>
         </div>
 
-        <button type="submit" disabled={isSubmitting} style={m.submitBtn}>
-          {isSubmitting ? 'Saving...' : 'Save Document'}
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{
+              ...m.submitBtn,
+              opacity: isSubmitting ? 0.6 : 1,
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {isSubmitting ? 'Saving...' : 'Save Document'}
+          </button>
+        </div>
       </form>
     </div>
   );

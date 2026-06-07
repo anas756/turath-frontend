@@ -1,6 +1,7 @@
-// ملف: app/router/DashboardRedirect.jsx
+// app/router/middleware/DashboardRedirect.jsx
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+import AdminLoading from '../../../components/admin/AdminLoading';
 
 export default function DashboardRedirect() {
   const { user } = useSelector((state) => state.auth);

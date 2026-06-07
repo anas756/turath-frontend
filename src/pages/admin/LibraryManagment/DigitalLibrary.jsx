@@ -25,10 +25,14 @@ export default function DigitalLibrary() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = (forceRefresh = false) => {
+    if (!forceRefresh && documents.length && categories.length) return;
     dispatch(getAllDocs());
     dispatch(getAllCategoris());
-  }, [dispatch]);
-
+  }; 
   return (
     <div style={{ padding: '2rem' }}>
       <PageHeader

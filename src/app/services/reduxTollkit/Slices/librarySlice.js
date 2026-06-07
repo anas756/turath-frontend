@@ -4,8 +4,8 @@ import {
   getAllDocs,
   createDoc,
   deleteDoc,
-  createCategory, // زيدي هادو
-  deleteCategory, // زيدي هادو
+  createCategory, 
+  deleteCategory, 
 } from '../asyncThunks/LibraryThunk';
 
 const initialState = {

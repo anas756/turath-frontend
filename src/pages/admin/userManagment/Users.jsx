@@ -27,14 +27,14 @@ export default function Users() {
   const [activeRole, setActiveRole] = useState('All');
   const [activeMenuId, setActiveMenuId] = useState(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+useEffect(() => {
+  fetchUsers(); 
+}, []); 
 
-  const fetchUsers = (forceRefresh = false) => {
-    if (!forceRefresh && users?.length) return;
-    dispatch(getAllusers());
-  };
+const fetchUsers = (forceRefresh = false) => {
+  if (!forceRefresh && users?.length) return;
+  dispatch(getAllusers());
+};
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
