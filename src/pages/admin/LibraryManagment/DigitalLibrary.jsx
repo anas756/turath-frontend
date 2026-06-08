@@ -30,6 +30,7 @@ export default function DigitalLibrary() {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [loadingRows, setLoadingRows] = useState({});
   const [activeMenuId, setActiveMenuId] = useState(null);
 
@@ -73,6 +74,16 @@ export default function DigitalLibrary() {
       setActiveMenuId(null);
     }
   };
+
+  const filteredDocuments = documents.filter((d) => {
+    const matchSearch = d.title.toLowerCase().includes(search.toLowerCase());
+    const matchCat =
+      !categoryFilter ||
+      d.categorie_id === categoryFilter ||
+      d.categorie?._id === categoryFilter ||
+      d.categorie?.id === categoryFilter;
+    return matchSearch && matchCat;
+  });
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -118,11 +129,12 @@ export default function DigitalLibrary() {
         ) : (
           <div style={styles.tableContainer}>
             <DocumentsTable
-              data={documents.filter((d) =>
-                d.title.toLowerCase().includes(search.toLowerCase())
-              )}
+              data={filteredDocuments}
               search={search}
               setSearch={setSearch}
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
+              categories={categories}
               loadingRows={loadingRows}
               activeMenuId={activeMenuId}
               setActiveMenuId={setActiveMenuId}
@@ -200,7 +212,6 @@ export default function DigitalLibrary() {
             setSelectedDoc(null);
           }}
         >
-          {/* Wire up your UpdateDocument component here */}
           <div style={{ padding: '2rem' }}>
             <h2>Update Document (wire your form here)</h2>
           </div>
@@ -231,7 +242,6 @@ export default function DigitalLibrary() {
             setSelectedCategory(null);
           }}
         >
-          {/* Wire up your UpdateCategory component here */}
           <div style={{ padding: '2rem' }}>
             <h2>Update Category (wire your form here)</h2>
           </div>
@@ -325,6 +335,9 @@ const DocumentsTable = ({
   data,
   search,
   setSearch,
+  categoryFilter,
+  setCategoryFilter,
+  categories,
   loadingRows,
   activeMenuId,
   setActiveMenuId,
@@ -333,12 +346,41 @@ const DocumentsTable = ({
   onDelete,
 }) => (
   <>
-    <input
-      placeholder="Search documents..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      style={styles.input}
-    />
+    {/* Filter bar */}
+    <div style={styles.filterBar}>
+      <input
+        placeholder="Search documents..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ ...styles.filterInput }}
+      />
+
+      <select
+        value={categoryFilter}
+        onChange={(e) => setCategoryFilter(e.target.value)}
+        style={{ ...styles.filterSelect }}
+      >
+        <option value="">All categories</option>
+        {categories.map((cat) => (
+          <option key={cat._id || cat.id} value={cat._id || cat.id}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
+
+      {(search || categoryFilter) && (
+        <button
+          onClick={() => {
+            setSearch('');
+            setCategoryFilter('');
+          }}
+          style={styles.clearBtn}
+        >
+          ✕ Clear
+        </button>
+      )}
+    </div>
+
     {data.length === 0 ? (
       <div style={styles.empty}>No documents found.</div>
     ) : (
@@ -409,7 +451,6 @@ const DocumentsTable = ({
                       <DropdownItem onClick={() => onDetails(doc)}>
                         👁 View Details
                       </DropdownItem>
-                      {/* update/delete only if NOT from open library */}
                       {!isFromOpenLibrary && (
                         <>
                           <DropdownItem onClick={() => onUpdate(doc)}>
@@ -557,6 +598,42 @@ const styles = {
     color: 'var(--primary)',
     cursor: 'pointer',
     fontWeight: 600,
+  },
+  filterBar: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: '1rem',
+  },
+  filterInput: {
+    flex: 1,
+    minWidth: '180px',
+    padding: '0.6rem 0.85rem',
+    borderRadius: '0.5rem',
+    border: '1px solid var(--surface-low)',
+    backgroundColor: 'var(--surface-low)',
+    outline: 'none',
+    fontSize: '0.85rem',
+  },
+  filterSelect: {
+    padding: '0.6rem 0.85rem',
+    borderRadius: '0.5rem',
+    border: '1px solid var(--surface-low)',
+    backgroundColor: 'var(--surface-low)',
+    outline: 'none',
+    fontSize: '0.85rem',
+    minWidth: '170px',
+    cursor: 'pointer',
+  },
+  clearBtn: {
+    padding: '0.55rem 0.9rem',
+    borderRadius: '0.5rem',
+    border: '1px solid var(--surface-high)',
+    background: 'transparent',
+    color: 'var(--on-surface-muted)',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: {

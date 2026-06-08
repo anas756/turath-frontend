@@ -34,6 +34,7 @@ export const createDoc = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const res = await api.createDoc(data);
+      console.log(res);
       return res.data;
     } catch (error) {
       return rejectWithValue(
@@ -65,7 +66,9 @@ export const createCategory = createAsyncThunk(
       const res = await api.createCategorie(data);
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create category');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to create category'
+      );
     }
   }
 );
@@ -78,7 +81,9 @@ export const updateCategory = createAsyncThunk(
       const res = await api.updateCategorie(id, data);
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update category');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update category'
+      );
     }
   }
 );
@@ -89,9 +94,11 @@ export const deleteCategory = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await api.deleteCategorie(id);
-      return id; 
+      return id;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete category');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to delete category'
+      );
     }
   }
 );

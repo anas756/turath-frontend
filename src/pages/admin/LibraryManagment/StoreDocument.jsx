@@ -98,34 +98,34 @@ export default function StoreDocument({ setShowStore }) {
 
   const onSubmit = async (data) => {
     const formData = new FormData();
+
     formData.append('title', data.title);
     formData.append('categorie_id', data.categorie_id);
     formData.append('description', data.description || '');
     formData.append('source', data.source || '');
 
-    // Ensure authors is sent as an array
-    formData.append('authors', data.authors);
-
-    if (data.tags) {
-      data.tags
-        .split(',')
-        .forEach((tag) => formData.append('tags[]', tag.trim()));
-    }
-
-
+    // ✅ authors as array only (remove the plain string append)
     data.authors.split(',').forEach((author) => {
       formData.append('authors[]', author.trim());
     });
 
-    // Ensure file is correctly accessed
-    if (data.file && data.file[0]) {
+    // ✅ tags as array
+    if (data.tags) {
+      data.tags.split(',').forEach((tag) => {
+        formData.append('tags[]', tag.trim());
+      });
+    }
+
+    // ✅ file
+    if (data.file?.[0]) {
       formData.append('file_path', data.file[0]);
     }
 
-
-    if (data.cover?.[0]) {
+    // ✅ cover — only append if a file was actually selected
+    if (data.cover?.[0] instanceof File) {
       formData.append('cover', data.cover[0]);
     }
+    console.log(formData);
 
     try {
       await dispatch(createDoc(formData)).unwrap();
