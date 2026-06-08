@@ -11,8 +11,8 @@ import {
 const initialState = {
   documents: [],
   categories: [],
-  loading: false,
-  error: null,
+  documentsLoading: false,
+  categoriesLoading: false,
 };
 
 export const librarySlice = createSlice({
@@ -23,28 +23,27 @@ export const librarySlice = createSlice({
     builder
       // --- Documents ---
       .addCase(getAllDocs.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.documentsLoading = true;
       })
       .addCase(getAllDocs.fulfilled, (state, action) => {
-        state.loading = false;
+        state.documentsLoading = false;
         state.documents = action.payload.data ?? action.payload ?? [];
       })
-      .addCase(getAllDocs.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(getAllDocs.rejected, (state) => {
+        state.documentsLoading = false;
+    
       })
 
       // --- Categories ---
       .addCase(getAllCategoris.pending, (state) => {
-        state.loading = true;
+        state.categoriesLoading = true;
       })
       .addCase(getAllCategoris.fulfilled, (state, action) => {
-        state.loading = false;
+        state.categoriesLoading = false;
         state.categories = action.payload.data ?? action.payload ?? [];
       })
       .addCase(getAllCategoris.rejected, (state) => {
-        state.loading = false;
+        state.categoriesLoading = false;
       })
 
       // --- Create Doc ---

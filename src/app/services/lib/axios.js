@@ -14,10 +14,10 @@ export const customAxios = axios.create({
   baseURL: backEndUrl,
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
   },
   withCredentials: true,
 });
+
 customAxios.interceptors.request.use(
   async (config) => {
     const token = Cookies.get('jwt_token');
@@ -27,17 +27,20 @@ customAxios.interceptors.request.use(
     }
 
     config.headers['X-App-Secret'] = secret_key;
+
+ if (!(config.data instanceof FormData)) {
+   config.headers['Content-Type'] = 'application/json';
+ } else {
+   delete config.headers['Content-Type'];
+ }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 customAxios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (
       error.response &&

@@ -13,7 +13,7 @@ const Schema = yup.object().shape({
   tags: yup.string().optional(),
   description: yup.string().optional(),
   file: yup.mixed().required('Document file is required'),
-  cover_image: yup.mixed().optional(),
+  cover: yup.mixed().optional(),
 });
 
 const m = {
@@ -103,29 +103,36 @@ export default function StoreDocument({ setShowStore }) {
     formData.append('description', data.description || '');
     formData.append('source', data.source || '');
 
-    // authors → array
-    formData.append('authors[]', data.authors);
+    // Ensure authors is sent as an array
+    formData.append('authors', data.authors);
 
-    // tags → split by comma into array
     if (data.tags) {
       data.tags
         .split(',')
         .forEach((tag) => formData.append('tags[]', tag.trim()));
     }
 
-    // file_path → backend field name
-    formData.append('file_path', data.file[0]);
 
-    // cover → optional
-    if (data.cover_image?.[0]) {
-      formData.append('cover', data.cover_image[0]);
+    data.authors.split(',').forEach((author) => {
+      formData.append('authors[]', author.trim());
+    });
+
+    // Ensure file is correctly accessed
+    if (data.file && data.file[0]) {
+      formData.append('file_path', data.file[0]);
+    }
+
+
+    if (data.cover?.[0]) {
+      formData.append('cover', data.cover[0]);
     }
 
     try {
       await dispatch(createDoc(formData)).unwrap();
       setShowStore(false);
     } catch (err) {
-      alert(err?.message || 'Failed to create document');
+      console.error('Submission Error:', err);
+      alert(err?.data?.message || 'Failed to create document');
     }
   };
 
@@ -164,9 +171,9 @@ export default function StoreDocument({ setShowStore }) {
             <input
               {...register('authors')}
               style={m.input}
-              placeholder="e.g. Ibn Battuta"
+              placeholder="e.g. Ibn Battuta, Al-Idrisi"
             />
-            <span style={m.hint}>Single author or comma-separated</span>
+            <span style={m.hint}>Separate multiple authors with a comma</span>
             {errors.authors && (
               <span style={m.error}>{errors.authors.message}</span>
             )}
@@ -207,7 +214,7 @@ export default function StoreDocument({ setShowStore }) {
             </label>
             <input
               type="file"
-              {...register('cover_image')}
+              {...register('cover')}
               accept="image/*"
               style={m.input}
             />

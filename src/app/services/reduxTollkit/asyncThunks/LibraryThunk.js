@@ -20,7 +20,6 @@ export const getAllCategoris = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.getCategories();
-      console.log('library',res)
       return res.data;
     } catch (error) {
       return rejectWithValue(
