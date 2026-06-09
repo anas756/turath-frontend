@@ -104,37 +104,44 @@ export default function StoreDocument({ setShowStore }) {
     formData.append('description', data.description || '');
     formData.append('source', data.source || '');
 
-    // ✅ authors as array only (remove the plain string append)
     data.authors.split(',').forEach((author) => {
       formData.append('authors[]', author.trim());
     });
 
-    // ✅ tags as array
     if (data.tags) {
       data.tags.split(',').forEach((tag) => {
         formData.append('tags[]', tag.trim());
       });
     }
 
-    // ✅ file
-    if (data.file?.[0]) {
-      formData.append('file_path', data.file[0]);
+    // 2. Safely handle file inputs (Ensure we grab the first File object)
+    const fileInput = data.file?.[0];
+    if (fileInput instanceof File) {
+      formData.append('file_path', fileInput);
     }
 
-    // ✅ cover — only append if a file was actually selected
-    if (data.cover?.[0] instanceof File) {
-      formData.append('cover', data.cover[0]);
+    const coverInput = data.cover?.[0];
+    if (coverInput instanceof File) {
+      formData.append('cover', coverInput);
     }
-    console.log(formData);
+
+    // 3. Debug before sending
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
 
     try {
       await dispatch(createDoc(formData)).unwrap();
       setShowStore(false);
     } catch (err) {
-      console.error('Submission Error:', err);
-      alert(err?.data?.message || 'Failed to create document');
+      if (err.response && err.response.data.errors) {
+        console.table(err.response.data.errors); // This will show you exactly which field failed
+        alert('Validation failed: ' + JSON.stringify(err.response.data.errors));
+      } else {
+        console.error('Submission Error:', err);
+      }
     }
-  };
+  };;
 
   return (
     <div style={m.container}>
