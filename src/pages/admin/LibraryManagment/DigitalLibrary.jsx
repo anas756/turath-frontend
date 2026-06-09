@@ -9,8 +9,10 @@ import {
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
 import AdminLoading from '../../../components/admin/AdminLoading';
-import StoreDocument from './StoreDocument';
-import StoreCategories from './StoreCategories';
+import StoreDocument from './document/StoreDocument';
+import StoreCategories from './categories/StoreCategories';
+import UpdateDocument from './document/UpdateDocument';
+import UpdateCategorie from './categories/UpdateCategoei';
 
 export default function DigitalLibrary() {
   const dispatch = useDispatch();
@@ -205,6 +207,7 @@ export default function DigitalLibrary() {
         </Modal>
       )}
 
+      {/* ✅ Update Document Modal — wired */}
       {showUpdate && selectedDoc && (
         <Modal
           onClose={() => {
@@ -212,9 +215,14 @@ export default function DigitalLibrary() {
             setSelectedDoc(null);
           }}
         >
-          <div style={{ padding: '2rem' }}>
-            <h2>Update Document (wire your form here)</h2>
-          </div>
+          <UpdateDocument
+            document={selectedDoc}
+            setShowUpdate={(val) => {
+              setShowUpdate(val);
+              setSelectedDoc(null);
+              if (!val) fetchData(true);
+            }}
+          />
         </Modal>
       )}
 
@@ -235,6 +243,7 @@ export default function DigitalLibrary() {
         </Modal>
       )}
 
+      {/* ✅ Update Category Modal — wired */}
       {showUpdateCategory && selectedCategory && (
         <Modal
           onClose={() => {
@@ -242,9 +251,14 @@ export default function DigitalLibrary() {
             setSelectedCategory(null);
           }}
         >
-          <div style={{ padding: '2rem' }}>
-            <h2>Update Category (wire your form here)</h2>
-          </div>
+          <UpdateCategorie
+            categorie={selectedCategory}
+            setShowUpdate={(val) => {
+              setShowUpdateCategory(val);
+              setSelectedCategory(null);
+              if (!val) fetchData(true);
+            }}
+          />
         </Modal>
       )}
     </div>
@@ -346,7 +360,6 @@ const DocumentsTable = ({
   onDelete,
 }) => (
   <>
-    {/* Filter bar */}
     <div style={styles.filterBar}>
       <input
         placeholder="Search documents..."
@@ -354,7 +367,6 @@ const DocumentsTable = ({
         onChange={(e) => setSearch(e.target.value)}
         style={{ ...styles.filterInput }}
       />
-
       <select
         value={categoryFilter}
         onChange={(e) => setCategoryFilter(e.target.value)}
@@ -367,7 +379,6 @@ const DocumentsTable = ({
           </option>
         ))}
       </select>
-
       {(search || categoryFilter) && (
         <button
           onClick={() => {

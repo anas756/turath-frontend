@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
-import { createCategory } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import { createCategory } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 
 const schema = yup.object().shape({
   name: yup.string().required('Category name is required').min(3, 'Too short!'),
@@ -24,14 +24,14 @@ export default function StoreCategories({ setShowStore }) {
   });
   const dispatch = useDispatch();
 
- const onSubmit = async (data) => {
-   try {
-     await dispatch(createCategory(data)).unwrap();
-     setShowStore(false);
-   } catch (err) {
-     alert(err?.message || 'Failed to create category');
-   }
- };
+  const onSubmit = async (data) => {
+    try {
+      await dispatch(createCategory(data)).unwrap();
+      setShowStore(false);
+    } catch (err) {
+      alert(err?.message || 'Failed to create category');
+    }
+  };
 
   return (
     <div style={m.container}>

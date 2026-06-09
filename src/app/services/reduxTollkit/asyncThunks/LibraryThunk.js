@@ -43,6 +43,19 @@ export const createDoc = createAsyncThunk(
     }
   }
 );
+export const updateDoc = createAsyncThunk(
+  'library/docs/update',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await api.updateDoc(id, data);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to update document'
+      );
+    }
+  }
+);
 
 export const deleteDoc = createAsyncThunk(
   'library/docs/delete',

@@ -3,17 +3,14 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { createDoc } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import { updateDoc } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 
 const Schema = yup.object().shape({
-  title: yup.string().required('Title is required').min(3),
-  authors: yup.string().required('Authors are required'),
-  categorie_id: yup.string().required('Category is required'),
-  source: yup.string().optional(),
-  tags: yup.string().optional(),
+  title: yup.string().min(3).optional(),
   description: yup.string().optional(),
-  file: yup.mixed().required('Document file is required'),
-  cover: yup.mixed().optional(),
+  authors: yup.string().optional(),
+  categorie_id: yup.string().optional(),
+  tags: yup.string().optional(),
 });
 
 const m = {
@@ -84,7 +81,7 @@ const m = {
   },
 };
 
-export default function StoreDocument({ setShowStore }) {
+export default function UpdateDocument({ document, setShowUpdate }) {
   const dispatch = useDispatch();
   const { categories = [] } = useSelector((state) => state.library || {});
 
@@ -94,67 +91,49 @@ export default function StoreDocument({ setShowStore }) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
+    defaultValues: {
+      title: document?.title || '',
+      description: document?.description || '',
+      authors: document?.authors?.join(', ') || '',
+      categorie_id: document?.categorie_id || '',
+      tags: document?.tags?.join(', ') || '',
+    },
   });
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
+    const payload = {};
 
-    formData.append('title', data.title);
-    formData.append('categorie_id', data.categorie_id);
-    formData.append('description', data.description || '');
-    formData.append('source', data.source || '');
+    if (data.title) payload.title = data.title;
+    if (data.description) payload.description = data.description;
+    if (data.categorie_id) payload.categorie_id = data.categorie_id;
 
-    data.authors.split(',').forEach((author) => {
-      formData.append('authors[]', author.trim());
-    });
+    if (data.authors) {
+      payload.authors = data.authors.split(',').map((a) => a.trim());
+    }
 
     if (data.tags) {
-      data.tags.split(',').forEach((tag) => {
-        formData.append('tags[]', tag.trim());
-      });
-    }
-
-    // 2. Safely handle file inputs (Ensure we grab the first File object)
-    const fileInput = data.file?.[0];
-    if (fileInput instanceof File) {
-      formData.append('file_path', fileInput);
-    }
-
-    const coverInput = data.cover?.[0];
-    if (coverInput instanceof File) {
-      formData.append('cover', coverInput);
-    }
-
-    // 3. Debug before sending
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
+      payload.tags = data.tags.split(',').map((t) => t.trim());
     }
 
     try {
-      await dispatch(createDoc(formData)).unwrap();
-      setShowStore(false);
+      await dispatch(updateDoc({ id: document.id, data: payload })).unwrap();
+      setShowUpdate(false);
     } catch (err) {
-      if (err.response && err.response.data.errors) {
-        console.table(err.response.data.errors); // This will show you exactly which field failed
-        alert('Validation failed: ' + JSON.stringify(err.response.data.errors));
-      } else {
-        console.error('Submission Error:', err);
-      }
+      console.error('Update Error:', err);
+      alert(err?.data?.message || 'Failed to update document');
     }
-  };;
+  };
 
   return (
     <div style={m.container}>
       <div style={m.header}>
         <div>
-          <h2 style={m.title}>Add New Document</h2>
-          <p style={m.subtitle}>
-            Archive a new heritage document to the library
-          </p>
+          <h2 style={m.title}>Update Document</h2>
+          <p style={m.subtitle}>Edit the details of this heritage document</p>
         </div>
         <button
           type="button"
-          onClick={() => setShowStore(false)}
+          onClick={() => setShowUpdate(false)}
           style={m.closeBtn}
         >
           ✕
@@ -165,7 +144,9 @@ export default function StoreDocument({ setShowStore }) {
         <div style={m.grid}>
           {/* Title - full width */}
           <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
-            <label style={m.label}>Document Title</label>
+            <label style={m.label}>
+              Document Title <span style={m.optionalLabel}>(optional)</span>
+            </label>
             <input {...register('title')} style={m.input} />
             {errors.title && (
               <span style={m.error}>{errors.title.message}</span>
@@ -174,7 +155,9 @@ export default function StoreDocument({ setShowStore }) {
 
           {/* Authors */}
           <div style={m.inputGroup}>
-            <label style={m.label}>Authors</label>
+            <label style={m.label}>
+              Authors <span style={m.optionalLabel}>(optional)</span>
+            </label>
             <input
               {...register('authors')}
               style={m.input}
@@ -188,7 +171,9 @@ export default function StoreDocument({ setShowStore }) {
 
           {/* Category */}
           <div style={m.inputGroup}>
-            <label style={m.label}>Category</label>
+            <label style={m.label}>
+              Category <span style={m.optionalLabel}>(optional)</span>
+            </label>
             <select {...register('categorie_id')} style={m.input}>
               <option value="">Select category…</option>
               {categories.map((cat) => (
@@ -200,43 +185,6 @@ export default function StoreDocument({ setShowStore }) {
             {errors.categorie_id && (
               <span style={m.error}>{errors.categorie_id.message}</span>
             )}
-          </div>
-
-          {/* Document File */}
-          <div style={m.inputGroup}>
-            <label style={m.label}>Document File (PDF)</label>
-            <input
-              type="file"
-              {...register('file')}
-              accept="application/pdf"
-              style={m.input}
-            />
-            {errors.file && <span style={m.error}>{errors.file.message}</span>}
-          </div>
-
-          {/* Cover Image */}
-          <div style={m.inputGroup}>
-            <label style={m.label}>
-              Cover Image <span style={m.optionalLabel}>(optional)</span>
-            </label>
-            <input
-              type="file"
-              {...register('cover')}
-              accept="image/*"
-              style={m.input}
-            />
-          </div>
-
-          {/* Source */}
-          <div style={m.inputGroup}>
-            <label style={m.label}>
-              Source <span style={m.optionalLabel}>(optional)</span>
-            </label>
-            <input
-              {...register('source')}
-              style={m.input}
-              placeholder="e.g. National Library"
-            />
           </div>
 
           {/* Tags */}
@@ -274,7 +222,7 @@ export default function StoreDocument({ setShowStore }) {
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
             }}
           >
-            {isSubmitting ? 'Saving...' : 'Save Document'}
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>
