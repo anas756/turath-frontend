@@ -34,20 +34,39 @@ export const api = {
   // --- Books (Fixed routes) ---
   getDocs: () => customAxios.get('/library/docs'),
   getDoc: (id) => customAxios.get(`/library/docs/${id}`),
-
-  createDoc: (data) => customAxios.post('/library/docs', data), 
+  createDoc: (data) => customAxios.post('/library/docs', data),
   updateDoc: (id, data) => customAxios.put(`/library/docs/${id}`, data),
   deleteDoc: (id) => customAxios.delete(`/library/docs/${id}`),
 
   // Content & Search
   getDocContent: (id, page = 1) =>
     customAxios.get(`/library/docs/${id}/pages`, { params: { page } }),
-
   searchInsideDoc: (keyWord, id) =>
     customAxios.get(`/library/docs/${id}/search`, {
       params: { key_word: keyWord },
     }),
-
   searchAbookUsingWord: (keyWord) =>
     customAxios.get('/search/library', { params: { key_word: keyWord } }),
+
+  // --- Media (Images, Videos, Audio) ---
+  // Get all media (with optional filters)
+  getMedia: (filters = {}) => customAxios.get('/media', { params: filters }),
+  // Get single media by ID
+  getMediaById: (id) => customAxios.get(`/media/${id}`),
+
+  // Create new media
+  createMedia: (data) => customAxios.post('/media', data),
+
+  // Update media
+  updateMedia: (id, data) => customAxios.put(`/media/${id}`, data),
+
+  // Delete media
+  deleteMedia: (id) => customAxios.delete(`/media/${id}`),
+
+  // Bulk delete media
+  bulkDeleteMedia: (ids) => customAxios.post('/media/bulk-delete', { ids }),
+
+  // Update media status
+  updateMediaStatus: (id, status) =>
+    customAxios.put(`/media/${id}/status`, { status }),
 };

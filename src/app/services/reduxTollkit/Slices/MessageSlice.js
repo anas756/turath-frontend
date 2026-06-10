@@ -7,6 +7,16 @@ import {
   createCategory,
   deleteCategory,
 } from '../asyncThunks/LibraryThunk';
+import {
+  fetchMedia,
+  fetchMediaById,
+  createMedia,
+  updateMedia,
+  deleteMedia,
+  bulkDeleteMedia,
+  updateMediaStatus,
+} from '../asyncThunks/MediaThunk';
+
 const initialState = {
   success: null,
   error: null,
@@ -22,17 +32,16 @@ export const MessageSlice = createSlice({
     },
     setSuccessMessage: (state, action) => {
       state.success = action.payload;
-
       state.error = null;
     },
     setErrorMessage: (state, action) => {
       state.error = action.payload;
-
       state.success = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // ========== AUTHENTICATION ==========
       // Login
       .addCase(login.fulfilled, (state, action) => {
         state.success = action.payload?.message || 'Welcome back!';
@@ -40,13 +49,16 @@ export const MessageSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.error = action.payload;
       })
-      // logout
+
+      // Logout
       .addCase(logout.fulfilled, (state, action) => {
-        state.success = action.payload?.message || 'logout success';
+        state.success = action.payload?.message || 'Logout successful';
       })
       .addCase(logout.rejected, (state, action) => {
         state.error = action.payload;
       })
+
+      // ========== USERS ==========
       // Register
       .addCase(registerUser.fulfilled, (state, action) => {
         state.success =
@@ -55,14 +67,16 @@ export const MessageSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload;
       })
-      // Update
+
+      // Update User
       .addCase(updateUser.fulfilled, (state, action) => {
         state.success = action.payload?.message || 'User updated successfully!';
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.error = action.payload;
       })
-      // Delete
+
+      // Delete User
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.success = action.payload?.message || 'User deleted successfully!';
       })
@@ -70,7 +84,8 @@ export const MessageSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Create Doc
+      // ========== DOCUMENTS ==========
+      // Create Document
       .addCase(createDoc.fulfilled, (state, action) => {
         state.success =
           action.payload?.message || 'Document created successfully!';
@@ -79,7 +94,7 @@ export const MessageSlice = createSlice({
         state.error = action.payload || 'Failed to create document';
       })
 
-      // Delete Doc
+      // Delete Document
       .addCase(deleteDoc.fulfilled, (state, action) => {
         state.success =
           action.payload?.message || 'Document deleted successfully!';
@@ -88,6 +103,7 @@ export const MessageSlice = createSlice({
         state.error = action.payload || 'Failed to delete document';
       })
 
+      // ========== CATEGORIES ==========
       // Create Category
       .addCase(createCategory.fulfilled, (state, action) => {
         state.success =
@@ -104,7 +120,77 @@ export const MessageSlice = createSlice({
       })
       .addCase(deleteCategory.rejected, (state, action) => {
         state.error = action.payload || 'Failed to delete category';
-      });
+      })
+
+      // ========== MEDIA ==========
+      // Fetch Media
+      .addCase(fetchMedia.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media retrieved successfully';
+      })
+      .addCase(fetchMedia.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to fetch media';
+      })
+
+      // Fetch Media By ID
+      .addCase(fetchMediaById.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media retrieved successfully';
+      })
+      .addCase(fetchMediaById.rejected, (state, action) => {
+        state.error =
+          action.payload?.message || 'Failed to fetch media details';
+      })
+
+      // Create Media
+      .addCase(createMedia.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media created successfully!';
+      })
+      .addCase(createMedia.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to create media';
+      })
+
+      // Update Media
+      .addCase(updateMedia.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media updated successfully!';
+      })
+      .addCase(updateMedia.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to update media';
+      })
+
+      // Delete Media
+      .addCase(deleteMedia.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media deleted successfully!';
+      })
+      .addCase(deleteMedia.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to delete media';
+      })
+
+      // Bulk Delete Media
+      .addCase(bulkDeleteMedia.fulfilled, (state, action) => {
+        const count = action.payload?.deleted_count || 0;
+        state.success =
+          action.payload?.message ||
+          `${count} media items deleted successfully!`;
+      })
+      .addCase(bulkDeleteMedia.rejected, (state, action) => {
+        state.error = action.payload?.message || 'Failed to delete media';
+      })
+
+      // Update Media Status
+      .addCase(updateMediaStatus.fulfilled, (state, action) => {
+        state.success =
+          action.payload?.message || 'Media status updated successfully!';
+      })
+      .addCase(updateMediaStatus.rejected, (state, action) => {
+        state.error =
+          action.payload?.message || 'Failed to update media status';
+      })
+
+    
   },
 });
 

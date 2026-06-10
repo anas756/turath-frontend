@@ -10,7 +10,7 @@ import GuestMiddleware from './middleware/GuestMiddleware';
 // Admin Components
 import Dashboard from '../../pages/admin/Dashboard';
 import DigitalLibrary from '../../pages/admin/LibraryManagment/DigitalLibrary';
-import MediaLibrary from '../../pages/admin/MediaLibrary';
+import MediaLibrary from '../../pages/admin/mediaManagment/MediaLibrary';
 import Users from '../../pages/admin/userManagment/Users';
 import ChatLogs from '../../pages/admin/ChatLogs';
 
@@ -81,6 +81,6 @@ export const route = createBrowserRouter([
       },
     ],
   },
- 
+
   { path: '*', element: <NotFoundPage /> },
 ]);
