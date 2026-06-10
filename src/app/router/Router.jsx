@@ -13,6 +13,7 @@ import DigitalLibrary from '../../pages/admin/LibraryManagment/DigitalLibrary';
 import MediaLibrary from '../../pages/admin/mediaManagment/MediaLibrary';
 import Users from '../../pages/admin/userManagment/Users';
 import ChatLogs from '../../pages/admin/ChatLogs';
+import ProfilePage from '../../pages/admin/ProfilePage';
 
 // Auth Components
 import Login from '../../pages/auth/Login';
@@ -77,6 +78,7 @@ export const route = createBrowserRouter([
           { path: 'media', element: <MediaLibrary /> },
           { path: 'users', element: <Users /> },
           { path: 'chat-logs', element: <ChatLogs /> },
+          { path: 'profile', element: <ProfilePage /> },
         ],
       },
     ],

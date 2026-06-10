@@ -13,6 +13,7 @@ import StoreDocument from './document/StoreDocument';
 import StoreCategories from './categories/StoreCategories';
 import UpdateDocument from './document/UpdateDocument';
 import UpdateCategorie from './categories/UpdateCategoei';
+import ShowDocumentDetailes from './document/ShowDocumentDetailes';
 
 export default function DigitalLibrary() {
   const dispatch = useDispatch();
@@ -197,11 +198,16 @@ export default function DigitalLibrary() {
             setSelectedDoc(null);
           }}
         >
-          <DocDetails
+          <ShowDocumentDetailes
             doc={selectedDoc}
             onClose={() => {
               setShowDetails(false);
               setSelectedDoc(null);
+            }}
+            onEdit={(doc) => {
+              setShowDetails(false);
+              setSelectedDoc(doc);
+              setShowUpdate(true);
             }}
           />
         </Modal>
@@ -271,76 +277,6 @@ const Modal = ({ children, onClose }) => (
     <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
       {children}
     </div>
-  </div>
-);
-
-// --- DOC DETAILS ---
-const DocDetails = ({ doc, onClose }) => (
-  <div style={{ padding: '2rem' }}>
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-        {doc.title}
-      </h2>
-      <button
-        onClick={onClose}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '1.2rem',
-        }}
-      >
-        ✕
-      </button>
-    </div>
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-        fontSize: '0.85rem',
-      }}
-    >
-      <Row
-        label="Authors"
-        value={
-          Array.isArray(doc.authors) ? doc.authors.join(', ') : doc.authors
-        }
-      />
-      <Row label="Category" value={doc.categorie?.name || '---'} />
-      <Row label="Source" value={doc.source || '---'} />
-      <Row
-        label="Tags"
-        value={
-          Array.isArray(doc.tags) ? doc.tags.join(', ') : doc.tags || '---'
-        }
-      />
-      <Row label="Description" value={doc.description || '---'} />
-      {doc.open_library_key && (
-        <Row label="Open Library Key" value={doc.open_library_key} />
-      )}
-    </div>
-  </div>
-);
-
-const Row = ({ label, value }) => (
-  <div style={{ display: 'flex', gap: '1rem' }}>
-    <span
-      style={{
-        fontWeight: 600,
-        color: 'var(--on-surface-muted)',
-        minWidth: '120px',
-      }}
-    >
-      {label}
-    </span>
-    <span style={{ color: 'var(--on-surface)' }}>{value}</span>
   </div>
 );
 

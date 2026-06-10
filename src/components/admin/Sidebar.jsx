@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import '../../styles/admin.css';
-import NewEntryModal from './NewEntryModal';
-import ProfilePanel from './ProfilePanel';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../app/services/reduxTollkit/asyncThunks/AuthThunk';
+import { useSelector } from 'react-redux';
 
 const NAV = [
   {
@@ -99,18 +96,12 @@ const NAV = [
 ];
 
 export default function Sidebar() {
-  const [showNewEntry, setShowNewEntry] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-  const handelLogout = () => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to logout ${user.name}?`
-    );
-    if (confirmDelete) {
-      dispatch(logout());
-    }
-  };
+
+  const name     = user?.name || 'Admin User';
+  const role     = user?.role || 'Curator Access';
+  const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   return (
     <>
@@ -134,57 +125,24 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* New Entry button — now opens modal */}
-        <button className="btn-new-entry" onClick={() => setShowNewEntry(true)}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Entry
-        </button>
 
-        {/* Bottom links — unchanged */}
-        <div className="sidebar-bottom">
-          <button className="sidebar-nav-item">...</button>
-          <button className="sidebar-nav-item">...</button>
-        </div>
 
-        {/* Profile — now opens panel */}
-        <div className="sidebar-user" onClick={() => setShowProfile(true)}>
-          <div className="sidebar-avatar">A</div>
+        {/* Profile */}
+        <div className="sidebar-user" onClick={() => navigate('/admin/profile')}>
+          <div className="sidebar-avatar">{initials}</div>
           <div className="sidebar-user-info">
-            <span className="sidebar-user-name">Admin User</span>
-            <span className="sidebar-user-role">Curator Access</span>
+            <span className="sidebar-user-name">{name}</span>
+            <span className="sidebar-user-role">{role}</span>
           </div>
           <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" strokeWidth="2"
             style={{ marginLeft: 'auto', color: 'var(--on-surface-muted)' }}
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </div>
       </aside>
-
-      {/* Modals — rendered outside sidebar so they overlay everything */}
-      {showNewEntry && <NewEntryModal onClose={() => setShowNewEntry(false)} />}
-      {showProfile && (
-        <ProfilePanel
-          onClose={() => setShowProfile(false)}
-          handelLogout={handelLogout}
-        />
-      )}
     </>
   );
 }
