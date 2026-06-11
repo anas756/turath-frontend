@@ -1,248 +1,176 @@
 import React from 'react';
 import StatusBadge from '../../../components/admin/StatusBadge';
 
-export default function ShowUserDetails({ user, onClose }) {
+const formatDate = (str) => {
+  if (!str) return null;
+  return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const getInitials = (name) => {
+  if (!name) return '??';
+  return name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+};
+
+// ── Shared style tokens — identical to ShowMediaDetails ───────────────────────
+const m = {
+  container: { padding: '2rem' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.75rem' },
+  title:    { fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
+  subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
+  closeBtn: {
+    background: 'var(--surface-low)', border: 'none',
+    width: '32px', height: '32px', borderRadius: '50%',
+    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  identityCard: {
+    background: 'var(--surface-white)', border: '1px solid var(--surface-high)',
+    borderRadius: '1rem', padding: '1.25rem 1.5rem',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap',
+  },
+  avatarRow:  { display: 'flex', alignItems: 'center', gap: '1rem' },
+  avatar: {
+    width: '48px', height: '48px', borderRadius: '50%',
+    background: 'var(--primary-gradient)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: "'Noto Serif', serif", fontSize: '1rem', fontWeight: 600,
+    color: '#fff', flexShrink: 0,
+  },
+  assetTitle: { fontFamily: "'Noto Serif', serif", fontSize: '1.05rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
+  assetMeta:  { fontSize: '0.78rem', color: 'var(--on-surface-muted)', marginTop: '0.2rem' },
+  rolePill: {
+    display: 'inline-flex', alignItems: 'center',
+    padding: '0.22rem 0.85rem', borderRadius: '9999px',
+    fontSize: '0.72rem', fontWeight: 700,
+    background: 'rgba(0,78,138,0.08)', color: 'var(--primary)',
+    border: '1px solid rgba(0,78,138,0.14)', flexShrink: 0,
+  },
+  grid:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' },
+  card:     { background: 'var(--surface-white)', border: '1px solid var(--surface-high)', borderRadius: '1rem', padding: '1.25rem' },
+  cardFull: { background: 'var(--surface-white)', border: '1px solid var(--surface-high)', borderRadius: '1rem', padding: '1.25rem', marginBottom: '1.25rem' },
+  secLabel: { fontSize: '0.63rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-muted)', marginBottom: '0.85rem' },
+  list:     { border: '1px solid var(--surface-low)', borderRadius: '0.625rem', overflow: 'hidden' },
+  row:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.7rem 1rem', borderBottom: '1px solid var(--surface-low)' },
+  rowLast:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.7rem 1rem' },
+  lbl:      { fontSize: '0.75rem', color: 'var(--on-surface-muted)', fontWeight: 500 },
+  val:      { fontSize: '0.82rem', color: 'var(--on-surface)', fontWeight: 600 },
+  valMuted: { fontSize: '0.82rem', color: 'var(--on-surface-muted)', fontStyle: 'italic' },
+  descText:  { fontSize: '0.85rem', color: 'var(--on-surface)', lineHeight: 1.7, margin: 0 },
+  descMuted: { fontSize: '0.85rem', color: 'var(--on-surface-muted)', fontStyle: 'italic' },
+  footer:     { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingTop: '1.25rem', borderTop: '1px solid var(--surface-low)' },
+  editBtn: {
+    padding: '0.55rem 1.4rem', borderRadius: '9999px',
+    background: 'var(--primary-gradient)', color: '#fff',
+    border: 'none', cursor: 'pointer',
+    fontSize: '0.82rem', fontWeight: 600, fontFamily: 'inherit',
+    display: 'flex', alignItems: 'center', gap: '6px',
+  },
+};
+
+const Val = ({ value }) => value
+  ? <span style={m.val}>{value}</span>
+  : <span style={m.valMuted}>—</span>;
+
+export default function ShowUserDetails({ user, onClose, onEdit }) {
   if (!user) return null;
 
-  const formatDate = (date) => {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-  };
-
-  const getInitials = (name) => {
-    if (!name) return '??';
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
-
-  const isAdmin = user.role?.toLowerCase() === 'admin';
-
-
-  const styles = {
-    card: {
-      backgroundColor: '#e8e2d7', // Warm gray 200 – darker than cream, still heritage
-      borderRadius: '1rem',
-      overflow: 'hidden',
-      boxShadow: '0 20px 35px -10px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
-    },
-    header: {
-      background: 'linear-gradient(135deg, #d2c8b9 0%, #e8e2d7 100%)', // darker gradient
-      padding: '1.5rem 2rem',
-      borderBottom: '1px solid #c4b8a8',
-    },
-    headerInner: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-    },
-    avatarSection: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1.25rem',
-    },
-    avatar: {
-      width: '72px',
-      height: '72px',
-      borderRadius: '50%',
-      background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'white',
-      fontSize: '1.8rem',
-      fontWeight: 'bold',
-      fontFamily: 'var(--serif)',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-    },
-    name: {
-      fontFamily: 'var(--serif)',
-      fontSize: '1.5rem',
-      fontWeight: 700,
-      color: '#2c2a24', // darker ink for better contrast on warm bg
-      margin: 0,
-      textTransform: 'capitalize',
-    },
-    username: {
-      color: '#5a4e3e',
-      marginTop: '0.25rem',
-      fontSize: '0.85rem',
-    },
-    closeBtn: {
-      background: '#d2c8b9',
-      border: 'none',
-      width: '32px',
-      height: '32px',
-      borderRadius: '50%',
-      cursor: 'pointer',
-      fontSize: '1.2rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#4a3e2c',
-      transition: 'background 0.2s',
-    },
-    body: {
-      padding: '2rem',
-      backgroundColor: '#e8e2d7',
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '1.5rem',
-    },
-    infoCard: {
-      backgroundColor: '#f6f3ed', // slightly lighter than card bg for contrast
-      borderRadius: '0.75rem',
-      padding: '1.25rem',
-      border: '1px solid #d2c8b9',
-      boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.04)',
-    },
-    cardTitle: {
-      fontFamily: 'var(--serif)',
-      fontSize: '1rem',
-      fontWeight: 600,
-      color: '#2c2a24',
-      marginBottom: '1rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-    },
-    row: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '0.6rem 0',
-      borderBottom: '1px solid #d2c8b9',
-    },
-    lastRow: {
-      borderBottom: 'none',
-    },
-    label: {
-      color: '#6b5a48',
-      fontSize: '0.8rem',
-    },
-    value: {
-      fontWeight: 500,
-      color: '#2c2a24',
-      fontSize: '0.85rem',
-      wordBreak: 'break-all',
-      textAlign: 'right',
-    },
-    roleBadge: {
-      display: 'inline-block',
-      padding: '0.25rem 0.75rem',
-      borderRadius: '9999px',
-      fontSize: '0.7rem',
-      fontWeight: 600,
-      backgroundColor: isAdmin ? 'rgba(0,78,138,0.15)' : 'rgba(99,70,29,0.15)',
-      color: isAdmin ? 'var(--primary)' : 'var(--tertiary)',
-    },
-    verified: {
-      color: '#2e7d32',
-      fontWeight: 500,
-    },
-    unverified: {
-      color: '#b1452e', // terracotta variation
-    },
-    bioCard: {
-      marginTop: '1.5rem',
-      backgroundColor: '#f6f3ed',
-      borderRadius: '0.75rem',
-      padding: '1.25rem',
-      border: '1px solid #d2c8b9',
-    },
-    bioText: {
-      color: '#4a3e2c',
-      lineHeight: 1.5,
-      fontSize: '0.85rem',
-    },
-  };
+  const joinedAt   = formatDate(user.created_at);
+  const lastLogin  = formatDate(user.last_login || user.last_login_at);
+  const verifiedAt = formatDate(user.email_verified_at);
+  const initials   = getInitials(user.name);
 
   return (
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.avatarSection}>
-            <div style={styles.avatar}>{getInitials(user.name)}</div>
-            <div>
-              <h2 style={styles.name}>{user.name}</h2>
-              <p style={styles.username}>@{user.userName}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            style={styles.closeBtn}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#c4b8a8'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#d2c8b9'}
-          >
-            ✕
-          </button>
+    <div style={m.container}>
+
+      {/* Header */}
+      <div style={m.header}>
+        <div>
+          <h2 style={m.title}>User Details</h2>
+          <p style={m.subtitle}>Account and activity information</p>
         </div>
+        <button type="button" onClick={onClose} style={m.closeBtn}>✕</button>
       </div>
 
-      <div style={styles.body}>
-        <div style={styles.grid}>
-          <div style={styles.infoCard}>
-            <div style={styles.cardTitle}>
-              <span>📋</span> Account Information
-            </div>
-            <div>
-              <div style={styles.row}>
-                <span style={styles.label}>Email</span>
-                <span style={styles.value}>{user.email}</span>
-              </div>
-              <div style={styles.row}>
-                <span style={styles.label}>Role</span>
-                <span style={styles.value}>
-                  <span style={styles.roleBadge}>{user.role}</span>
-                </span>
-              </div>
-              <div style={{ ...styles.row, ...styles.lastRow }}>
-                <span style={styles.label}>Status</span>
-                <span style={styles.value}>
-                  <StatusBadge status={user.confirmed ? 'Active' : 'Pending'} />
-                </span>
-              </div>
-            </div>
+      {/* Identity card */}
+      <div style={m.identityCard}>
+        <div style={m.avatarRow}>
+          <div style={m.avatar}>{initials}</div>
+          <div>
+            <p style={m.assetTitle}>{user.name || '—'}</p>
+            <p style={m.assetMeta}>@{user.userName || user.username || '—'} · {user.email || '—'}</p>
           </div>
+        </div>
+        {user.role && <span style={m.rolePill}>{user.role}</span>}
+      </div>
 
-          <div style={styles.infoCard}>
-            <div style={styles.cardTitle}>
-              <span>⏱️</span> Activity
+      {/* Two-column info grid */}
+      <div style={m.grid}>
+
+        <div style={m.card}>
+          <p style={m.secLabel}>Account Information</p>
+          <div style={m.list}>
+            <div style={m.row}>
+              <span style={m.lbl}>Email</span>
+              <Val value={user.email} />
             </div>
-            <div>
-              <div style={styles.row}>
-                <span style={styles.label}>Joined</span>
-                <span style={styles.value}>{formatDate(user.created_at)}</span>
-              </div>
-              <div style={styles.row}>
-                <span style={styles.label}>Last Login</span>
-                <span style={styles.value}>{formatDate(user.last_login)}</span>
-              </div>
-              <div style={{ ...styles.row, ...styles.lastRow }}>
-                <span style={styles.label}>Email Verified</span>
-                <span style={styles.value}>
-                  <span style={user.email_verified_at ? styles.verified : styles.unverified}>
-                    {user.email_verified_at ? formatDate(user.email_verified_at) : 'Not verified'}
-                  </span>
-                </span>
-              </div>
+            <div style={m.row}>
+              <span style={m.lbl}>Role</span>
+              {user.role
+                ? <span style={m.rolePill}>{user.role}</span>
+                : <span style={m.valMuted}>—</span>
+              }
+            </div>
+            <div style={m.rowLast}>
+              <span style={m.lbl}>Status</span>
+              <StatusBadge status={user.confirmed ? 'Active' : 'Pending'} />
             </div>
           </div>
         </div>
 
-        {user.bio && (
-          <div style={styles.bioCard}>
-            <div style={styles.cardTitle}>
-              <span>📝</span> Bio
+        <div style={m.card}>
+          <p style={m.secLabel}>Activity</p>
+          <div style={m.list}>
+            <div style={m.row}>
+              <span style={m.lbl}>Joined</span>
+              <Val value={joinedAt} />
             </div>
-            <p style={styles.bioText}>{user.bio}</p>
+            <div style={m.row}>
+              <span style={m.lbl}>Last login</span>
+              <Val value={lastLogin} />
+            </div>
+            <div style={m.rowLast}>
+              <span style={m.lbl}>Email verified</span>
+              {verifiedAt
+                ? <span style={{ ...m.val, color: '#15803d' }}>{verifiedAt}</span>
+                : <span style={{ ...m.valMuted, color: 'var(--secondary)' }}>Not verified</span>
+              }
+            </div>
           </div>
+        </div>
+
+      </div>
+
+      {/* Bio — only if present */}
+      {user.bio && (
+        <div style={{ ...m.cardFull, marginBottom: '1.5rem' }}>
+          <p style={m.secLabel}>Bio</p>
+          <p style={m.descText}>{user.bio}</p>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={m.footer}>
+        {onEdit && (
+          <button style={m.editBtn} onClick={() => onEdit(user)}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit User
+          </button>
         )}
       </div>
+
     </div>
   );
 }
