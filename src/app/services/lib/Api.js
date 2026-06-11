@@ -48,25 +48,20 @@ export const api = {
   searchAbookUsingWord: (keyWord) =>
     customAxios.get('/search/library', { params: { key_word: keyWord } }),
 
-  // --- Media (Images, Videos, Audio) ---
-  // Get all media (with optional filters)
+  // --- Media ---
   getMedia: (filters = {}) => customAxios.get('/media', { params: filters }),
-  // Get single media by ID
   getMediaById: (id) => customAxios.get(`/media/${id}`),
 
-  // Create new media
   createMedia: (data) => customAxios.post('/media', data),
 
-  // Update media
-  updateMedia: (id, data) => customAxios.put(`/media/${id}`, data),
+  // FIX: Change to POST because of FormData + _method: 'PUT'
+  updateMedia: (id, data) => customAxios.post(`/media/${id}`, data),
 
-  // Delete media
+  // FIX: Ensure ID is correctly interpolated
   deleteMedia: (id) => customAxios.delete(`/media/${id}`),
 
-  // Bulk delete media
   bulkDeleteMedia: (ids) => customAxios.post('/media/bulk-delete', { ids }),
 
-  // Update media status
   updateMediaStatus: (id, status) =>
     customAxios.put(`/media/${id}/status`, { status }),
 };

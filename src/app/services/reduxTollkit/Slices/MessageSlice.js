@@ -11,7 +11,7 @@ import {
   fetchMedia,
   fetchMediaById,
   createMedia,
-  updateMedia,
+  updateMediaTunk,
   deleteMedia,
   bulkDeleteMedia,
   updateMediaStatus,
@@ -152,11 +152,11 @@ export const MessageSlice = createSlice({
       })
 
       // Update Media
-      .addCase(updateMedia.fulfilled, (state, action) => {
+      .addCase(updateMediaTunk.fulfilled, (state, action) => {
         state.success =
           action.payload?.message || 'Media updated successfully!';
       })
-      .addCase(updateMedia.rejected, (state, action) => {
+      .addCase(updateMediaTunk.rejected, (state, action) => {
         state.error = action.payload?.message || 'Failed to update media';
       })
 
@@ -188,7 +188,7 @@ export const MessageSlice = createSlice({
       .addCase(updateMediaStatus.rejected, (state, action) => {
         state.error =
           action.payload?.message || 'Failed to update media status';
-      })
+      });
 
     
   },

@@ -41,7 +41,7 @@ export const createMedia = createAsyncThunk(
 );
 
 // ==================== UPDATE MEDIA ====================
-export const updateMedia = createAsyncThunk(
+export const updateMediaTunk = createAsyncThunk(
   'media/updateMedia',
   async ({ id, data }, { rejectWithValue }) => {
     try {

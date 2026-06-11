@@ -4,6 +4,7 @@ import {
   fetchMedia,
   deleteMedia,
   updateMediaStatus,
+  updateMediaTunk,
 } from '../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
@@ -153,12 +154,13 @@ export default function MediaLibrary() {
   const handleBackgroundUpdate = async (mediaId, updatedData) => {
     setLoadingRows((prev) => ({ ...prev, [mediaId]: 'updating' }));
     try {
-      await dispatch(updateMedia({ id: mediaId, data: updatedData }));
+      await dispatch(updateMediaTunk({ id: mediaId, data: updatedData }));
       setShowUpdate(false);
       setSelectedMedia(null);
-      fetchMediaData(true);
-    } catch (err) {
-      throw err;
+      } catch (err) {
+      console.error('Update failed:', err);
+      // Optional: add a toast notification here
+      alert(err.response?.data?.message || 'Error updating media');
     } finally {
       setLoadingRows((prev) => ({ ...prev, [mediaId]: false }));
     }
@@ -166,7 +168,6 @@ export default function MediaLibrary() {
 
   const handleStoreClose = () => {
     setShowStore(false);
-    fetchMediaData(true);
   };
 
   const handleDetailsClose = () => {

@@ -3,7 +3,7 @@ import {
   fetchMedia,
   fetchMediaById,
   createMedia,
-  updateMedia,
+  updateMediaTunk,
   deleteMedia,
   bulkDeleteMedia,
   updateMediaStatus,
@@ -37,6 +37,7 @@ export const MediaSlice = createSlice({
         // Adjusting based on if your API returns { data: [], pagination: {} }
         state.media = payload.data ?? payload;
         state.pagination = action.payload.pagination ?? state.pagination;
+        console.log('rani dkholt ');
       })
       .addCase(fetchMedia.rejected, (state) => {
         state.mediaLoading = false;
@@ -45,6 +46,7 @@ export const MediaSlice = createSlice({
       // --- Fetch Single Media ---
       .addCase(fetchMediaById.fulfilled, (state, action) => {
         state.currentMedia = action.payload.data ?? action.payload;
+        
       })
 
       // --- Create Media ---
@@ -54,7 +56,7 @@ export const MediaSlice = createSlice({
       })
 
       // --- Update Media ---
-      .addCase(updateMedia.fulfilled, (state, action) => {
+      .addCase(updateMediaTunk.fulfilled, (state, action) => {
         const updatedMedia = action.payload.data ?? action.payload;
         const index = state.media.findIndex(
           (m) => (m._id || m.id) === (updatedMedia._id || updatedMedia.id)
