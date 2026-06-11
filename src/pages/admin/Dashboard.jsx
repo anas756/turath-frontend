@@ -37,7 +37,9 @@ const getTypeIcon = (type) => {
         stroke="currentColor"
         strokeWidth="2"
       >
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
       </svg>
     );
   if (type === 'user')
@@ -56,18 +58,21 @@ const getTypeIcon = (type) => {
     );
 };
 
-const getIconStyle = (type) => {
-  if (type === 'document') return 'blue';
-  if (type === 'media') return 'gold';
-  if (type === 'user') return 'terrac';
-  return 'blue';
+const getIconColors = (type) => {
+  if (type === 'document')
+    return { bg: 'rgba(99,102,241,0.12)', color: '#6366f1' };
+  if (type === 'media')
+    return { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' };
+  if (type === 'user') return { bg: 'rgba(16,185,129,0.12)', color: '#10b981' };
+  return { bg: 'rgba(99,102,241,0.12)', color: '#6366f1' };
 };
 
-const getChipStyle = (type) => {
-  if (type === 'document') return 'chip-manuscript';
-  if (type === 'media') return 'chip-media';
-  if (type === 'user') return 'chip-arch';
-  return '';
+const getChipColors = (type) => {
+  if (type === 'document')
+    return { bg: 'rgba(99,102,241,0.1)', color: '#6366f1' };
+  if (type === 'media') return { bg: 'rgba(245,158,11,0.1)', color: '#d97706' };
+  if (type === 'user') return { bg: 'rgba(16,185,129,0.1)', color: '#059669' };
+  return { bg: '#f1f5f9', color: '#64748b' };
 };
 
 const getInitials = (name) => {
@@ -90,10 +95,17 @@ const formatDate = (dateStr) => {
 };
 
 const getCurator = (item) => {
-  if (item.type === 'document') return item.authors ?? '—';
-  if (item.type === 'media') return item.curator ?? '—';
-  if (item.type === 'user') return item.role ?? '—';
+  if (item.type === 'document') return String(item.authors ?? '—');
+  if (item.type === 'media') return String(item.curator ?? '—');
+  if (item.type === 'user') return String(item.subtitle ?? '—');
   return '—';
+};
+
+const getAvatarColor = (type) => {
+  if (type === 'document') return { bg: '#6366f1', color: '#fff' };
+  if (type === 'media') return { bg: '#f59e0b', color: '#fff' };
+  if (type === 'user') return { bg: '#10b981', color: '#fff' };
+  return { bg: '#94a3b8', color: '#fff' };
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -111,6 +123,7 @@ export default function Dashboard() {
     dispatch(fetchDashboardStats());
   }, [dispatch]);
 
+  if (loading) return <p>Loading stats...</p>;
   if (error) return <p className="error-text">{error}</p>;
 
   const STATS = [
@@ -154,72 +167,203 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Recent content */}
+      {/* Recent Activity Feed */}
       <div className="section-card">
         <div className="section-header">
           <h2 className="section-title">Recently Added Content</h2>
-          <button className="btn-view-all">View All →</button>
         </div>
 
-        <table className="content-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Category</th>
-              <th>Date Added</th>
-              <th>Curator / Author</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recent.map((item, index) => (
-              <tr key={index}>
-                <td>
-                  <div className="doc-title-wrap">
-                    <div className={`doc-icon ${getIconStyle(item.type)}`}>
-                      {getTypeIcon(item.type)}
-                    </div>
-                    <span className="doc-title-text">{item.title}</span>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            padding: '0.5rem 0',
+          }}
+        >
+          {recent.length === 0 && (
+            <p
+              style={{
+                textAlign: 'center',
+                color: 'var(--on-surface-muted)',
+                padding: '2rem',
+              }}
+            >
+              No recent activity
+            </p>
+          )}
+
+          {recent.map((item, index) => {
+            const iconColors = getIconColors(item.type);
+            const chipColors = getChipColors(item.type);
+            const avatarColors = getAvatarColor(item.type);
+            const curator = getCurator(item);
+
+            return (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '0.875rem 1rem',
+                  borderRadius: '0.75rem',
+                  backgroundColor: 'var(--surface-high, #f8fafc)',
+                  border: '1px solid var(--border, #e2e8f0)',
+                  transition: 'box-shadow 0.2s',
+                  cursor: 'default',
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    '0 4px 16px rgba(0,0,0,0.06)')
+                }
+                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
+              >
+                {/* Type Icon */}
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '0.625rem',
+                    backgroundColor: iconColors.bg,
+                    color: iconColors.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {getTypeIcon(item.type)}
+                </div>
+
+                {/* Title + subtitle */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'var(--on-surface, #1e293b)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {item.title}
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '0.75rem',
+                      color: 'var(--on-surface-muted, #94a3b8)',
+                      marginTop: '2px',
+                    }}
+                  >
+                    {item.subtitle ?? '—'}
+                  </p>
+                </div>
+
+                {/* Type chip */}
+                <span
+                  style={{
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    backgroundColor: chipColors.bg,
+                    color: chipColors.color,
+                    textTransform: 'capitalize',
+                    flexShrink: 0,
+                  }}
+                >
+                  {item.type}
+                </span>
+
+                {/* Curator / Author */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flexShrink: 0,
+                    minWidth: '110px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      backgroundColor: avatarColors.bg,
+                      color: avatarColors.color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {getInitials(curator)}
                   </div>
-                </td>
-                <td>
-                  <span className={`chip ${getChipStyle(item.type)}`}>
-                    {item.subtitle ?? item.type}
+                  <span
+                    style={{
+                      fontSize: '0.78rem',
+                      color: 'var(--on-surface-muted, #64748b)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '80px',
+                    }}
+                  >
+                    {curator}
                   </span>
-                </td>
-                <td>
-                  <span className="date-text">
-                    {formatDate(item.created_at)}
-                  </span>
-                </td>
-                <td>
-                  <div className="curator-wrap">
-                    <div className="curator-avatar">
-                      {getInitials(getCurator(item))}
-                    </div>
-                    {getCurator(item)}
-                  </div>
-                </td>
-                <td>
-                  <button className="action-btn">
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="5" r="1" />
-                      <circle cx="12" cy="12" r="1" />
-                      <circle cx="12" cy="19" r="1" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+
+                {/* Date */}
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--on-surface-muted, #94a3b8)',
+                    flexShrink: 0,
+                    minWidth: '90px',
+                    textAlign: 'right',
+                  }}
+                >
+                  {formatDate(item.created_at)}
+                </span>
+
+                {/* Action */}
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    borderRadius: '0.375rem',
+                    color: 'var(--on-surface-muted, #94a3b8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="19" r="1" />
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </>
   );
