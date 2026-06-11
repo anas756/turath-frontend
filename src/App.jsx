@@ -14,6 +14,7 @@ export default function App() {
   const { isLoading } = useSelector((state) => state.auth);
   const jwt_token = Cookies.get('jwt_token');
 
+
   useEffect(() => {
     if (jwt_token) {
       dispatch(getProfile());

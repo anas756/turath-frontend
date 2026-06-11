@@ -64,4 +64,5 @@ export const api = {
 
   updateMediaStatus: (id, status) =>
     customAxios.put(`/media/${id}/status`, { status }),
+  getDashboardStats: () => customAxios.get('/dashboard/stats'),
 };
