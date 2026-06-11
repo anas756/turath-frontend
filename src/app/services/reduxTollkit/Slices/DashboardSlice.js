@@ -1,32 +1,33 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchDashboardStats } from '../asyncThunks/DashboardThunk';
+
 const initialState = {
-  stats: {
-    users: {
-      total: 0,
-      this_month: 0,
-      last_month: 0,
-      percentage: 0,
-      trend: 'up',
-    },
-    documents: {
-      total: 0,
-      this_month: 0,
-      last_month: 0,
-      percentage: 0,
-      trend: 'up',
-    },
-    media: {
-      total: 0,
-      this_month: 0,
-      last_month: 0,
-      percentage: 0,
-      trend: 'up',
-    },
+  users: {
+    total: 0,
+    this_month: 0,
+    last_month: 0,
+    percentage: 0,
+    trend: 'up',
   },
+  documents: {
+    total: 0,
+    this_month: 0,
+    last_month: 0,
+    percentage: 0,
+    trend: 'up',
+  },
+  media: {
+    total: 0,
+    this_month: 0,
+    last_month: 0,
+    percentage: 0,
+    trend: 'up',
+  },
+  recent: [],
   loading: false,
   error: null,
 };
+
 export const DashboardSlice = createSlice({
   name: 'Dashboard',
   initialState,
@@ -41,8 +42,10 @@ export const DashboardSlice = createSlice({
       })
       .addCase(fetchDashboardStats.fulfilled, (state, action) => {
         state.loading = false;
-        state.stats = action.payload;
-        console.log(action);
+        state.users = action.payload.users;
+        state.documents = action.payload.documents;
+        state.media = action.payload.media;
+        state.recent = action.payload.recent;
       })
       .addCase(fetchDashboardStats.rejected, (state, action) => {
         state.loading = false;
@@ -50,4 +53,15 @@ export const DashboardSlice = createSlice({
       });
   },
 });
+
 export const { resetDashboard } = DashboardSlice.actions;
+
+// ─── Selectors ────────────────────────────────────────────────────────────────
+export const selectDashboardUsers = (state) => state.dashboard.users;
+export const selectDashboardDocuments = (state) => state.dashboard.documents;
+export const selectDashboardMedia = (state) => state.dashboard.media;
+export const selectDashboardRecent = (state) => state.dashboard.recent;
+export const selectDashboardLoading = (state) => state.dashboard.loading;
+export const selectDashboardError = (state) => state.dashboard.error;
+
+export default DashboardSlice.reducer;

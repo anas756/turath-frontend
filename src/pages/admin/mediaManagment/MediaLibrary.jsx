@@ -13,10 +13,10 @@ import StoreMedia from './StoreMedia';
 import UpdateMedia from './UpdateMedia';
 import ShowMediaDetails from './ShowMediaDetails';
 
-const TYPES = ['All', 'Image', 'Audio', 'Video'];
+const TYPES = ['All', 'image', 'audio', 'video'];
 
 const TYPE_ICONS = {
-  Image: (
+  image: (
     <svg
       width="15"
       height="15"
@@ -30,7 +30,7 @@ const TYPE_ICONS = {
       <polyline points="21 15 16 10 5 21" />
     </svg>
   ),
-  Audio: (
+  audio: (
     <svg
       width="15"
       height="15"
@@ -44,7 +44,7 @@ const TYPE_ICONS = {
       <circle cx="18" cy="16" r="3" />
     </svg>
   ),
-  Video: (
+  video: (
     <svg
       width="15"
       height="15"

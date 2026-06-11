@@ -1,17 +1,20 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDashboardStats } from '../../app/services/reduxTollkit/asyncThunks/DashboardThunk';
+import {
+  selectDashboardUsers,
+  selectDashboardDocuments,
+  selectDashboardMedia,
+  selectDashboardRecent,
+  selectDashboardLoading,
+  selectDashboardError,
+} from '../../app/services/reduxTollkit/Slices/DashboardSlice';
 
-const DOCS = [
-  {
-    title: 'Al-Qarawiyyin Manuscript 042',
-    category: 'Manuscript',
-    categoryStyle: 'chip-manuscript',
-    date: 'Oct 12, 2023',
-    curator: 'Fatima B.',
-    initials: 'FB',
-    iconStyle: 'blue',
-    icon: (
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const getTypeIcon = (type) => {
+  if (type === 'document')
+    return (
       <svg
         width="16"
         height="16"
@@ -23,17 +26,9 @@ const DOCS = [
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
       </svg>
-    ),
-  },
-  {
-    title: 'Blue Zellige Master Pattern',
-    category: 'Media',
-    categoryStyle: 'chip-media',
-    date: 'Oct 10, 2023',
-    curator: 'Admin User',
-    initials: 'AU',
-    iconStyle: 'gold',
-    icon: (
+    );
+  if (type === 'media')
+    return (
       <svg
         width="16"
         height="16"
@@ -44,17 +39,9 @@ const DOCS = [
       >
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
-    ),
-  },
-  {
-    title: 'Riad Courtyard Blueprint',
-    category: 'Architecture',
-    categoryStyle: 'chip-arch',
-    date: 'Oct 08, 2023',
-    curator: 'Youssef A.',
-    initials: 'YA',
-    iconStyle: 'terrac',
-    icon: (
+    );
+  if (type === 'user')
+    return (
       <svg
         width="16"
         height="16"
@@ -63,25 +50,68 @@ const DOCS = [
         stroke="currentColor"
         strokeWidth="2"
       >
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
       </svg>
-    ),
-  },
-];
+    );
+};
+
+const getIconStyle = (type) => {
+  if (type === 'document') return 'blue';
+  if (type === 'media') return 'gold';
+  if (type === 'user') return 'terrac';
+  return 'blue';
+};
+
+const getChipStyle = (type) => {
+  if (type === 'document') return 'chip-manuscript';
+  if (type === 'media') return 'chip-media';
+  if (type === 'user') return 'chip-arch';
+  return '';
+};
+
+const getInitials = (name) => {
+  if (!name || typeof name !== 'string') return '??';
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+};
+
+const getCurator = (item) => {
+  if (item.type === 'document') return item.authors ?? '—';
+  if (item.type === 'media') return item.curator ?? '—';
+  if (item.type === 'user') return item.role ?? '—';
+  return '—';
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const dispatch = useDispatch();
-  const { stats, loading, error } = useSelector((state) => state.dashboard); // ✅ capital D
+  const users = useSelector(selectDashboardUsers);
+  const documents = useSelector(selectDashboardDocuments);
+  const media = useSelector(selectDashboardMedia);
+  const recent = useSelector(selectDashboardRecent);
+  const loading = useSelector(selectDashboardLoading);
+  const error = useSelector(selectDashboardError);
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
-  }, [dispatch]); // ✅ only runs once on mount
+  }, [dispatch]);
 
-  // ✅ Guard before destructuring
-  if (loading || !stats?.users) return <p>Loading stats...</p>;
   if (error) return <p className="error-text">{error}</p>;
-
-  const { users, documents, media } = stats; // ✅ safe to destructure now
 
   const STATS = [
     {
@@ -134,36 +164,40 @@ export default function Dashboard() {
         <table className="content-table">
           <thead>
             <tr>
-              <th>Document Title</th>
+              <th>Title</th>
               <th>Category</th>
               <th>Date Added</th>
-              <th>Curator</th>
+              <th>Curator / Author</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {DOCS.map((doc) => (
-              <tr key={doc.title}>
+            {recent.map((item, index) => (
+              <tr key={index}>
                 <td>
                   <div className="doc-title-wrap">
-                    <div className={`doc-icon ${doc.iconStyle}`}>
-                      {doc.icon}
+                    <div className={`doc-icon ${getIconStyle(item.type)}`}>
+                      {getTypeIcon(item.type)}
                     </div>
-                    <span className="doc-title-text">{doc.title}</span>
+                    <span className="doc-title-text">{item.title}</span>
                   </div>
                 </td>
                 <td>
-                  <span className={`chip ${doc.categoryStyle}`}>
-                    {doc.category}
+                  <span className={`chip ${getChipStyle(item.type)}`}>
+                    {item.subtitle ?? item.type}
                   </span>
                 </td>
                 <td>
-                  <span className="date-text">{doc.date}</span>
+                  <span className="date-text">
+                    {formatDate(item.created_at)}
+                  </span>
                 </td>
                 <td>
                   <div className="curator-wrap">
-                    <div className="curator-avatar">{doc.initials}</div>
-                    {doc.curator}
+                    <div className="curator-avatar">
+                      {getInitials(getCurator(item))}
+                    </div>
+                    {getCurator(item)}
                   </div>
                 </td>
                 <td>
