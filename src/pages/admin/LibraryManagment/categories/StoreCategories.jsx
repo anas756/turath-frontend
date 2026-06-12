@@ -97,7 +97,7 @@ export default function StoreCategories({ setShowStore }) {
 
 // الـ Styles اللي عطيتيني
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -127,7 +127,7 @@ const m = {
     justifyContent: 'center',
   },
   form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
   label: {
     fontSize: '0.8rem',

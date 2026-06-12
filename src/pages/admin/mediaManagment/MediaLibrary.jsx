@@ -4,6 +4,7 @@ import {
   fetchMedia,
   deleteMedia,
   updateMediaStatus,
+  updateMediaTunk as updateMedia,
 } from '../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
@@ -228,6 +229,7 @@ export default function MediaLibrary() {
         <>
           {/* Filter Bar */}
           <div
+            className="admin-filter-row"
             style={{
               display: 'flex',
               flexWrap: 'wrap',
@@ -267,6 +269,7 @@ export default function MediaLibrary() {
               ))}
             </div>
             <div
+              className="admin-search-pill"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -310,8 +313,8 @@ export default function MediaLibrary() {
             <div className="section-header">
               <h2 className="section-title">{filteredMedia.length} Assets</h2>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="content-table" style={{ minWidth: '900px' }}>
+            <div className="admin-table-shell" style={{ overflowX: 'auto' }}>
+              <table className="content-table admin-data-table" style={{ minWidth: '900px' }}>
                 <thead>
                   <tr>
                     <th>Title</th>
@@ -330,7 +333,7 @@ export default function MediaLibrary() {
                     const id = item._id || item.id;
                     return (
                       <tr key={id}>
-                        <td>
+                        <td data-label="Title">
                           <div style={{ fontWeight: 500 }}>{item.title}</div>
                           {item.tags && item.tags.length > 0 && (
                             <div
@@ -343,7 +346,7 @@ export default function MediaLibrary() {
                             </div>
                           )}
                         </td>
-                        <td>
+                        <td data-label="Type">
                           <div
                             style={{
                               display: 'flex',
@@ -358,16 +361,16 @@ export default function MediaLibrary() {
                             </span>
                           </div>
                         </td>
-                        <td className="date-text">
+                        <td data-label="Format" className="date-text">
                           {item.format?.toUpperCase()}
                         </td>
-                        <td className="date-text">
+                        <td data-label="Resolution" className="date-text">
                           {item.resolution || 'N/A'}
                         </td>
-                        <td className="date-text">
+                        <td data-label="Size" className="date-text">
                           {formatFileSize(item.size)}
                         </td>
-                        <td>
+                        <td data-label="Curator">
                           <CuratorAvatar
                             initials={
                               typeof item.curator === 'object'
@@ -382,13 +385,13 @@ export default function MediaLibrary() {
                             }
                           />
                         </td>
-                        <td className="date-text">
+                        <td data-label="Date Added" className="date-text">
                           {formatDate(item.date_added || item.created_at)}
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <StatusBadge status={item.status || 'active'} />
                         </td>
-                        <td style={{ position: 'relative' }}>
+                        <td data-label="Actions" style={{ position: 'relative' }}>
                           <button
                             className="action-btn"
                             disabled={!!loadingRows[id]}

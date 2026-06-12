@@ -62,19 +62,19 @@ function EditProfileModal({ user, onClose }) {
   const ms = {
     overlay:  { position: 'fixed', inset: 0, background: 'rgba(28,28,24,0.35)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
     modal:    { background: 'var(--surface-white)', borderRadius: '1rem', width: '90%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(28,28,24,0.14)' },
-    inner:    { padding: '2rem' },
+    inner:    { padding: 'clamp(1rem, 4vw, 2rem)' },
     header:   { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' },
     title:    { fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
     subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
     closeBtn: { background: 'var(--surface-low)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    grid:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
-    full:     { gridColumn: 'span 2' },
+    grid:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
+    full:     { gridColumn: '1 / -1' },
     group:    { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
     label:    { fontSize: '0.85rem', fontWeight: 500, color: 'var(--on-surface)' },
     optional: { fontWeight: 'normal', fontSize: '0.7rem', color: 'var(--on-surface-muted)' },
     input:    { padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--surface-low)', fontSize: '0.9rem', outline: 'none', width: '100%' },
     error:    { color: 'var(--secondary)', fontSize: '0.7rem', marginTop: '0.25rem' },
-    actions:  { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' },
+    actions:  { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.5rem' },
     cancel:   { padding: '0.5rem 1.25rem', borderRadius: '9999px', background: 'var(--surface-high)', border: 'none', cursor: 'pointer', color: 'var(--on-surface-muted)', fontFamily: 'inherit' },
     submit:   { padding: '0.5rem 1.5rem', borderRadius: '9999px', background: 'var(--primary-gradient)', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
   };
@@ -150,7 +150,7 @@ export default function ProfilePage() {
   };
 
   const p = {
-    page: { padding: '2rem' },
+    page: { padding: 'clamp(0rem, 2vw, 2rem)' },
 
     // ── Identity card — flat, no banner, no blue ───────────────────────────
     identityCard: {
@@ -188,7 +188,7 @@ export default function ProfilePage() {
     },
 
     // ── Detail grid ────────────────────────────────────────────────────────
-    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' },
     card: {
       background: 'var(--surface-white)', borderRadius: '1rem',
       boxShadow: 'var(--shadow-lift)', padding: '1.5rem',
@@ -199,10 +199,10 @@ export default function ProfilePage() {
       color: 'var(--on-surface-muted)', marginBottom: '1rem',
     },
     list:    { border: '1px solid var(--surface-high)', borderRadius: '0.625rem', overflow: 'hidden' },
-    row:     { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-low)' },
-    rowLast: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem' },
+    row:     { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-low)' },
+    rowLast: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem' },
     lbl:     { fontSize: '0.75rem', color: 'var(--on-surface-muted)', fontWeight: 500 },
-    val:     { fontSize: '0.82rem', color: 'var(--on-surface)', fontWeight: 600 },
+    val:     { fontSize: '0.82rem', color: 'var(--on-surface)', fontWeight: 600, textAlign: 'right', minWidth: 0, overflowWrap: 'break-word' },
     rolePill: {
       display: 'inline-flex', padding: '0.18rem 0.7rem',
       borderRadius: '9999px', fontSize: '0.72rem', fontWeight: 700,
@@ -214,7 +214,7 @@ export default function ProfilePage() {
     signoutCard: {
       background: 'var(--surface-white)', borderRadius: '1rem',
       boxShadow: 'var(--shadow-lift)', padding: '1.5rem',
-      gridColumn: 'span 2',
+      gridColumn: '1 / -1',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       flexWrap: 'wrap', gap: '1rem',
     },

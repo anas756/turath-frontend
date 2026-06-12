@@ -6,7 +6,6 @@ import {
   selectDashboardDocuments,
   selectDashboardMedia,
   selectDashboardRecent,
-  selectDashboardLoading,
   selectDashboardError,
 } from '../../app/services/reduxTollkit/Slices/DashboardSlice';
 
@@ -116,14 +115,12 @@ export default function Dashboard() {
   const documents = useSelector(selectDashboardDocuments);
   const media = useSelector(selectDashboardMedia);
   const recent = useSelector(selectDashboardRecent);
-  const loading = useSelector(selectDashboardLoading);
   const error = useSelector(selectDashboardError);
 
   useEffect(() => {
     dispatch(fetchDashboardStats());
   }, [dispatch]);
 
-  if (loading) return <p>Loading stats...</p>;
   if (error) return <p className="error-text">{error}</p>;
 
   const STATS = [
@@ -173,20 +170,13 @@ export default function Dashboard() {
           <h2 className="section-title">Recently Added Content</h2>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.75rem',
-            padding: '0.5rem 0',
-          }}
-        >
+        <div className="admin-activity-feed">
           {recent.length === 0 && (
             <p
               style={{
                 textAlign: 'center',
                 color: 'var(--on-surface-muted)',
-                padding: '2rem',
+                padding: 'clamp(1.25rem, 5vw, 2rem)',
               }}
             >
               No recent activity
@@ -202,6 +192,7 @@ export default function Dashboard() {
             return (
               <div
                 key={index}
+                className="admin-activity-card"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -237,7 +228,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Title + subtitle */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="admin-activity-main" style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
                       margin: 0,
@@ -281,6 +272,7 @@ export default function Dashboard() {
 
                 {/* Curator / Author */}
                 <div
+                  className="admin-activity-curator"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -322,6 +314,7 @@ export default function Dashboard() {
 
                 {/* Date */}
                 <span
+                  className="admin-activity-date"
                   style={{
                     fontSize: '0.75rem',
                     color: 'var(--on-surface-muted, #94a3b8)',

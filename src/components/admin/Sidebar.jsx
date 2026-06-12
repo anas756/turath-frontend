@@ -95,19 +95,63 @@ const NAV = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
 
   const name     = user?.name || 'Admin User';
   const role     = user?.role || 'Curator Access';
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const handleNavigate = () => onClose?.();
 
   return (
     <>
-      <aside className="sidebar">
-        {/* Brand — unchanged */}
-        <div className="sidebar-brand">{/* ... same as before ... */}</div>
+      <aside className={`sidebar${isOpen ? ' is-open' : ''}`}>
+        <div className="sidebar-brand-row">
+          <NavLink
+            to="/admin/dashboard"
+            className="sidebar-brand"
+            onClick={handleNavigate}
+          >
+            <span className="sidebar-brand-icon" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M3 21h18" />
+                <path d="M5 21V7l7-4 7 4v14" />
+                <path d="M9 21v-8h6v8" />
+              </svg>
+            </span>
+            <span className="sidebar-brand-text">
+              <span className="sidebar-brand-name">Turath</span>
+              <span className="sidebar-brand-sub">Admin Backoffice</span>
+            </span>
+          </NavLink>
+
+          <button
+            type="button"
+            className="sidebar-close"
+            aria-label="Close admin navigation"
+            onClick={onClose}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
         {/* Nav — unchanged */}
         <nav className="sidebar-nav">
@@ -115,6 +159,7 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={handleNavigate}
               className={({ isActive }) =>
                 `sidebar-nav-item${isActive ? ' active' : ''}`
               }
@@ -128,7 +173,14 @@ export default function Sidebar() {
 
 
         {/* Profile */}
-        <div className="sidebar-user" onClick={() => navigate('/admin/profile')}>
+        <button
+          type="button"
+          className="sidebar-user"
+          onClick={() => {
+            navigate('/admin/profile');
+            handleNavigate();
+          }}
+        >
           <div className="sidebar-avatar">{initials}</div>
           <div className="sidebar-user-info">
             <span className="sidebar-user-name">{name}</span>
@@ -141,7 +193,7 @@ export default function Sidebar() {
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
-        </div>
+        </button>
       </aside>
     </>
   );

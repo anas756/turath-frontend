@@ -19,39 +19,41 @@ export default function ChatLogs() {
         <div className="section-header">
           <h2 className="section-title">{logs.length} Interactions</h2>
         </div>
-        <table className="content-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Query</th>
-              <th>Response</th>
-              <th>Tokens</th>
-              <th>Timestamp</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map(log => (
-              <tr key={log.id}>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div className="curator-avatar">{log.user.initials}</div>
-                    <span style={{ fontWeight: 500, fontSize: '0.82rem' }}>{log.user.name}</span>
-                  </div>
-                </td>
-                <td style={{ maxWidth: 220 }}>
-                  <div style={{ fontSize: '0.8rem', lineHeight: 1.5 }}>{log.query}</div>
-                </td>
-                <td style={{ maxWidth: 240 }}>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-muted)', lineHeight: 1.5 }}>{log.response}</div>
-                </td>
-                <td className="date-text">{log.tokens}</td>
-                <td className="date-text" style={{ whiteSpace: 'nowrap' }}>{log.timestamp}</td>
-                <td><StatusBadge status={log.status} /></td>
+        <div className="admin-table-scroll admin-table-shell">
+          <table className="content-table admin-data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Query</th>
+                <th>Response</th>
+                <th>Tokens</th>
+                <th>Timestamp</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {logs.map(log => (
+                <tr key={log.id}>
+                  <td data-label="User">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div className="curator-avatar">{log.user.initials}</div>
+                      <span style={{ fontWeight: 500, fontSize: '0.82rem' }}>{log.user.name}</span>
+                    </div>
+                  </td>
+                  <td data-label="Query" style={{ maxWidth: 220 }}>
+                    <div style={{ fontSize: '0.8rem', lineHeight: 1.5 }}>{log.query}</div>
+                  </td>
+                  <td data-label="Response" style={{ maxWidth: 240 }}>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-muted)', lineHeight: 1.5 }}>{log.response}</div>
+                  </td>
+                  <td data-label="Tokens" className="date-text">{log.tokens}</td>
+                  <td data-label="Timestamp" className="date-text" style={{ whiteSpace: 'nowrap' }}>{log.timestamp}</td>
+                  <td data-label="Status"><StatusBadge status={log.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );

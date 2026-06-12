@@ -34,20 +34,20 @@ export default function StoreUser({ setShowStore }) {
   };
 
   const modalStyles = {
-    container: { padding: '2rem' },
+    container: { padding: 'clamp(1rem, 4vw, 2rem)' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' },
     title: { fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
     subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
     closeBtn: { background: 'var(--surface-low)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem' },
     form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
-    fullWidth: { gridColumn: 'span 2' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
+    fullWidth: { gridColumn: '1 / -1' },
     inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
     label: { fontSize: '0.85rem', fontWeight: 500, color: 'var(--on-surface)' },
     input: { padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: 'var(--surface-low)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.2s' },
     error: { color: 'var(--secondary)', fontSize: '0.7rem', marginTop: '0.25rem' },
     radioGroup: { display: 'flex', gap: '1.5rem', marginTop: '0.5rem' },
-    actions: { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' },
+    actions: { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' },
     cancelBtn: { padding: '0.5rem 1.25rem', borderRadius: '9999px', background: 'var(--surface-high)', border: 'none', cursor: 'pointer' },
     submitBtn: { padding: '0.5rem 1.5rem', borderRadius: '9999px', background: 'var(--primary-gradient)', border: 'none', color: 'white', fontWeight: 600, cursor: 'pointer' },
   };

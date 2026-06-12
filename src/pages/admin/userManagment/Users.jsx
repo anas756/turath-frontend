@@ -148,8 +148,8 @@ const fetchUsers = (forceRefresh = false) => {
       ) : (
         <>
           {/* Filter Bar - using flex with gap */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="admin-filter-row" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div className="filter-chips" style={{ display: 'flex', gap: '0.5rem' }}>
               {ROLES.map((r) => (
                 <button
                   key={r}
@@ -170,7 +170,7 @@ const fetchUsers = (forceRefresh = false) => {
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--surface-high)', borderRadius: '9999px', padding: '0.25rem 1rem' }}>
+            <div className="admin-search-pill" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--surface-high)', borderRadius: '9999px', padding: '0.25rem 1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ color: 'var(--tertiary)' }}>
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -186,8 +186,8 @@ const fetchUsers = (forceRefresh = false) => {
           </div>
 
           {/* Table Container */}
-          <div style={{ backgroundColor: 'var(--surface-white)', borderRadius: '1rem', boxShadow: 'var(--shadow-lift)', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+          <div className="admin-table-shell" style={{ backgroundColor: 'var(--surface-white)', borderRadius: '1rem', boxShadow: 'var(--shadow-lift)', overflowX: 'auto' }}>
+            <table className="admin-data-table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
               <thead style={{ backgroundColor: 'var(--surface-low)' }}>
                 <tr style={{ textAlign: 'left' }}>
                   <th style={{ padding: '1rem', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--on-surface-muted)' }}>User</th>
@@ -204,7 +204,7 @@ const fetchUsers = (forceRefresh = false) => {
                   const id = user._id || user.id;
                   return (
                     <tr key={id} style={{ borderTop: '1px solid var(--surface-low)' }}>
-                      <td style={{ padding: '1rem' }}>
+                      <td data-label="User" style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-container))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
                             {getInitials(user.name)}
@@ -215,7 +215,7 @@ const fetchUsers = (forceRefresh = false) => {
                           </div>
                         </div>
                       </td>
-                      <td style={{ padding: '1rem' }}>
+                      <td data-label="Role" style={{ padding: '1rem' }}>
                         <span style={{
                           display: 'inline-block',
                           padding: '0.25rem 0.75rem',
@@ -228,11 +228,11 @@ const fetchUsers = (forceRefresh = false) => {
                           {user.role}
                         </span>
                       </td>
-                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{user.email}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{formatDate(user.last_login)}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{formatDate(user.created_at)}</td>
-                      <td style={{ padding: '1rem' }}><StatusBadge status={user.confirmed ? 'Active' : 'Pending'} /></td>
-                      <td style={{ padding: '1rem', position: 'relative' }}>
+                      <td data-label="Email" style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{user.email}</td>
+                      <td data-label="Last Login" style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{formatDate(user.last_login)}</td>
+                      <td data-label="Joined" style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--on-surface-muted)' }}>{formatDate(user.created_at)}</td>
+                      <td data-label="Status" style={{ padding: '1rem' }}><StatusBadge status={user.confirmed ? 'Active' : 'Pending'} /></td>
+                      <td data-label="Actions" style={{ padding: '1rem', position: 'relative' }}>
                         <button
                           className="action-btn"
                           disabled={!!loadingRows[id]}

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
+import { updateMediaTunk as updateMedia } from '../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
 
 
 const Schema = yup.object().shape({
@@ -15,7 +16,7 @@ const Schema = yup.object().shape({
 });
 
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -30,7 +31,7 @@ const m = {
     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   form:       { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  grid:       { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+  grid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
   label: {
     fontSize: '0.8rem', fontWeight: 600,
@@ -103,7 +104,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
         <div style={m.grid}>
 
           {/* Title — full width */}
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
               Title <span style={m.optionalLabel}>(optional)</span>
             </label>
@@ -153,7 +154,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
           </div>
 
           {/* Description — full width */}
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
             </label>

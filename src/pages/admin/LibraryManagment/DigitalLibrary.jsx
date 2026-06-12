@@ -7,7 +7,6 @@ import {
   deleteCategory,
 } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
 import PageHeader from '../../../components/admin/PageHeader';
-import StatusBadge from '../../../components/admin/StatusBadge';
 import AdminLoading from '../../../components/admin/AdminLoading';
 import StoreDocument from './document/StoreDocument';
 import StoreCategories from './categories/StoreCategories';
@@ -89,12 +88,12 @@ export default function DigitalLibrary() {
   });
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: 'clamp(0rem, 2vw, 2rem)' }}>
       <PageHeader
         title="Digital Library"
         subtitle="Manage heritage documents and categories"
         action={
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             <button
               onClick={() => setShowStoreCategory(true)}
               style={styles.btnSecondary}
@@ -130,7 +129,7 @@ export default function DigitalLibrary() {
         documentsLoading && !documents.length ? (
           <AdminLoading />
         ) : (
-          <div style={styles.tableContainer}>
+          <div className="admin-table-shell" style={styles.tableContainer}>
             <DocumentsTable
               data={filteredDocuments}
               search={search}
@@ -158,7 +157,7 @@ export default function DigitalLibrary() {
       ) : categoriesLoading && !categories.length ? (
         <AdminLoading />
       ) : (
-        <div style={styles.tableContainer}>
+        <div className="admin-table-shell" style={styles.tableContainer}>
           <CategoriesTable
             data={categories}
             loadingRows={loadingRows}
@@ -331,12 +330,11 @@ const DocumentsTable = ({
     {data.length === 0 ? (
       <div style={styles.empty}>No documents found.</div>
     ) : (
-      <table style={styles.table}>
+      <table className="admin-data-table" style={styles.table}>
         <thead style={{ backgroundColor: 'var(--surface-low)' }}>
           <tr>
             <th style={styles.th}>Document</th>
             <th style={styles.th}>Category</th>
-            <th style={styles.th}>Status</th>
             <th style={styles.th}>Actions</th>
           </tr>
         </thead>
@@ -346,7 +344,7 @@ const DocumentsTable = ({
             const isFromOpenLibrary = !!doc.open_library_key;
             return (
               <tr key={id} style={styles.tr}>
-                <td style={styles.td}>
+                <td data-label="Document" style={styles.td}>
                   <div
                     style={{
                       display: 'flex',
@@ -373,15 +371,12 @@ const DocumentsTable = ({
                     </div>
                   </div>
                 </td>
-                <td style={styles.td}>
+                <td data-label="Category" style={styles.td}>
                   <span style={styles.badge}>
                     {doc.categorie?.name || '---'}
                   </span>
                 </td>
-                <td style={styles.td}>
-                  <StatusBadge status={doc.status} />
-                </td>
-                <td style={{ ...styles.td, position: 'relative' }}>
+                <td data-label="Actions" style={{ ...styles.td, position: 'relative' }}>
                   <button
                     className="action-btn"
                     disabled={!!loadingRows[id]}
@@ -391,7 +386,7 @@ const DocumentsTable = ({
                     }}
                     style={styles.menuBtn}
                   >
-                    {loadingRows[id] ? <Spinner /> : '•••'}
+                    {loadingRows[id] ? <Spinner /> : <MenuDots />}
                   </button>
                   {activeMenuId === id && (
                     <div style={styles.dropdown}>
@@ -433,7 +428,7 @@ const CategoriesTable = ({
     {data.length === 0 ? (
       <div style={styles.empty}>No categories found.</div>
     ) : (
-      <table style={styles.table}>
+      <table className="admin-data-table" style={styles.table}>
         <thead style={{ backgroundColor: 'var(--surface-low)' }}>
           <tr>
             <th style={styles.th}>Name</th>
@@ -446,9 +441,9 @@ const CategoriesTable = ({
             const id = cat._id || cat.id;
             return (
               <tr key={id} style={styles.tr}>
-                <td style={styles.td}>{cat.name}</td>
-                <td style={styles.td}>{cat.slug}</td>
-                <td style={{ ...styles.td, position: 'relative' }}>
+                <td data-label="Name" style={styles.td}>{cat.name}</td>
+                <td data-label="Slug" style={styles.td}>{cat.slug}</td>
+                <td data-label="Actions" style={{ ...styles.td, position: 'relative' }}>
                   <button
                     className="action-btn"
                     disabled={!!loadingRows[id]}
@@ -458,7 +453,7 @@ const CategoriesTable = ({
                     }}
                     style={styles.menuBtn}
                   >
-                    {loadingRows[id] ? <Spinner /> : '•••'}
+                    {loadingRows[id] ? <Spinner /> : <MenuDots />}
                   </button>
                   {activeMenuId === id && (
                     <div style={styles.dropdown}>
@@ -515,17 +510,37 @@ const Spinner = () => (
   />
 );
 
+const MenuDots = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="5" r="1.2" />
+    <circle cx="12" cy="12" r="1.2" />
+    <circle cx="12" cy="19" r="1.2" />
+  </svg>
+);
+
 // --- STYLES ---
 const styles = {
   tableContainer: {
     backgroundColor: 'var(--surface-white)',
     borderRadius: '1rem',
     boxShadow: 'var(--shadow-lift)',
-    padding: '1rem',
+    padding: 'clamp(0.85rem, 2vw, 1rem)',
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch',
   },
   tabsContainer: {
     display: 'flex',
-    gap: '2rem',
+    gap: 'clamp(1rem, 4vw, 2rem)',
+    flexWrap: 'wrap',
     marginBottom: '2rem',
     borderBottom: '1px solid var(--surface-high)',
   },
@@ -582,7 +597,7 @@ const styles = {
     fontSize: '0.8rem',
     cursor: 'pointer',
   },
-  table: { width: '100%', borderCollapse: 'collapse' },
+  table: { width: '100%', minWidth: '640px', borderCollapse: 'collapse' },
   th: {
     padding: '1rem',
     textAlign: 'left',
@@ -625,10 +640,15 @@ const styles = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: '0.25rem 0.5rem',
+    width: '34px',
+    height: '34px',
+    padding: 0,
     borderRadius: '0.375rem',
-    fontSize: '1rem',
     color: 'var(--on-surface-muted)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 1,
   },
   dropdown: {
     position: 'absolute',
@@ -667,7 +687,7 @@ const styles = {
     outline: 'none',
   },
   empty: {
-    padding: '2rem',
+    padding: 'clamp(1.25rem, 5vw, 2rem)',
     textAlign: 'center',
     color: 'var(--on-surface-muted)',
     fontSize: '0.85rem',
@@ -680,12 +700,14 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: '1rem',
+    overflowY: 'auto',
     zIndex: 1000,
   },
   modalContent: {
     background: 'var(--surface-white)',
     borderRadius: '1rem',
-    width: '90%',
+    width: 'min(90vw, 650px)',
     maxWidth: '650px',
     maxHeight: '85vh',
     overflow: 'auto',

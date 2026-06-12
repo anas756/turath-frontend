@@ -17,7 +17,7 @@ const Schema = yup.object().shape({
 });
 
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -47,7 +47,7 @@ const m = {
     justifyContent: 'center',
   },
   form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
   label: {
     fontSize: '0.8rem',
@@ -164,7 +164,7 @@ export default function StoreDocument({ setShowStore }) {
       <form onSubmit={handleSubmit(onSubmit)} style={m.form}>
         <div style={m.grid}>
           {/* Title - full width */}
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Document Title</label>
             <input {...register('title')} style={m.input} />
             {errors.title && (
@@ -253,7 +253,7 @@ export default function StoreDocument({ setShowStore }) {
           </div>
 
           {/* Description - full width */}
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
             </label>

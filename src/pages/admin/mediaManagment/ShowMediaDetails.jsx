@@ -14,7 +14,7 @@ const formatSize = (bytes) => {
 };
 
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
 
   // Header
   header: {
@@ -55,7 +55,7 @@ const m = {
   },
 
   // Two-column grid of info cards
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.25rem', marginBottom: '1.25rem' },
 
   // Info card (like profile page)
   card: {
@@ -102,7 +102,7 @@ const m = {
   // Footer
   footer: {
     display: 'flex', justifyContent: 'space-between',
-    alignItems: 'center', paddingTop: '1.25rem',
+    alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', paddingTop: '1.25rem',
     borderTop: '1px solid var(--surface-low)',
   },
   footerMeta: { fontSize: '0.72rem', color: 'var(--on-surface-muted)' },

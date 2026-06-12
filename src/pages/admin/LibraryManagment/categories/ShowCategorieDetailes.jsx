@@ -29,7 +29,7 @@ const Row = ({ label, value }) => (
 );
 
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -59,11 +59,11 @@ const m = {
     gap: '0.75rem',
     fontSize: '0.85rem',
   },
-  row: { display: 'flex', gap: '1rem' },
+  row: { display: 'flex', gap: '0.5rem 1rem', flexWrap: 'wrap' },
   label: {
     fontWeight: 600,
     color: 'var(--on-surface-muted)',
     minWidth: '120px',
   },
-  value: { color: 'var(--on-surface)' },
+  value: { color: 'var(--on-surface)', minWidth: 0, overflowWrap: 'break-word' },
 };

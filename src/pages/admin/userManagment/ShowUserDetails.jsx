@@ -13,7 +13,7 @@ const getInitials = (name) => {
 
 // ── Shared style tokens — identical to ShowMediaDetails ───────────────────────
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.75rem' },
   title:    { fontSize: '1.5rem', fontWeight: 600, color: 'var(--on-surface)', margin: 0 },
   subtitle: { color: 'var(--on-surface-muted)', fontSize: '0.85rem', marginTop: '0.25rem' },
@@ -45,7 +45,7 @@ const m = {
     background: 'rgba(0,78,138,0.08)', color: 'var(--primary)',
     border: '1px solid rgba(0,78,138,0.14)', flexShrink: 0,
   },
-  grid:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' },
+  grid:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.25rem', marginBottom: '1.25rem' },
   card:     { background: 'var(--surface-white)', border: '1px solid var(--surface-high)', borderRadius: '1rem', padding: '1.25rem' },
   cardFull: { background: 'var(--surface-white)', border: '1px solid var(--surface-high)', borderRadius: '1rem', padding: '1.25rem', marginBottom: '1.25rem' },
   secLabel: { fontSize: '0.63rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--on-surface-muted)', marginBottom: '0.85rem' },
@@ -57,7 +57,7 @@ const m = {
   valMuted: { fontSize: '0.82rem', color: 'var(--on-surface-muted)', fontStyle: 'italic' },
   descText:  { fontSize: '0.85rem', color: 'var(--on-surface)', lineHeight: 1.7, margin: 0 },
   descMuted: { fontSize: '0.85rem', color: 'var(--on-surface-muted)', fontStyle: 'italic' },
-  footer:     { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingTop: '1.25rem', borderTop: '1px solid var(--surface-low)' },
+  footer:     { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--surface-low)' },
   editBtn: {
     padding: '0.55rem 1.4rem', borderRadius: '9999px',
     background: 'var(--primary-gradient)', color: '#fff',

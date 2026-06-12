@@ -13,7 +13,7 @@ const formatDate = (str) => {
 // ── Shared style tokens — identical to ShowMediaDetails ───────────────────────
 const m = {
   container: {
-    padding: '2rem',
+    padding: 'clamp(1rem, 4vw, 2rem)',
   },
 
   header: {
@@ -95,7 +95,7 @@ const m = {
 
   grid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
     gap: '1.25rem',
     marginBottom: '1.25rem',
   },

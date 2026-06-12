@@ -17,7 +17,7 @@ const Schema = yup.object().shape({
 });
 
 const m = {
-  container: { padding: '2rem' },
+  container: { padding: 'clamp(1rem, 4vw, 2rem)' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -47,7 +47,7 @@ const m = {
     justifyContent: 'center',
   },
   form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
   label: {
     fontSize: '0.8rem',
@@ -149,7 +149,7 @@ export default function StoreMedia({ setShowStore }) {
 
       <form onSubmit={handleSubmit(onSubmit)} style={m.form}>
         <div style={m.grid}>
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Media Title</label>
             <input
               {...register('title')}
@@ -182,7 +182,7 @@ export default function StoreMedia({ setShowStore }) {
             </select>
           </div>
 
-          <div style={{ gridColumn: 'span 2', ...m.inputGroup }}>
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Media File</label>
             <input type="file" onChange={handleFileChange} style={m.input} />
             {filePreview && (
