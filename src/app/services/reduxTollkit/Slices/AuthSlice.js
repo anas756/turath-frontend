@@ -1,6 +1,44 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login, getProfile, logout } from '../asyncThunks/AuthThunk';
 import Cookies from 'js-cookie';
+import { updateUser } from '../asyncThunks/UserThunk';
+
+const USER_FIELDS = [
+  'id',
+  '_id',
+  'name',
+  'userName',
+  'username',
+  'email',
+  'role',
+  'created_at',
+  'joined_at',
+  'last_login_at',
+];
+
+const isUserLike = (value) =>
+  value &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  USER_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(value, field));
+
+const getUserId = (user) => user?.id || user?._id;
+
+const normalizeUser = (user) =>
+  isUserLike(user)
+    ? {
+        ...user,
+        id: getUserId(user),
+      }
+    : null;
+
+const extractUpdatedUser = (payload) =>
+  [
+    payload?.data?.user,
+    payload?.user,
+    payload?.data,
+    payload,
+  ].find(isUserLike) || null;
 
 const initialState = {
   user: null,
@@ -68,6 +106,26 @@ export const AuthSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         Cookies.remove('jwt_token');
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+
+        const currentUserId = getUserId(state.user);
+        const requestedUserId = action.meta.arg?.id;
+        const updatedUser = normalizeUser(extractUpdatedUser(action.payload));
+        const updatedUserId = getUserId(updatedUser) || requestedUserId;
+
+        if (!currentUserId || String(updatedUserId) !== String(currentUserId)) return;
+
+        const submittedData = action.meta.arg?.data;
+        const fallbackUpdate = isUserLike(submittedData) ? submittedData : null;
+        const mergedUser = {
+          ...state.user,
+          ...(updatedUser || fallbackUpdate),
+          id: currentUserId,
+        };
+
+        state.user = normalizeUser(mergedUser) || state.user;
       });
   },
 });

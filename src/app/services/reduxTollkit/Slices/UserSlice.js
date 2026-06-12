@@ -12,6 +12,32 @@ const initialState = {
   loading: false,
 };
 
+const USER_FIELDS = ['id', '_id', 'name', 'userName', 'username', 'email', 'role'];
+
+const isUserLike = (value) =>
+  value &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  USER_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(value, field));
+
+const getUserId = (user) => user?.id || user?._id;
+
+const normalizeUser = (user, fallbackId) =>
+  isUserLike(user)
+    ? {
+        ...user,
+        id: getUserId(user) || fallbackId,
+      }
+    : null;
+
+const extractUpdatedUser = (payload) =>
+  [
+    payload?.data?.user,
+    payload?.user,
+    payload?.data,
+    payload,
+  ].find(isUserLike) || null;
+
 
 export const UserSlice = createSlice({
   name: 'user',
@@ -67,14 +93,16 @@ export const UserSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedUser = action.payload?.data;
+        const targetId = action.meta.arg?.id;
+        const updatedUser =
+          normalizeUser(extractUpdatedUser(action.payload), targetId) ||
+          normalizeUser(action.meta.arg?.data, targetId);
+
         if (updatedUser) {
-          const normalizedUpdate = {
-            ...updatedUser,
-            id: updatedUser.id || updatedUser._id
-          };
           state.users = state.users.map((u) =>
-            (u.id === normalizedUpdate.id || u._id === normalizedUpdate.id) ? normalizedUpdate : u
+            String(u.id) === String(updatedUser.id) || String(u._id) === String(updatedUser.id)
+              ? { ...u, ...updatedUser }
+              : u
           );
         }
       })

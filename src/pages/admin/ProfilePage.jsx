@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { logout } from '../../app/services/reduxTollkit/asyncThunks/AuthThunk';
 import PageHeader from '../../components/admin/PageHeader';
+import { updateUser } from '../../app/services/reduxTollkit/asyncThunks/UserThunk';
 
 const Schema = yup.object().shape({
   name:                  yup.string().required('Full name required').min(3),
@@ -29,18 +30,18 @@ const formatDate = (str) => {
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
 function EditProfileModal({ user, onClose }) {
+  const dispatch = useDispatch();
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(Schema),
     defaultValues: {
       name:     user?.name     || '',
-      userName: user?.userName || '',
+      userName: user?.userName || user?.username || '',
       email:    user?.email    || '',
       password: '',
       password_confirmation: '',
     },
   });
-
   const onSubmit = async (data) => {
     setSaving(true);
     try {
@@ -49,10 +50,10 @@ function EditProfileModal({ user, onClose }) {
         payload.password = data.password;
         payload.password_confirmation = data.password_confirmation;
       }
-      // await dispatch(updateProfile(payload)).unwrap();
+      await dispatch(updateUser({ id: user?.id || user?._id, data: payload })).unwrap();
       onClose();
     } catch (err) {
-      alert(err?.message || 'Update failed');
+      alert(err?.message || err || 'Update failed');
     } finally {
       setSaving(false);
     }
