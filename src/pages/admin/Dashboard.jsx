@@ -332,34 +332,6 @@ export default function Dashboard() {
                 >
                   {formatDate(item.created_at)}
                 </span>
-
-                {/* Action */}
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '0.25rem',
-                    borderRadius: '0.375rem',
-                    color: 'var(--on-surface-muted, #94a3b8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
-                </button>
               </div>
             );
           })}
