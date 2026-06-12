@@ -2,15 +2,14 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../../components/user/Navbar';
 import Footer from '../../components/user/Footer';
+import '../../styles/user.css';
 
 export default function UserLayout() {
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
-    >
+    <div className="user-shell">
       <Navbar />
 
-      <main style={{ flex: 1 }}>
+      <main className="user-main">
         <Outlet />
       </main>
 

@@ -1,0 +1,238 @@
+import heroImage from '../../assets/arch-signup.png';
+import zellijImage from '../../assets/arch-login.png';
+import carvedImage from '../../assets/arch-signup.png';
+
+export const heroContent = {
+  eyebrow: 'Discover Moroccan Heritage',
+  title: 'Find books, documents, and media about',
+  accent: 'Moroccan culture',
+  subtitle:
+    'Search curated PDFs, manuscripts, articles, videos, images, and oral histories in one focused heritage library.',
+  placeholder: 'Search books, PDFs, videos, manuscripts...',
+  image: heroImage,
+  stats: [
+    { value: '2.4k+', label: 'Library Items' },
+    { value: '860+', label: 'Media Assets' },
+    { value: '120+', label: 'Collections' },
+  ],
+};
+
+export const contentFilters = [
+  'Books',
+  'PDFs',
+  'Manuscripts',
+  'Videos',
+  'Audio',
+  'Images',
+  'Articles',
+];
+
+export const libraryItems = [
+  {
+    id: 'lib-qarawiyyin-chronicles',
+    source: 'library',
+    type: 'Book',
+    format: 'PDF',
+    pages: '182 pages',
+    category: 'Education',
+    title: 'The Al-Qarawiyyin Chronicles',
+    description:
+      "A digitized study of Morocco's oldest centers of learning and scholarship.",
+    thumbnail: carvedImage,
+    imagePosition: '55% 50%',
+    actionLabel: 'Read',
+    href: '#library',
+  },
+  {
+    id: 'lib-zellij-geometry',
+    source: 'library',
+    type: 'Article',
+    format: 'Web Doc',
+    length: '12 min read',
+    category: 'Craftsmanship',
+    title: 'Geometry in Zellij',
+    description:
+      'Mathematical symbolism found in carved plaster, tilework, and pattern systems.',
+    thumbnail: zellijImage,
+    imagePosition: '42% 50%',
+    actionLabel: 'Open',
+    href: '#library',
+  },
+  {
+    id: 'lib-ceramic-field-notes',
+    source: 'library',
+    type: 'Document',
+    format: 'PDF',
+    pages: '48 pages',
+    category: 'Craftsmanship',
+    title: 'Fes Blue Ceramic Notes',
+    description:
+      'Field notes on zellige pigment traditions, kiln methods, and artisan vocabulary.',
+    thumbnail: zellijImage,
+    imagePosition: '43% 50%',
+    actionLabel: 'Read',
+    href: '#library',
+  },
+];
+
+export const mediaItems = [
+  {
+    id: 'media-gnawa-legacy',
+    source: 'media',
+    type: 'Video',
+    format: 'HD Video',
+    duration: '18 min',
+    category: 'Music',
+    title: 'Rhythms of the Desert: The Gnaoua Legacy',
+    description:
+      'A curated introduction to ceremony, rhythm, instruments, and living memory.',
+    thumbnail: zellijImage,
+    imagePosition: '44% 50%',
+    actionLabel: 'Watch',
+    href: '#media',
+    featured: true,
+  },
+  {
+    id: 'media-mint-tea',
+    source: 'media',
+    type: 'Video',
+    format: 'Video',
+    duration: '04:12',
+    category: 'Culinary Heritage',
+    title: 'The Art of the Mint Tea Ceremony',
+    description: 'A short visual archive of gestures, hospitality, and ritual.',
+    thumbnail: carvedImage,
+    imagePosition: '35% 50%',
+    actionLabel: 'Watch',
+    href: '#media',
+  },
+  {
+    id: 'media-atlas-voices',
+    source: 'media',
+    type: 'Audio',
+    format: 'Recording',
+    duration: '12:30',
+    category: 'Oral Traditions',
+    title: 'Echoes From the Atlas: Berber Oral History',
+    description: 'Recorded oral histories preserving stories, language, and place.',
+    thumbnail: carvedImage,
+    imagePosition: '12% 50%',
+    actionLabel: 'Listen',
+    href: '#media',
+  },
+  {
+    id: 'media-blue-ceramics',
+    source: 'media',
+    type: 'Video',
+    format: 'Video',
+    duration: '08:45',
+    category: 'Craftsmanship',
+    title: 'Fes Blue: The Secret of Zellige Ceramics',
+    description: 'A studio visit with artisans preserving ceramic color traditions.',
+    thumbnail: zellijImage,
+    imagePosition: '40% 50%',
+    actionLabel: 'Watch',
+    href: '#media',
+  },
+];
+
+export const collectionItems = [
+  {
+    id: 'collection-architecture-sacred-spaces',
+    title: 'Architecture & Sacred Spaces',
+    description: 'Mosques, medersas, riads, gates, tiles, plaster, and carved wood.',
+    itemCount: '312 resources',
+    libraryCount: 224,
+    mediaCount: 88,
+    sourceTypes: ['Library', 'Media'],
+    coverImage: carvedImage,
+    imagePosition: '72% 50%',
+    href: '#collections',
+  },
+  {
+    id: 'collection-amazigh-culture',
+    title: 'Amazigh Culture',
+    description: 'Language, jewelry, patterns, songs, mountain life, and oral memory.',
+    itemCount: '188 resources',
+    libraryCount: 113,
+    mediaCount: 75,
+    sourceTypes: ['Library', 'Media'],
+    coverImage: zellijImage,
+    imagePosition: '45% 50%',
+    href: '#collections',
+  },
+  {
+    id: 'collection-craftsmanship',
+    title: 'Craftsmanship & Material Culture',
+    description: 'Ceramics, zellij, textiles, leatherwork, calligraphy, and tools.',
+    itemCount: '276 resources',
+    libraryCount: 168,
+    mediaCount: 108,
+    sourceTypes: ['Library', 'Media'],
+    coverImage: heroImage,
+    imagePosition: '74% 50%',
+    href: '#collections',
+  },
+];
+
+export const myLibraryItems = [
+  {
+    id: 'saved-qarawiyyin-chronicles',
+    savedResourceId: 'lib-qarawiyyin-chronicles',
+    source: 'library',
+    type: 'Book',
+    format: 'PDF',
+    pages: '182 pages',
+    category: 'Education',
+    title: 'The Al-Qarawiyyin Chronicles',
+    description: 'Saved to continue reading from your personal library.',
+    thumbnail: carvedImage,
+    imagePosition: '55% 50%',
+    progress: 62,
+    actionLabel: 'Resume',
+    href: '#my-library',
+  },
+  {
+    id: 'saved-gnawa-legacy',
+    savedResourceId: 'media-gnawa-legacy',
+    source: 'media',
+    type: 'Video',
+    format: 'HD Video',
+    duration: '18 min',
+    category: 'Music',
+    title: 'Rhythms of the Desert: The Gnaoua Legacy',
+    description: 'Saved media from your watch list.',
+    thumbnail: zellijImage,
+    imagePosition: '44% 50%',
+    progress: 35,
+    actionLabel: 'Resume',
+    href: '#my-library',
+  },
+];
+
+export const quickAccessItems = [
+  {
+    id: 'library',
+    label: 'Library',
+    description: 'Books, PDFs, documents, manuscripts, and articles.',
+    count: '2.4k items',
+  },
+  {
+    id: 'media',
+    label: 'Media',
+    description: 'Videos, images, recordings, documentaries, and oral history.',
+    count: '860 assets',
+  },
+  {
+    id: 'collections',
+    label: 'Collections',
+    description: 'Mixed library and media resources grouped by heritage theme.',
+    count: '120 sets',
+  },
+  {
+    id: 'my-library',
+    label: 'My Library',
+    description: 'Saved items, reading progress, favorites, and watch history.',
+    count: 'Personal',
+  },
+];
