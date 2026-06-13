@@ -1,5 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchLandingPreview } from '../asyncThunks/landingThunk';
+import { deleteDoc } from '../asyncThunks/LibraryThunk';
+import {
+  bulkDeleteMedia,
+  deleteMedia,
+  updateMediaStatus,
+} from '../asyncThunks/MediaThunk';
 
 const initialState = {
   documents: [],
@@ -28,6 +34,45 @@ export const landingSlice = createSlice({
       .addCase(fetchLandingPreview.rejected, (state, { payload }) => {
         state.loading = false;
         state.error = payload;
+      })
+      .addCase(deleteDoc.fulfilled, (state, { payload }) => {
+        state.documents = state.documents.filter(
+          (doc) => (doc._id || doc.id) !== payload
+        );
+        state.collections.documents = state.collections.documents.filter(
+          (doc) => (doc._id || doc.id) !== payload
+        );
+      })
+      .addCase(deleteMedia.fulfilled, (state, { payload }) => {
+        const deletedId = payload.id ?? payload;
+        state.media = state.media.filter(
+          (item) => (item._id || item.id) !== deletedId
+        );
+        state.collections.media = state.collections.media.filter(
+          (item) => (item._id || item.id) !== deletedId
+        );
+      })
+      .addCase(bulkDeleteMedia.fulfilled, (state, { payload }) => {
+        const deletedIds = payload.ids ?? payload;
+        state.media = state.media.filter(
+          (item) => !deletedIds.includes(item._id || item.id)
+        );
+        state.collections.media = state.collections.media.filter(
+          (item) => !deletedIds.includes(item._id || item.id)
+        );
+      })
+      .addCase(updateMediaStatus.fulfilled, (state, { payload }) => {
+        const updatedMedia = payload.data ?? payload;
+        const updatedId = updatedMedia._id || updatedMedia.id;
+
+        if (updatedMedia.status !== 'active') {
+          state.media = state.media.filter(
+            (item) => (item._id || item.id) !== updatedId
+          );
+          state.collections.media = state.collections.media.filter(
+            (item) => (item._id || item.id) !== updatedId
+          );
+        }
       });
   },
 });

@@ -128,7 +128,8 @@ export default function MediaLibrary() {
     if (window.confirm(`Delete "${mediaItem.title}"?`)) {
       setLoadingRows((prev) => ({ ...prev, [mediaId]: 'deleting' }));
       try {
-        await dispatch(deleteMedia(mediaId));
+        await dispatch(deleteMedia(mediaId)).unwrap();
+        fetchMediaData(true);
         setActiveMenuId(null);
       } catch (err) {
         alert('Delete failed: ' + (err.message || 'Unknown error'));

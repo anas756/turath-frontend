@@ -22,6 +22,7 @@ const assetBaseUrl = (
   .replace(/\/$/, '');
 
 const imageFilePattern = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+const videoFilePattern = /\.(m4v|mov|mp4|ogg|ogv|webm)(\?.*)?$/i;
 
 function resolveAssetUrl(path) {
   const value = path?.toString().trim();
@@ -62,6 +63,63 @@ function PreviewImage({ src, title, label, mediaType }) {
       alt={title}
       loading="lazy"
       onError={() => setFailed(true)}
+    />
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function getMediaType(item) {
+  return item?.type?.toString().toLowerCase() || 'media';
+}
+
+function isVideoMedia(item) {
+  const fileUrl = resolveAssetUrl(item?.file_path);
+
+  return getMediaType(item) === 'video' || videoFilePattern.test(fileUrl || '');
+}
+
+function mediaMeta(item) {
+  return [item.type || 'Media', item.format].filter(Boolean).join(' / ');
+}
+
+function MediaPoster({ item, compact = false }) {
+  const [failed, setFailed] = useState(false);
+  const fileUrl = resolveAssetUrl(item?.file_path);
+  const isVideo = isVideoMedia(item);
+
+  if (isVideo && fileUrl && !failed) {
+    return (
+      <video
+        src={fileUrl}
+        controls={!compact}
+        muted={compact}
+        playsInline
+        preload="metadata"
+        aria-label={`${item.title} video preview`}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <PreviewImage
+      src={item?.file_path}
+      title={item?.title || 'Media preview'}
+      label={item?.type || 'Media'}
+      mediaType={item?.type}
     />
   );
 }
@@ -179,6 +237,111 @@ function MediaCard({ item }) {
         </div>
       </div>
     </article>
+  );
+}
+
+function GuestMediaShowcase({ items, loading }) {
+  if (loading) {
+    return (
+      <div className="guest-media-showcase">
+        <article className="guest-media-feature guest-media-feature--loading">
+          <div />
+          <div />
+        </article>
+        <div className="guest-media-rail">
+          {[1, 2, 3].map((n) => (
+            <article className="guest-media-rail-item is-loading" key={n}>
+              <div />
+              <div />
+            </article>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const featured = items.find((item) => isVideoMedia(item)) || items[0];
+
+  if (!featured) {
+    return (
+      <div className="guest-media-empty">
+        <PlayIcon />
+        <h3>No media previews yet</h3>
+        <p>Videos, audio, and image records will appear here after they are added.</p>
+      </div>
+    );
+  }
+
+  const featuredId = featured._id || featured.id;
+  const otherMedia = items
+    .filter((item) => (item._id || item.id) !== featuredId)
+    .slice(0, 4);
+  const featuredIsVideo = isVideoMedia(featured);
+
+  return (
+    <div className="guest-media-showcase">
+      <article className="guest-media-feature">
+        <div className="guest-media-feature__stage">
+          <MediaPoster item={featured} />
+          <span className="guest-media-feature__pill">
+            <PlayIcon />
+            {featuredIsVideo ? 'Playable preview' : 'Media preview'}
+          </span>
+        </div>
+        <div className="guest-media-feature__body">
+          <div className="guest-media-feature__meta">
+            <span>{mediaMeta(featured)}</span>
+            {featured.resolution && <span>{featured.resolution}</span>}
+          </div>
+          <h3>{featured.title}</h3>
+          <p>
+            {featured.curator
+              ? `Curated by ${featured.curator}.`
+              : 'Preview this archive item, then create an account to keep exploring the full collection.'}
+          </p>
+          <div className="guest-media-feature__actions">
+            <Link to="/signup">Unlock full access</Link>
+            <Link to="/login">Sign in</Link>
+          </div>
+        </div>
+      </article>
+
+      <aside className="guest-media-rail" aria-label="More media previews">
+        <div className="guest-media-rail__header">
+          <span>More Media</span>
+          <Link to="/signup">See all</Link>
+        </div>
+
+        {otherMedia.length > 0 ? (
+          otherMedia.map((item) => {
+            const itemIsVideo = isVideoMedia(item);
+
+            return (
+              <article className="guest-media-rail-item" key={item._id || item.id}>
+                <div className="guest-media-rail-item__thumb">
+                  <MediaPoster item={item} compact />
+                  {itemIsVideo && (
+                    <span>
+                      <PlayIcon />
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <small>{mediaMeta(item)}</small>
+                  <h3>{item.title}</h3>
+                  <p>{item.curator || 'Members-only archive preview'}</p>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <article className="guest-media-rail-note">
+            <h3>More previews are coming</h3>
+            <p>Add more media in the back office and they will appear here.</p>
+          </article>
+        )}
+      </aside>
+    </div>
   );
 }
 
@@ -321,11 +484,7 @@ export default function Home() {
           actionLabel="Sign In to Watch"
           actionHref="/login"
         />
-        <div className="guest-preview-grid">
-          {loading
-            ? [1, 2, 3].map((n) => <CardSkeleton key={n} />)
-            : media.map((item) => <MediaCard key={item._id} item={item} />)}
-        </div>
+        <GuestMediaShowcase items={media} loading={loading} />
       </section>
 
       {/* ── Collections Preview (2 docs + 2 media) ── */}

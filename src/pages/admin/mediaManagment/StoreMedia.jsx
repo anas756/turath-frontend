@@ -5,6 +5,8 @@ import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createMedia } from './../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
 
+const MAX_MEDIA_FILE_SIZE = 100 * 1024 * 1024;
+
 const Schema = yup.object().shape({
   title: yup.string().required('Title is required').min(3, 'Min 3 characters'),
   type: yup
@@ -13,7 +15,14 @@ const Schema = yup.object().shape({
     .oneOf(['image', 'video', 'audio', 'document']),
   status: yup.string().optional(),
   curator: yup.string().optional(),
-  file_path: yup.mixed().required('Media file is required'),
+  file_path: yup
+    .mixed()
+    .required('Media file is required')
+    .test(
+      'fileSize',
+      'Media file must be 100MB or smaller',
+      (value) => !value?.[0] || value[0].size <= MAX_MEDIA_FILE_SIZE
+    ),
 });
 
 const m = {
@@ -107,7 +116,9 @@ export default function StoreMedia({ setShowStore }) {
       } else {
         setFilePreview(null);
       }
-      setValue('file_path', e.target.files);
+      setValue('file_path', e.target.files, { shouldValidate: true });
+    } else {
+      setValue('file_path', null, { shouldValidate: true });
     }
   };
 
