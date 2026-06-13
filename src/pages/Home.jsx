@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/user/Footer';
 import SectionHeader from '../components/user/SectionHeader';
+import SearchContainer from '../components/user/SearchContainer';
 import {
   contentFilters,
   heroContent,
@@ -10,8 +11,13 @@ import '../styles/user.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { fetchLandingPreview } from '../app/services/reduxTollkit/asyncThunks/landingThunk';
-import { selectLandingCollectionDocs, selectLandingCollectionMedia, selectLandingDocuments, selectLandingLoading, selectLandingMedia } from '../app/services/reduxTollkit/Slices/landingSlice';
-
+import {
+  selectLandingCollectionDocs,
+  selectLandingCollectionMedia,
+  selectLandingDocuments,
+  selectLandingLoading,
+  selectLandingMedia,
+} from '../app/services/reduxTollkit/Slices/landingSlice';
 
 const assetBaseUrl = (
   import.meta.env.VITE_BACK_END_URL_IMAGE ||
@@ -26,18 +32,11 @@ const videoFilePattern = /\.(m4v|mov|mp4|ogg|ogv|webm)(\?.*)?$/i;
 
 function resolveAssetUrl(path) {
   const value = path?.toString().trim();
-
-  if (!value || value === 'null') {
-    return null;
-  }
-
-  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+  if (!value || value === 'null') return null;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:'))
     return value;
-  }
-
   const cleanPath = value.replace(/^\/+/, '');
   const publicPath = cleanPath.startsWith('storage/') ? cleanPath : `storage/${cleanPath}`;
-
   return `${assetBaseUrl}/${publicPath}`;
 }
 
@@ -56,27 +55,23 @@ function PreviewImage({ src, title, label, mediaType }) {
       </div>
     );
   }
-
-  return (
-    <img
-      src={imageSrc}
-      alt={title}
-      loading="lazy"
-      onError={() => setFailed(true)}
-    />
-  );
+  return <img src={imageSrc} alt={title} loading="lazy" onError={() => setFailed(true)} />;
 }
 
 function PlayIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
 }
@@ -87,7 +82,6 @@ function getMediaType(item) {
 
 function isVideoMedia(item) {
   const fileUrl = resolveAssetUrl(item?.file_path);
-
   return getMediaType(item) === 'video' || videoFilePattern.test(fileUrl || '');
 }
 
@@ -113,7 +107,6 @@ function MediaPoster({ item, compact = false }) {
       />
     );
   }
-
   return (
     <PreviewImage
       src={item?.file_path}
@@ -124,57 +117,18 @@ function MediaPoster({ item, compact = false }) {
   );
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
 function GuestNavbar() {
   const navItems = [
     { label: 'Library Preview', href: '#library-preview' },
     { label: 'Media Preview', href: '#media-preview' },
     { label: 'Collections', href: '#collections-preview' },
   ];
-
   return (
     <header className="guest-navbar">
-      <a href="#top" className="guest-navbar__brand">
-        Turath
-      </a>
+      <a href="#top" className="guest-navbar__brand">Turath</a>
       <nav aria-label="Guest navigation">
         {navItems.map((item) => (
-          <a href={item.href} key={item.label}>
-            {item.label}
-          </a>
+          <a href={item.href} key={item.label}>{item.label}</a>
         ))}
       </nav>
       <div className="guest-navbar__actions">
@@ -190,9 +144,7 @@ function DocumentCard({ item }) {
     <article className="guest-preview-card">
       <div className="guest-preview-card__image">
         <PreviewImage src={item.cover} title={item.title} label="Document" />
-        <span>
-          <LockIcon /> Members only
-        </span>
+        <span><LockIcon /> Members only</span>
       </div>
       <div className="guest-preview-card__body">
         <div className="guest-preview-card__meta">
@@ -220,9 +172,7 @@ function MediaCard({ item }) {
           label={item.type || 'Media'}
           mediaType={item.type}
         />
-        <span>
-          <LockIcon /> Members only
-        </span>
+        <span><LockIcon /> Members only</span>
       </div>
       <div className="guest-preview-card__body">
         <div className="guest-preview-card__meta">
@@ -245,14 +195,12 @@ function GuestMediaShowcase({ items, loading }) {
     return (
       <div className="guest-media-showcase">
         <article className="guest-media-feature guest-media-feature--loading">
-          <div />
-          <div />
+          <div /><div />
         </article>
         <div className="guest-media-rail">
           {[1, 2, 3].map((n) => (
             <article className="guest-media-rail-item is-loading" key={n}>
-              <div />
-              <div />
+              <div /><div />
             </article>
           ))}
         </div>
@@ -273,9 +221,7 @@ function GuestMediaShowcase({ items, loading }) {
   }
 
   const featuredId = featured._id || featured.id;
-  const otherMedia = items
-    .filter((item) => (item._id || item.id) !== featuredId)
-    .slice(0, 4);
+  const otherMedia = items.filter((item) => (item._id || item.id) !== featuredId).slice(0, 4);
   const featuredIsVideo = isVideoMedia(featured);
 
   return (
@@ -311,20 +257,14 @@ function GuestMediaShowcase({ items, loading }) {
           <span>More Media</span>
           <Link to="/signup">See all</Link>
         </div>
-
         {otherMedia.length > 0 ? (
           otherMedia.map((item) => {
             const itemIsVideo = isVideoMedia(item);
-
             return (
               <article className="guest-media-rail-item" key={item._id || item.id}>
                 <div className="guest-media-rail-item__thumb">
                   <MediaPoster item={item} compact />
-                  {itemIsVideo && (
-                    <span>
-                      <PlayIcon />
-                    </span>
-                  )}
+                  {itemIsVideo && <span><PlayIcon /></span>}
                 </div>
                 <div>
                   <small>{mediaMeta(item)}</small>
@@ -348,37 +288,12 @@ function GuestMediaShowcase({ items, loading }) {
 function CardSkeleton() {
   return (
     <article className="guest-preview-card" style={{ opacity: 0.5 }}>
-      <div
-        className="guest-preview-card__image"
-        style={{ background: 'var(--color-border-tertiary)' }}
-      />
+      <div className="guest-preview-card__image"
+        style={{ background: 'var(--color-border-tertiary)' }} />
       <div className="guest-preview-card__body">
-        <div
-          style={{
-            height: 12,
-            width: '60%',
-            background: 'var(--color-border-tertiary)',
-            borderRadius: 4,
-            marginBottom: 8,
-          }}
-        />
-        <div
-          style={{
-            height: 16,
-            width: '80%',
-            background: 'var(--color-border-tertiary)',
-            borderRadius: 4,
-            marginBottom: 8,
-          }}
-        />
-        <div
-          style={{
-            height: 12,
-            width: '90%',
-            background: 'var(--color-border-tertiary)',
-            borderRadius: 4,
-          }}
-        />
+        <div style={{ height: 12, width: '60%', background: 'var(--color-border-tertiary)', borderRadius: 4, marginBottom: 8 }} />
+        <div style={{ height: 16, width: '80%', background: 'var(--color-border-tertiary)', borderRadius: 4, marginBottom: 8 }} />
+        <div style={{ height: 12, width: '90%', background: 'var(--color-border-tertiary)', borderRadius: 4 }} />
       </div>
     </article>
   );
@@ -416,28 +331,18 @@ export default function Home() {
             are unlocked after sign in.
           </p>
 
-          <form
-            className="user-hero-search guest-hero-search"
-            aria-label="Preview archive search"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <SearchIcon />
-            <input type="search" placeholder={heroContent.placeholder} />
-            <Link to="/signup">Unlock Search</Link>
-          </form>
+          {/* ── Search ── */}
+          <SearchContainer />
 
           <div className="quick-filter-row" aria-label="Guest content filters">
             {contentFilters.map((filter) => (
-              <button type="button" key={filter}>
-                {filter}
-              </button>
+              <button type="button" key={filter}>{filter}</button>
             ))}
           </div>
 
           <div className="guest-access-note">
             <LockIcon />
-            Full reading, downloads, saves, and media playback require an
-            account.
+            Full reading, downloads, saves, and media playback require an account.
           </div>
         </div>
       </section>
@@ -459,10 +364,7 @@ export default function Home() {
       </section>
 
       {/* ── Library Preview ── */}
-      <section
-        className="guest-section guest-section-soft"
-        id="library-preview"
-      >
+      <section className="guest-section guest-section-soft" id="library-preview">
         <SectionHeader
           eyebrow="Library Preview"
           title="Books, PDFs, documents, and manuscripts"
@@ -487,11 +389,8 @@ export default function Home() {
         <GuestMediaShowcase items={media} loading={loading} />
       </section>
 
-      {/* ── Collections Preview (2 docs + 2 media) ── */}
-      <section
-        className="guest-section guest-section-soft"
-        id="collections-preview"
-      >
+      {/* ── Collections Preview ── */}
+      <section className="guest-section guest-section-soft" id="collections-preview">
         <SectionHeader
           eyebrow="Collections Preview"
           title="Themes that combine library and media"
@@ -503,12 +402,8 @@ export default function Home() {
             [1, 2, 3, 4].map((n) => <CardSkeleton key={n} />)
           ) : (
             <>
-              {collectionDocs.map((doc) => (
-                <DocumentCard key={doc._id} item={doc} />
-              ))}
-              {collectionMedia.map((item) => (
-                <MediaCard key={item._id} item={item} />
-              ))}
+              {collectionDocs.map((doc) => <DocumentCard key={doc._id} item={doc} />)}
+              {collectionMedia.map((item) => <MediaCard key={item._id} item={item} />)}
             </>
           )}
         </div>

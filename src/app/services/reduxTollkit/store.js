@@ -7,6 +7,7 @@ import { MediaSlice } from './Slices/MediaSlice';
 import { DashboardSlice } from './Slices/DashboardSlice';
 import { landingSlice } from './Slices/landingSlice';
 import { FavoriteSlice } from './Slices/FavoriteSlice';
+import { searchSlice } from './Slices/SearchSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     dashboard: DashboardSlice.reducer,
     landing: landingSlice.reducer,
     favorite: FavoriteSlice.reducer,
+    search: searchSlice.reducer,
     message: MessageSlice.reducer,
   },
 });
