@@ -34,9 +34,13 @@ export const FavoriteSlice = createSlice({
       })
       .addCase(fetchFavorites.fulfilled, (state, { payload }) => {
         state.loading = false;
-        state.documents = payload.documents.data;
-        state.media = payload.media.data;
-        state.counts = payload.counts;
+        state.documents = payload?.documents?.data || payload?.documents || [];
+        state.media = payload?.media?.data || payload?.media || [];
+        state.counts = payload?.counts || {
+          document: state.documents.length,
+          media: state.media.length,
+          total: state.documents.length + state.media.length,
+        };
       })
       .addCase(fetchFavorites.rejected, (state, { payload }) => {
         state.loading = false;
@@ -51,9 +55,11 @@ export const FavoriteSlice = createSlice({
       })
       .addCase(addDocumentFavorite.fulfilled, (state, { payload }) => {
         state.loading = false;
-        state.documents.unshift(payload);
-        state.counts.document += 1;
-        state.counts.total += 1;
+        if (!state.documents.some((favorite) => favorite.favorable_id === payload?.favorable_id)) {
+          state.documents.unshift(payload);
+          state.counts.document += 1;
+          state.counts.total += 1;
+        }
       })
       .addCase(addDocumentFavorite.rejected, (state, { payload }) => {
         state.loading = false;
@@ -68,9 +74,11 @@ export const FavoriteSlice = createSlice({
       })
       .addCase(addMediaFavorite.fulfilled, (state, { payload }) => {
         state.loading = false;
-        state.media.unshift(payload);
-        state.counts.media += 1;
-        state.counts.total += 1;
+        if (!state.media.some((favorite) => favorite.favorable_id === payload?.favorable_id)) {
+          state.media.unshift(payload);
+          state.counts.media += 1;
+          state.counts.total += 1;
+        }
       })
       .addCase(addMediaFavorite.rejected, (state, { payload }) => {
         state.loading = false;
@@ -90,14 +98,14 @@ export const FavoriteSlice = createSlice({
           state.documents = state.documents.filter(
             (f) => f.favorable_id !== payload.favorableId
           );
-          state.counts.document -= 1;
+          state.counts.document = Math.max(0, state.counts.document - 1);
         } else {
           state.media = state.media.filter(
             (f) => f.favorable_id !== payload.favorableId
           );
-          state.counts.media -= 1;
+          state.counts.media = Math.max(0, state.counts.media - 1);
         }
-        state.counts.total -= 1;
+        state.counts.total = Math.max(0, state.counts.total - 1);
       })
       .addCase(removeFavorite.rejected, (state, { payload }) => {
         state.loading = false;

@@ -150,7 +150,11 @@ export default function ProfilePage() {
   };
 
   const p = {
-    page: { padding: 'clamp(0rem, 2vw, 2rem)' },
+    page: {
+      width: 'min(100%, 1360px)',
+      margin: '0 auto',
+      padding: 'clamp(0rem, 2vw, 2rem)',
+    },
 
     // ── Identity card — flat, no banner, no blue ───────────────────────────
     identityCard: {
@@ -188,10 +192,16 @@ export default function ProfilePage() {
     },
 
     // ── Detail grid ────────────────────────────────────────────────────────
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' },
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 430px), 1fr))',
+      gap: '1.5rem',
+      alignItems: 'stretch',
+    },
     card: {
       background: 'var(--surface-white)', borderRadius: '1rem',
       boxShadow: 'var(--shadow-lift)', padding: '1.5rem',
+      minWidth: 0,
     },
     secLabel: {
       fontSize: '0.63rem', fontWeight: 700,

@@ -47,6 +47,8 @@ export const api = {
     }),
   searchAbookUsingWord: (keyWord) =>
     customAxios.get('/search/library', { params: { key_word: keyWord } }),
+  searchPublic: ({ query, type = 'all' }) =>
+    customAxios.get('/search/public', { params: { q: query, type } }),
 
   // --- Media ---
   getMedia: (filters = {}) => customAxios.get('/media', { params: filters }),

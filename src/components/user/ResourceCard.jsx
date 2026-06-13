@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import { fallbackImage } from '../../utils/userResources';
 
 export default function ResourceCard({ item, compact = false }) {
-  const image = item.image || item.thumbnail || item.coverImage;
+  const image = item.image || item.thumbnail || item.coverImage || fallbackImage;
   const imagePosition = item.imagePosition || 'center';
   const summary = item.summary || item.description;
   const type = item.type || item.resourceType || item.source;
@@ -39,11 +40,23 @@ export default function ResourceCard({ item, compact = false }) {
 
         <div className="resource-card__footer">
           <span>{item.category}</span>
-          {isInternalRoute ? (
-            <Link to={href}>{actionLabel}</Link>
-          ) : (
-            <a href={href}>{actionLabel}</a>
-          )}
+          <div className="resource-card__actions">
+            {item.onSecondaryAction && (
+              <button
+                type="button"
+                className={item.secondaryActionTone === 'danger' ? 'is-danger' : undefined}
+                disabled={item.secondaryActionDisabled}
+                onClick={item.onSecondaryAction}
+              >
+                {item.secondaryActionLabel || 'Save'}
+              </button>
+            )}
+            {isInternalRoute ? (
+              <Link to={href}>{actionLabel}</Link>
+            ) : (
+              <a href={href}>{actionLabel}</a>
+            )}
+          </div>
         </div>
       </div>
     </article>

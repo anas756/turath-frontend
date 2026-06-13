@@ -26,12 +26,17 @@ import ResetTokenConfirmed from '../../pages/auth/ResetTokenConfirmed';
 
 // General Components
 import Home from '../../pages/Home';
+import SearchResults from '../../pages/SearchResults';
+import CollectionDetail from '../../pages/CollectionDetail';
 import UserHome from '../../pages/user/UserHome';
 import ProfileSettings from '../../pages/user/ProfileSettings';
 import UserLibrary from '../../pages/user/UserLibrary';
 import UserMedia from '../../pages/user/UserMedia';
 import UserCollections from '../../pages/user/UserCollections';
 import MyLibrary from '../../pages/user/MyLibrary';
+import UserDocumentDetail from '../../pages/user/UserDocumentDetail';
+import UserDocumentReader from '../../pages/user/UserDocumentReader';
+import UserMediaDetail from '../../pages/user/UserMediaDetail';
 import UnauthorizedPage from '../../pages/UnauthorizedPage';
 import DashboardRedirect from './middleware/DashboardRedirect';
 import NotFoundPage from '../../pages/NotFoundPage';
@@ -39,6 +44,8 @@ import NotFoundPage from '../../pages/NotFoundPage';
 export const route = createBrowserRouter([
   // Public home
   { path: '/home', element: <Home /> },
+  { path: '/search', element: <SearchResults /> },
+  { path: '/collections/:id', element: <CollectionDetail /> },
   { path: '/', element: <DashboardRedirect /> },
 
   // Guest-only routes (redirect away if already logged in)
@@ -68,7 +75,10 @@ export const route = createBrowserRouter([
         children: [
           { path: 'home', element: <UserHome /> },
           { path: 'library', element: <UserLibrary /> },
+          { path: 'library/:id', element: <UserDocumentDetail /> },
+          { path: 'library/:id/read', element: <UserDocumentReader /> },
           { path: 'media', element: <UserMedia /> },
+          { path: 'media/:id', element: <UserMediaDetail /> },
           { path: 'collections', element: <UserCollections /> },
           { path: 'my-library', element: <MyLibrary /> },
           { path: 'profile', element: <ProfileSettings /> },

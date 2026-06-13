@@ -12,12 +12,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { fetchLandingPreview } from '../app/services/reduxTollkit/asyncThunks/landingThunk';
 import {
-  selectLandingCollectionDocs,
-  selectLandingCollectionMedia,
+  selectLandingCollectionCategories,
   selectLandingDocuments,
   selectLandingLoading,
   selectLandingMedia,
 } from '../app/services/reduxTollkit/Slices/landingSlice';
+import { htmlToPlainText } from '../utils/richText';
 
 const assetBaseUrl = (
   import.meta.env.VITE_BACK_END_URL_IMAGE ||
@@ -85,14 +85,42 @@ function isVideoMedia(item) {
   return getMediaType(item) === 'video' || videoFilePattern.test(fileUrl || '');
 }
 
+function getItemId(item) {
+  return item?._id || item?.id;
+}
+
 function mediaMeta(item) {
   return [item.type || 'Media', item.format].filter(Boolean).join(' / ');
+}
+
+function formatFileSize(size) {
+  const bytes = Number(size);
+  if (!Number.isFinite(bytes) || bytes <= 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / (1024 ** exponent);
+  return `${value >= 10 ? value.toFixed(0) : value.toFixed(1)} ${units[exponent]}`;
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
 }
 
 function MediaPoster({ item, compact = false }) {
   const [failed, setFailed] = useState(false);
   const fileUrl = resolveAssetUrl(item?.file_path);
   const isVideo = isVideoMedia(item);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [item?.file_path, item?.type]);
 
   if (isVideo && fileUrl && !failed) {
     return (
@@ -139,58 +167,143 @@ function GuestNavbar() {
   );
 }
 
-function DocumentCard({ item }) {
+function listText(value) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+  return value || '';
+}
+
+function DocumentCard({ item, onSelect }) {
+  const authors = listText(item.authors);
+  const shortDescription = htmlToPlainText(item.description) || 'Open this preview to see the document details.';
+
   return (
-    <article className="guest-preview-card">
+    <article
+      className="guest-preview-card guest-preview-card--compact"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(item)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(item);
+        }
+      }}
+    >
       <div className="guest-preview-card__image">
         <PreviewImage src={item.cover} title={item.title} label="Document" />
         <span><LockIcon /> Members only</span>
       </div>
       <div className="guest-preview-card__body">
         <div className="guest-preview-card__meta">
-          <span>Document</span>
-          {item.authors?.length > 0 && <span>{item.authors[0]}</span>}
+          <span>Archive</span>
+          {authors && <span>{authors.split(',')[0]}</span>}
         </div>
         <h3>{item.title}</h3>
-        <p>{item.description}</p>
-        <div className="guest-preview-card__actions">
-          <Link to="/signup">Unlock Access</Link>
-          <Link to="/login">Sign in</Link>
-        </div>
+        <p>{shortDescription}</p>
+        <strong className="guest-preview-card__hint">View details</strong>
       </div>
     </article>
   );
 }
 
-function MediaCard({ item }) {
+function DocumentDetailsModal({ document, onClose }) {
+  if (!document) return null;
+
+  const authors = listText(document.authors);
+  const tags = Array.isArray(document.tags) ? document.tags : [];
+
   return (
-    <article className="guest-preview-card">
-      <div className="guest-preview-card__image">
-        <PreviewImage
-          src={item.file_path}
-          title={item.title}
-          label={item.type || 'Media'}
-          mediaType={item.type}
-        />
-        <span><LockIcon /> Members only</span>
-      </div>
-      <div className="guest-preview-card__body">
-        <div className="guest-preview-card__meta">
-          <span>{item.type || 'Media'}</span>
-          {item.format && <span>{item.format}</span>}
+    <div className="guest-modal-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="guest-document-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guest-document-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="guest-document-modal__close"
+          onClick={onClose}
+          aria-label="Close document details"
+        >
+          x
+        </button>
+
+        <div className="guest-document-modal__cover">
+          <PreviewImage src={document.cover} title={document.title} label="Archive" />
         </div>
-        <h3>{item.title}</h3>
-        <p>{item.curator}</p>
-        <div className="guest-preview-card__actions">
-          <Link to="/signup">Unlock Access</Link>
-          <Link to="/login">Sign in</Link>
+
+        <div className="guest-document-modal__body">
+          <p className="user-section-eyebrow">Library Preview</p>
+          <h2 id="guest-document-modal-title">{document.title}</h2>
+          {authors && <p className="guest-document-modal__authors">{authors}</p>}
+          <p>
+            {htmlToPlainText(document.description) ||
+              'This archive record is available in Turath. Login to read the full item and save it to your library.'}
+          </p>
+
+          {tags.length > 0 && (
+            <div className="guest-document-modal__tags">
+              {tags.map((tag) => <span key={tag}>{tag}</span>)}
+            </div>
+          )}
+
+          <div className="guest-document-modal__meta">
+            {document.source && <span>Source: {document.source}</span>}
+            {document.open_library_key && <span>Open Library record</span>}
+          </div>
+
+          <Link to="/login" className="guest-document-modal__cta">
+            Login to read
+          </Link>
         </div>
-      </div>
-    </article>
+      </section>
+    </div>
   );
 }
 
-function GuestMediaShowcase({ items, loading }) {
+function CollectionPreviewCard({ item }) {
+  const id = item._id || item.id;
+  const documents = item.documents || [];
+  const previewNames = documents.slice(0, 3).map((doc) => doc.title).filter(Boolean);
+
+  return (
+    <Link to={`/collections/${id}`} className="guest-collection-link">
+      <div>
+        <span>{documents.length}</span>
+        <small>{documents.length === 1 ? 'item' : 'items'}</small>
+      </div>
+      <section>
+        <p className="user-section-eyebrow">Collection</p>
+        <h3>{item.name}</h3>
+        <p>{htmlToPlainText(item.description) || 'Explore the documents grouped inside this heritage category.'}</p>
+        {previewNames.length > 0 && (
+          <ul>
+            {previewNames.map((name) => <li key={name}>{name}</li>)}
+          </ul>
+        )}
+      </section>
+    </Link>
+  );
+}
+
+function GuestMediaShowcase({ items = [], loading }) {
+  const defaultFeatured = items.find((item) => isVideoMedia(item)) || items[0];
+  const [selectedMediaId, setSelectedMediaId] = useState(null);
+
+  useEffect(() => {
+    if (!items.length) {
+      setSelectedMediaId(null);
+      return;
+    }
+
+    const hasSelectedItem = items.some((item) => getItemId(item) === selectedMediaId);
+    if (!selectedMediaId || !hasSelectedItem) {
+      setSelectedMediaId(getItemId(defaultFeatured));
+    }
+  }, [items, selectedMediaId, defaultFeatured]);
+
   if (loading) {
     return (
       <div className="guest-media-showcase">
@@ -208,7 +321,9 @@ function GuestMediaShowcase({ items, loading }) {
     );
   }
 
-  const featured = items.find((item) => isVideoMedia(item)) || items[0];
+  const featured =
+    items.find((item) => getItemId(item) === selectedMediaId) ||
+    defaultFeatured;
 
   if (!featured) {
     return (
@@ -220,9 +335,16 @@ function GuestMediaShowcase({ items, loading }) {
     );
   }
 
-  const featuredId = featured._id || featured.id;
-  const otherMedia = items.filter((item) => (item._id || item.id) !== featuredId).slice(0, 4);
+  const featuredId = getItemId(featured);
+  const otherMedia = items.filter((item) => getItemId(item) !== featuredId).slice(0, 5);
   const featuredIsVideo = isVideoMedia(featured);
+  const details = [
+    ['Curator', featured.curator],
+    ['Format', featured.format],
+    ['Resolution', featured.resolution],
+    ['Size', formatFileSize(featured.size)],
+    ['Added', formatDate(featured.date_added || featured.created_at)],
+  ].filter(([, value]) => value);
 
   return (
     <div className="guest-media-showcase">
@@ -241,13 +363,30 @@ function GuestMediaShowcase({ items, loading }) {
           </div>
           <h3>{featured.title}</h3>
           <p>
-            {featured.curator
-              ? `Curated by ${featured.curator}.`
-              : 'Preview this archive item, then create an account to keep exploring the full collection.'}
+            {htmlToPlainText(featured.description) ||
+              (featured.curator
+                ? `Curated by ${featured.curator}.`
+                : 'Preview this archive item, then create an account to keep exploring the full collection.')}
           </p>
+          {details.length > 0 && (
+            <dl className="guest-media-feature__details">
+              {details.map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <div className="guest-media-feature__lock-note">
+            <LockIcon />
+            Login is required to open the full media record.
+          </div>
           <div className="guest-media-feature__actions">
-            <Link to="/signup">Unlock full access</Link>
-            <Link to="/login">Sign in</Link>
+            <Link to="/login">
+              <LockIcon />
+              Login to view full media
+            </Link>
           </div>
         </div>
       </article>
@@ -260,8 +399,14 @@ function GuestMediaShowcase({ items, loading }) {
         {otherMedia.length > 0 ? (
           otherMedia.map((item) => {
             const itemIsVideo = isVideoMedia(item);
+            const itemId = getItemId(item);
             return (
-              <article className="guest-media-rail-item" key={item._id || item.id}>
+              <button
+                type="button"
+                className="guest-media-rail-item"
+                key={itemId}
+                onClick={() => setSelectedMediaId(itemId)}
+              >
                 <div className="guest-media-rail-item__thumb">
                   <MediaPoster item={item} compact />
                   {itemIsVideo && <span><PlayIcon /></span>}
@@ -269,9 +414,9 @@ function GuestMediaShowcase({ items, loading }) {
                 <div>
                   <small>{mediaMeta(item)}</small>
                   <h3>{item.title}</h3>
-                  <p>{item.curator || 'Members-only archive preview'}</p>
+                  <p>{htmlToPlainText(item.description) || item.curator || 'Members-only archive preview'}</p>
                 </div>
-              </article>
+              </button>
             );
           })
         ) : (
@@ -303,9 +448,9 @@ export default function Home() {
   const dispatch = useDispatch();
   const documents = useSelector(selectLandingDocuments);
   const media = useSelector(selectLandingMedia);
-  const collectionDocs = useSelector(selectLandingCollectionDocs);
-  const collectionMedia = useSelector(selectLandingCollectionMedia);
+  const collectionCategories = useSelector(selectLandingCollectionCategories);
   const loading = useSelector(selectLandingLoading);
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   useEffect(() => {
     dispatch(fetchLandingPreview());
@@ -331,7 +476,6 @@ export default function Home() {
             are unlocked after sign in.
           </p>
 
-          {/* ── Search ── */}
           <SearchContainer />
 
           <div className="quick-filter-row" aria-label="Guest content filters">
@@ -363,48 +507,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Library Preview ── */}
       <section className="guest-section guest-section-soft" id="library-preview">
         <SectionHeader
           eyebrow="Library Preview"
           title="Books, PDFs, documents, and manuscripts"
-          actionLabel="Create Account to Read"
-          actionHref="/signup"
         />
         <div className="guest-preview-grid">
           {loading
             ? [1, 2, 3].map((n) => <CardSkeleton key={n} />)
-            : documents.map((doc) => <DocumentCard key={doc._id} item={doc} />)}
+            : documents.map((doc) => (
+              <DocumentCard
+                key={doc._id || doc.id}
+                item={doc}
+                onSelect={setSelectedDocument}
+              />
+            ))}
         </div>
       </section>
 
-      {/* ── Media Preview ── */}
       <section className="guest-section" id="media-preview">
         <SectionHeader
           eyebrow="Media Preview"
           title="Videos, audio, images, and oral histories"
-          actionLabel="Sign In to Watch"
-          actionHref="/login"
         />
         <GuestMediaShowcase items={media} loading={loading} />
       </section>
 
-      {/* ── Collections Preview ── */}
       <section className="guest-section guest-section-soft" id="collections-preview">
         <SectionHeader
           eyebrow="Collections Preview"
-          title="Themes that combine library and media"
-          actionLabel="Join to Save Collections"
-          actionHref="/signup"
+          title="Browse heritage collections by category"
         />
-        <div className="guest-preview-grid">
+        <div className="guest-collection-list">
           {loading ? (
             [1, 2, 3, 4].map((n) => <CardSkeleton key={n} />)
+          ) : collectionCategories.length > 0 ? (
+            collectionCategories.map((category) => (
+              <CollectionPreviewCard key={category._id || category.id} item={category} />
+            ))
           ) : (
-            <>
-              {collectionDocs.map((doc) => <DocumentCard key={doc._id} item={doc} />)}
-              {collectionMedia.map((item) => <MediaCard key={item._id} item={item} />)}
-            </>
+            <div className="guest-media-empty">
+              <h3>No collections yet</h3>
+              <p>Create categories in the back office and they will appear here.</p>
+            </div>
           )}
         </div>
       </section>
@@ -425,6 +570,11 @@ export default function Home() {
       </section>
 
       <Footer />
+
+      <DocumentDetailsModal
+        document={selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+      />
     </div>
   );
 }

@@ -28,6 +28,74 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--sans); background: var(--surface-low); color: var(--on-surface); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
+.rich-text {
+  color: inherit;
+  font: inherit;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.rich-text > *:first-child {
+  margin-top: 0;
+}
+
+.rich-text > *:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text p {
+  margin: 0 0 0.8rem;
+}
+
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  margin: 1rem 0 0.5rem;
+  color: var(--on-surface);
+  font-family: var(--serif);
+  line-height: 1.2;
+}
+
+.rich-text h2 {
+  font-size: 1.35rem;
+}
+
+.rich-text h3 {
+  font-size: 1.12rem;
+}
+
+.rich-text h4 {
+  font-size: 0.98rem;
+}
+
+.rich-text ul,
+.rich-text ol {
+  margin: 0.75rem 0 0.85rem 1.2rem;
+  padding: 0;
+}
+
+.rich-text li + li {
+  margin-top: 0.3rem;
+}
+
+.rich-text blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--tertiary-light);
+  background: var(--surface-low);
+  color: var(--on-surface-muted);
+}
+
+.rich-text a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rich-text a:hover {
+  text-decoration: underline;
+}
+
 /* ══════════════════════════════
    ADMIN SHELL
 ══════════════════════════════ */

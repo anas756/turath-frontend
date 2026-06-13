@@ -37,7 +37,6 @@ export const MediaSlice = createSlice({
         // Adjusting based on if your API returns { data: [], pagination: {} }
         state.media = payload.data ?? payload;
         state.pagination = action.payload.pagination ?? state.pagination;
-        console.log('rani dkholt ');
       })
       .addCase(fetchMedia.rejected, (state) => {
         state.mediaLoading = false;

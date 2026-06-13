@@ -8,12 +8,14 @@ import { updateMediaTunk as updateMedia } from '../../../app/services/reduxTollk
 
 const Schema = yup.object().shape({
   title:       yup.string().min(3).optional(),
-  description: yup.string().optional(),
+  description: yup.string().max(6000, 'Description is too long').optional(),
   tags:        yup.string().optional(),
-  type:        yup.string().optional(),
+  type:        yup.string().oneOf(['', 'image', 'video', 'audio']).optional(),
   format:      yup.string().optional(),
   resolution:  yup.string().optional(),
 });
+
+const mediaTypes = ['image', 'video', 'audio'];
 
 const m = {
   container: { padding: 'clamp(1rem, 4vw, 2rem)' },
@@ -46,6 +48,11 @@ const m = {
     border: 'none', backgroundColor: 'var(--surface-low)', width: '100%',
     fontSize: '0.875rem', fontFamily: 'inherit',
   },
+  textarea: {
+    minHeight: '130px',
+    resize: 'vertical',
+    lineHeight: 1.6,
+  },
   hint:  { fontSize: '0.7rem', color: 'var(--on-surface-muted)', marginTop: '0.15rem' },
   error: { color: 'var(--secondary)', fontSize: '0.72rem' },
   footer: { display: 'flex', justifyContent: 'flex-end' },
@@ -59,6 +66,7 @@ const m = {
 
 export default function UpdateMedia({ media, setShowUpdate }) {
   const dispatch = useDispatch();
+  const currentType = media?.type?.toString().toLowerCase() || '';
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(Schema),
@@ -66,7 +74,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
       title:       media?.title       || '',
       description: media?.description || '',
       tags:        Array.isArray(media?.tags) ? media.tags.join(', ') : (media?.tags || ''),
-      type:        media?.type        || '',
+      type:        mediaTypes.includes(currentType) ? currentType : '',
       format:      media?.format      || '',
       resolution:  media?.resolution  || '',
     },
@@ -119,9 +127,9 @@ export default function UpdateMedia({ media, setShowUpdate }) {
             </label>
             <select {...register('type')} style={m.input}>
               <option value="">Select type…</option>
-              <option value="Image">Image</option>
-              <option value="Audio">Audio</option>
-              <option value="Video">Video</option>
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
             </select>
             {errors.type && <span style={m.error}>{errors.type.message}</span>}
           </div>
@@ -156,9 +164,15 @@ export default function UpdateMedia({ media, setShowUpdate }) {
           {/* Description — full width */}
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
-              Description <span style={m.optionalLabel}>(optional)</span>
+              Description HTML <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea {...register('description')} style={{ ...m.input, minHeight: '80px', resize: 'vertical' }} />
+            <textarea
+              {...register('description')}
+              style={{ ...m.input, ...m.textarea }}
+              placeholder="<h3>About this item</h3><p>Add a rich description with <strong>important details</strong>.</p>"
+            />
+            <span style={m.hint}>Allowed: headings, paragraphs, bold, italic, lists, and links.</span>
+            {errors.description && <span style={m.error}>{errors.description.message}</span>}
           </div>
 
         </div>

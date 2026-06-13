@@ -1,4 +1,5 @@
 import React from 'react';
+import RichText from '../../../components/common/RichText';
 
 const formatDate = (str) => {
   if (!str) return null;
@@ -210,7 +211,7 @@ export default function ShowMediaDetails({ media, onClose, onEdit }) {
       <div style={{ ...m.cardFull, marginBottom: '1.5rem' }}>
         <p style={m.secLabel}>Description</p>
         {media.description
-          ? <p style={m.descText}>{media.description}</p>
+          ? <RichText html={media.description} className="rich-text rich-text--admin" style={m.descText} />
           : <span style={m.descMuted}>No description provided</span>
         }
       </div>

@@ -12,7 +12,8 @@ const Schema = yup.object().shape({
   type: yup
     .string()
     .required('Type is required')
-    .oneOf(['image', 'video', 'audio', 'document']),
+    .oneOf(['image', 'video', 'audio']),
+  description: yup.string().max(6000, 'Description is too long').optional(),
   status: yup.string().optional(),
   curator: yup.string().optional(),
   file_path: yup
@@ -77,6 +78,11 @@ const m = {
     backgroundColor: 'var(--surface-low)',
     width: '100%',
   },
+  textarea: {
+    minHeight: '130px',
+    resize: 'vertical',
+    lineHeight: 1.6,
+  },
   hint: {
     fontSize: '0.7rem',
     color: 'var(--on-surface-muted)',
@@ -127,6 +133,7 @@ export default function StoreMedia({ setShowStore }) {
     formData.append('title', data.title);
     formData.append('type', data.type);
     formData.append('status', data.status || 'active');
+    if (data.description) formData.append('description', data.description);
     if (data.curator) formData.append('curator', data.curator);
 
     const file = data.file_path?.[0];
@@ -179,7 +186,6 @@ export default function StoreMedia({ setShowStore }) {
               <option value="image">Image</option>
               <option value="video">Video</option>
               <option value="audio">Audio</option>
-              <option value="document">Document</option>
             </select>
             {errors.type && <span style={m.error}>{errors.type.message}</span>}
           </div>
@@ -194,12 +200,27 @@ export default function StoreMedia({ setShowStore }) {
           </div>
 
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
+            <label style={m.label}>
+              Description HTML <span style={m.optionalLabel}>(optional)</span>
+            </label>
+            <textarea
+              {...register('description')}
+              style={{ ...m.input, ...m.textarea }}
+              placeholder="<h3>About this item</h3><p>Add a rich description with <strong>important details</strong>.</p>"
+            />
+            <span style={m.hint}>Allowed: headings, paragraphs, bold, italic, lists, and links.</span>
+            {errors.description && (
+              <span style={m.error}>{errors.description.message}</span>
+            )}
+          </div>
+
+          <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Media File</label>
-            <input type="file" onChange={handleFileChange} style={m.input} />
+            <input type="file" accept="image/*,video/*,audio/*" onChange={handleFileChange} style={m.input} />
             {filePreview && (
               <img src={filePreview} alt="Preview" style={m.preview} />
             )}
-            <span style={m.hint}>Image, video, audio, or PDF — max 100MB</span>
+            <span style={m.hint}>Image, video, or audio - max 100MB</span>
             {errors.file_path && (
               <span style={m.error}>{errors.file_path.message}</span>
             )}

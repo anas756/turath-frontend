@@ -25,13 +25,29 @@ export function MediaFeature({ exhibit }) {
         backgroundPosition: exhibit.imagePosition || 'center',
       }}
     >
-      <button
-        type="button"
-        className="media-play media-play--large"
-        aria-label={`Play ${title}`}
-      >
-        <PlayIcon />
-      </button>
+      {exhibit.isVideo && exhibit.mediaUrl ? (
+        <video
+          className="media-feature__video"
+          src={exhibit.mediaUrl}
+          controls
+          playsInline
+          preload="metadata"
+          aria-label={`${title} video`}
+        />
+      ) : exhibit.isAudio && exhibit.mediaUrl ? (
+        <div className="media-feature__audio">
+          <PlayIcon />
+          <audio src={exhibit.mediaUrl} controls preload="metadata" />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="media-play media-play--large"
+          aria-label={`Open ${title}`}
+        >
+          <PlayIcon />
+        </button>
+      )}
 
       <div className="media-feature__caption">
         <span>{eyebrow}</span>
@@ -42,25 +58,28 @@ export function MediaFeature({ exhibit }) {
   );
 }
 
-export function MediaListItem({ item }) {
+export function MediaListItem({ item, onSelect, isActive = false }) {
   const image = item.image || item.thumbnail || item.coverImage;
   const duration = item.duration || item.length;
 
   return (
-    <article className="media-list-item">
+    <button
+      type="button"
+      className={`media-list-item${isActive ? ' is-active' : ''}`}
+      onClick={onSelect}
+    >
       <div className="media-list-item__thumb">
         <img
           src={image}
           alt=""
           style={{ objectPosition: item.imagePosition || 'center' }}
         />
-        <button
-          type="button"
+        <span
           className="media-play media-play--small"
-          aria-label={`Play ${item.title}`}
+          aria-hidden="true"
         >
           <PlayIcon />
-        </button>
+        </span>
       </div>
 
       <div>
@@ -68,6 +87,6 @@ export function MediaListItem({ item }) {
         <h3>{item.title}</h3>
         {item.category && <p>{item.category}</p>}
       </div>
-    </article>
+    </button>
   );
 }

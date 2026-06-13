@@ -10,7 +10,7 @@ import {
 const initialState = {
   documents: [],
   media: [],
-  collections: { documents: [], media: [] },
+  collections: { categories: [] },
   loading: false,
   error: null,
 };
@@ -27,9 +27,9 @@ export const landingSlice = createSlice({
       })
       .addCase(fetchLandingPreview.fulfilled, (state, { payload }) => {
         state.loading = false;
-        state.documents = payload.documents;
-        state.media = payload.media;
-        state.collections = payload.collections;
+        state.documents = payload.documents || [];
+        state.media = payload.media || [];
+        state.collections = payload.collections || { categories: [] };
       })
       .addCase(fetchLandingPreview.rejected, (state, { payload }) => {
         state.loading = false;
@@ -39,25 +39,22 @@ export const landingSlice = createSlice({
         state.documents = state.documents.filter(
           (doc) => (doc._id || doc.id) !== payload
         );
-        state.collections.documents = state.collections.documents.filter(
-          (doc) => (doc._id || doc.id) !== payload
-        );
+        state.collections.categories = state.collections.categories.map((category) => ({
+          ...category,
+          documents: (category.documents || []).filter(
+            (doc) => (doc._id || doc.id) !== payload
+          ),
+        }));
       })
       .addCase(deleteMedia.fulfilled, (state, { payload }) => {
         const deletedId = payload.id ?? payload;
         state.media = state.media.filter(
           (item) => (item._id || item.id) !== deletedId
         );
-        state.collections.media = state.collections.media.filter(
-          (item) => (item._id || item.id) !== deletedId
-        );
       })
       .addCase(bulkDeleteMedia.fulfilled, (state, { payload }) => {
         const deletedIds = payload.ids ?? payload;
         state.media = state.media.filter(
-          (item) => !deletedIds.includes(item._id || item.id)
-        );
-        state.collections.media = state.collections.media.filter(
           (item) => !deletedIds.includes(item._id || item.id)
         );
       })
@@ -69,9 +66,6 @@ export const landingSlice = createSlice({
           state.media = state.media.filter(
             (item) => (item._id || item.id) !== updatedId
           );
-          state.collections.media = state.collections.media.filter(
-            (item) => (item._id || item.id) !== updatedId
-          );
         }
       });
   },
@@ -80,10 +74,8 @@ export const landingSlice = createSlice({
 export const selectLandingDocuments = (state) => state.landing.documents;
 export const selectLandingMedia = (state) => state.landing.media;
 export const selectLandingCollections = (state) => state.landing.collections;
-export const selectLandingCollectionDocs = (state) =>
-  state.landing.collections.documents;
-export const selectLandingCollectionMedia = (state) =>
-  state.landing.collections.media;
+export const selectLandingCollectionCategories = (state) =>
+  state.landing.collections.categories || [];
 export const selectLandingLoading = (state) => state.landing.loading;
 export const selectLandingError = (state) => state.landing.error;
 
