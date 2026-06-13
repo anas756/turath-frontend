@@ -65,4 +65,15 @@ export const api = {
   updateMediaStatus: (id, status) =>
     customAxios.put(`/media/${id}/status`, { status }),
   getDashboardStats: () => customAxios.get('/dashboard/stats'),
+
+  // --- Favorites ---
+  getFavorites: () => customAxios.get('/favorites'),
+  addDocumentFavorite: (favorableId) =>
+    customAxios.post('/favorites/document', { favorable_id: favorableId }),
+  addMediaFavorite: (favorableId) =>
+    customAxios.post('/favorites/media', { favorable_id: favorableId }),
+  removeFavorite: (type, favorableId) =>
+    customAxios.delete(`/favorites/${type}/${favorableId}`),
+
+  getLandingPreview: () => customAxios.get('/landing/preview'),
 };

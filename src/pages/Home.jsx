@@ -2,14 +2,18 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/user/Footer';
 import SectionHeader from '../components/user/SectionHeader';
 import {
-  collectionItems,
   contentFilters,
   heroContent,
-  libraryItems,
-  mediaItems,
   quickAccessItems,
 } from '../data/user/homeContent';
 import '../styles/user.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchLandingPreview } from '../app/services/reduxTollkit/asyncThunks/landingThunk';
+import { selectLandingCollectionDocs, selectLandingCollectionMedia, selectLandingDocuments, selectLandingLoading, selectLandingMedia } from '../app/services/reduxTollkit/Slices/landingSlice';
+
+
+const url = import.meta.env.VITE_BACK_END_URL_DATA;
 
 function SearchIcon() {
   return (
@@ -57,7 +61,6 @@ function GuestNavbar() {
       <a href="#top" className="guest-navbar__brand">
         Turath
       </a>
-
       <nav aria-label="Guest navigation">
         {navItems.map((item) => (
           <a href={item.href} key={item.label}>
@@ -65,7 +68,6 @@ function GuestNavbar() {
           </a>
         ))}
       </nav>
-
       <div className="guest-navbar__actions">
         <Link to="/login">Sign In</Link>
         <Link to="/signup">Create Account</Link>
@@ -74,24 +76,19 @@ function GuestNavbar() {
   );
 }
 
-function LockedResourceCard({ item }) {
-  const image = item.thumbnail || item.coverImage || item.image;
-  const meta = item.pages || item.duration || item.length || item.itemCount;
-
+function DocumentCard({ item }) {
   return (
     <article className="guest-preview-card">
       <div className="guest-preview-card__image">
-        <img src={image} alt="" style={{ objectPosition: item.imagePosition }} />
+        <img src={`${url}/${item.cover}`} alt={item.title} />
         <span>
-          <LockIcon />
-          Members only
+          <LockIcon /> Members only
         </span>
       </div>
-
       <div className="guest-preview-card__body">
         <div className="guest-preview-card__meta">
-          <span>{item.type || 'Collection'}</span>
-          <span>{meta}</span>
+          <span>Document</span>
+          {item.authors?.length > 0 && <span>{item.authors[0]}</span>}
         </div>
         <h3>{item.title}</h3>
         <p>{item.description}</p>
@@ -104,10 +101,81 @@ function LockedResourceCard({ item }) {
   );
 }
 
+function MediaCard({ item }) {
+  return (
+    <article className="guest-preview-card">
+      <div className="guest-preview-card__image">
+        <img src={`${url}/${item.file_path}`} alt={item.title} />
+        <span>
+          <LockIcon /> Members only
+        </span>
+      </div>
+      <div className="guest-preview-card__body">
+        <div className="guest-preview-card__meta">
+          <span>{item.type || 'Media'}</span>
+          {item.format && <span>{item.format}</span>}
+        </div>
+        <h3>{item.title}</h3>
+        <p>{item.curator}</p>
+        <div className="guest-preview-card__actions">
+          <Link to="/signup">Unlock Access</Link>
+          <Link to="/login">Sign in</Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <article className="guest-preview-card" style={{ opacity: 0.5 }}>
+      <div
+        className="guest-preview-card__image"
+        style={{ background: 'var(--color-border-tertiary)' }}
+      />
+      <div className="guest-preview-card__body">
+        <div
+          style={{
+            height: 12,
+            width: '60%',
+            background: 'var(--color-border-tertiary)',
+            borderRadius: 4,
+            marginBottom: 8,
+          }}
+        />
+        <div
+          style={{
+            height: 16,
+            width: '80%',
+            background: 'var(--color-border-tertiary)',
+            borderRadius: 4,
+            marginBottom: 8,
+          }}
+        />
+        <div
+          style={{
+            height: 12,
+            width: '90%',
+            background: 'var(--color-border-tertiary)',
+            borderRadius: 4,
+          }}
+        />
+      </div>
+    </article>
+  );
+}
+
 export default function Home() {
-  const previewLibrary = libraryItems.slice(0, 3);
-  const previewMedia = mediaItems.slice(0, 3);
-  const previewCollections = collectionItems.slice(0, 3);
+  const dispatch = useDispatch();
+  const documents = useSelector(selectLandingDocuments);
+  const media = useSelector(selectLandingMedia);
+  const collectionDocs = useSelector(selectLandingCollectionDocs);
+  const collectionMedia = useSelector(selectLandingCollectionMedia);
+  const loading = useSelector(selectLandingLoading);
+
+  useEffect(() => {
+    dispatch(fetchLandingPreview());
+  }, [dispatch]);
 
   return (
     <div className="guest-home" id="top">
@@ -132,7 +200,7 @@ export default function Home() {
           <form
             className="user-hero-search guest-hero-search"
             aria-label="Preview archive search"
-            onSubmit={(event) => event.preventDefault()}
+            onSubmit={(e) => e.preventDefault()}
           >
             <SearchIcon />
             <input type="search" placeholder={heroContent.placeholder} />
@@ -160,7 +228,6 @@ export default function Home() {
           eyebrow="What You Can Explore"
           title="A guided preview before joining"
         />
-
         <div className="quick-access-grid">
           {quickAccessItems.map((item) => (
             <Link to="/signup" className="quick-access-card" key={item.id}>
@@ -172,21 +239,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="guest-section guest-section-soft" id="library-preview">
+      {/* ── Library Preview ── */}
+      <section
+        className="guest-section guest-section-soft"
+        id="library-preview"
+      >
         <SectionHeader
           eyebrow="Library Preview"
           title="Books, PDFs, documents, and manuscripts"
           actionLabel="Create Account to Read"
           actionHref="/signup"
         />
-
         <div className="guest-preview-grid">
-          {previewLibrary.map((item) => (
-            <LockedResourceCard item={item} key={item.id} />
-          ))}
+          {loading
+            ? [1, 2, 3].map((n) => <CardSkeleton key={n} />)
+            : documents.map((doc) => <DocumentCard key={doc._id} item={doc} />)}
         </div>
       </section>
 
+      {/* ── Media Preview ── */}
       <section className="guest-section" id="media-preview">
         <SectionHeader
           eyebrow="Media Preview"
@@ -194,26 +265,37 @@ export default function Home() {
           actionLabel="Sign In to Watch"
           actionHref="/login"
         />
-
         <div className="guest-preview-grid">
-          {previewMedia.map((item) => (
-            <LockedResourceCard item={item} key={item.id} />
-          ))}
+          {loading
+            ? [1, 2, 3].map((n) => <CardSkeleton key={n} />)
+            : media.map((item) => <MediaCard key={item._id} item={item} />)}
         </div>
       </section>
 
-      <section className="guest-section guest-section-soft" id="collections-preview">
+      {/* ── Collections Preview (2 docs + 2 media) ── */}
+      <section
+        className="guest-section guest-section-soft"
+        id="collections-preview"
+      >
         <SectionHeader
           eyebrow="Collections Preview"
           title="Themes that combine library and media"
           actionLabel="Join to Save Collections"
           actionHref="/signup"
         />
-
         <div className="guest-preview-grid">
-          {previewCollections.map((item) => (
-            <LockedResourceCard item={item} key={item.id} />
-          ))}
+          {loading ? (
+            [1, 2, 3, 4].map((n) => <CardSkeleton key={n} />)
+          ) : (
+            <>
+              {collectionDocs.map((doc) => (
+                <DocumentCard key={doc._id} item={doc} />
+              ))}
+              {collectionMedia.map((item) => (
+                <MediaCard key={item._id} item={item} />
+              ))}
+            </>
+          )}
         </div>
       </section>
 
