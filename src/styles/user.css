@@ -543,6 +543,26 @@
   filter: saturate(0.85);
 }
 
+.guest-preview-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background:
+    linear-gradient(135deg, rgba(0, 91, 150, 0.12), rgba(168, 77, 41, 0.14)),
+    var(--user-surface-soft);
+  color: var(--user-primary);
+  text-align: center;
+}
+
+.guest-preview-card__placeholder strong {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .guest-preview-card__image::after {
   content: '';
   position: absolute;

@@ -8,12 +8,63 @@ import {
 } from '../data/user/homeContent';
 import '../styles/user.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchLandingPreview } from '../app/services/reduxTollkit/asyncThunks/landingThunk';
 import { selectLandingCollectionDocs, selectLandingCollectionMedia, selectLandingDocuments, selectLandingLoading, selectLandingMedia } from '../app/services/reduxTollkit/Slices/landingSlice';
 
 
-const url = import.meta.env.VITE_BACK_END_URL_DATA;
+const assetBaseUrl = (
+  import.meta.env.VITE_BACK_END_URL_IMAGE ||
+  import.meta.env.VITE_BACK_END_URL ||
+  ''
+)
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
+
+const imageFilePattern = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+
+function resolveAssetUrl(path) {
+  const value = path?.toString().trim();
+
+  if (!value || value === 'null') {
+    return null;
+  }
+
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+    return value;
+  }
+
+  const cleanPath = value.replace(/^\/+/, '');
+  const publicPath = cleanPath.startsWith('storage/') ? cleanPath : `storage/${cleanPath}`;
+
+  return `${assetBaseUrl}/${publicPath}`;
+}
+
+function PreviewImage({ src, title, label, mediaType }) {
+  const [failed, setFailed] = useState(false);
+  const imageSrc = resolveAssetUrl(src);
+  const shouldLoadImage =
+    imageSrc &&
+    !failed &&
+    (imageFilePattern.test(imageSrc) || mediaType?.toLowerCase() === 'image');
+
+  if (!shouldLoadImage) {
+    return (
+      <div className="guest-preview-card__placeholder" role="img" aria-label={`${title} preview`}>
+        <strong>{label}</strong>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageSrc}
+      alt={title}
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 function SearchIcon() {
   return (
@@ -80,7 +131,7 @@ function DocumentCard({ item }) {
   return (
     <article className="guest-preview-card">
       <div className="guest-preview-card__image">
-        <img src={`${url}/${item.cover}`} alt={item.title} />
+        <PreviewImage src={item.cover} title={item.title} label="Document" />
         <span>
           <LockIcon /> Members only
         </span>
@@ -105,7 +156,12 @@ function MediaCard({ item }) {
   return (
     <article className="guest-preview-card">
       <div className="guest-preview-card__image">
-        <img src={`${url}/${item.file_path}`} alt={item.title} />
+        <PreviewImage
+          src={item.file_path}
+          title={item.title}
+          label={item.type || 'Media'}
+          mediaType={item.type}
+        />
         <span>
           <LockIcon /> Members only
         </span>
