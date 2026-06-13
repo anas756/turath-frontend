@@ -41,7 +41,7 @@ export const libraryItems = [
     thumbnail: carvedImage,
     imagePosition: '55% 50%',
     actionLabel: 'Read',
-    href: '#library',
+    href: '/user/library',
   },
   {
     id: 'lib-zellij-geometry',
@@ -56,7 +56,7 @@ export const libraryItems = [
     thumbnail: zellijImage,
     imagePosition: '42% 50%',
     actionLabel: 'Open',
-    href: '#library',
+    href: '/user/library',
   },
   {
     id: 'lib-ceramic-field-notes',
@@ -71,7 +71,7 @@ export const libraryItems = [
     thumbnail: zellijImage,
     imagePosition: '43% 50%',
     actionLabel: 'Read',
-    href: '#library',
+    href: '/user/library',
   },
 ];
 
@@ -89,7 +89,7 @@ export const mediaItems = [
     thumbnail: zellijImage,
     imagePosition: '44% 50%',
     actionLabel: 'Watch',
-    href: '#media',
+    href: '/user/media',
     featured: true,
   },
   {
@@ -104,7 +104,7 @@ export const mediaItems = [
     thumbnail: carvedImage,
     imagePosition: '35% 50%',
     actionLabel: 'Watch',
-    href: '#media',
+    href: '/user/media',
   },
   {
     id: 'media-atlas-voices',
@@ -118,7 +118,7 @@ export const mediaItems = [
     thumbnail: carvedImage,
     imagePosition: '12% 50%',
     actionLabel: 'Listen',
-    href: '#media',
+    href: '/user/media',
   },
   {
     id: 'media-blue-ceramics',
@@ -132,7 +132,7 @@ export const mediaItems = [
     thumbnail: zellijImage,
     imagePosition: '40% 50%',
     actionLabel: 'Watch',
-    href: '#media',
+    href: '/user/media',
   },
 ];
 
@@ -147,7 +147,7 @@ export const collectionItems = [
     sourceTypes: ['Library', 'Media'],
     coverImage: carvedImage,
     imagePosition: '72% 50%',
-    href: '#collections',
+    href: '/user/collections',
   },
   {
     id: 'collection-amazigh-culture',
@@ -159,7 +159,7 @@ export const collectionItems = [
     sourceTypes: ['Library', 'Media'],
     coverImage: zellijImage,
     imagePosition: '45% 50%',
-    href: '#collections',
+    href: '/user/collections',
   },
   {
     id: 'collection-craftsmanship',
@@ -171,7 +171,7 @@ export const collectionItems = [
     sourceTypes: ['Library', 'Media'],
     coverImage: heroImage,
     imagePosition: '74% 50%',
-    href: '#collections',
+    href: '/user/collections',
   },
 ];
 
@@ -190,7 +190,7 @@ export const myLibraryItems = [
     imagePosition: '55% 50%',
     progress: 62,
     actionLabel: 'Resume',
-    href: '#my-library',
+    href: '/user/my-library',
   },
   {
     id: 'saved-gnawa-legacy',
@@ -206,31 +206,35 @@ export const myLibraryItems = [
     imagePosition: '44% 50%',
     progress: 35,
     actionLabel: 'Resume',
-    href: '#my-library',
+    href: '/user/my-library',
   },
 ];
 
 export const quickAccessItems = [
   {
     id: 'library',
+    to: '/user/library',
     label: 'Library',
     description: 'Books, PDFs, documents, manuscripts, and articles.',
     count: '2.4k items',
   },
   {
     id: 'media',
+    to: '/user/media',
     label: 'Media',
     description: 'Videos, images, recordings, documentaries, and oral history.',
     count: '860 assets',
   },
   {
     id: 'collections',
+    to: '/user/collections',
     label: 'Collections',
     description: 'Mixed library and media resources grouped by heritage theme.',
     count: '120 sets',
   },
   {
     id: 'my-library',
+    to: '/user/my-library',
     label: 'My Library',
     description: 'Saved items, reading progress, favorites, and watch history.',
     count: 'Personal',

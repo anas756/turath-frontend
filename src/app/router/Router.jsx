@@ -27,6 +27,11 @@ import ResetTokenConfirmed from '../../pages/auth/ResetTokenConfirmed';
 // General Components
 import Home from '../../pages/Home';
 import UserHome from '../../pages/user/UserHome';
+import ProfileSettings from '../../pages/user/ProfileSettings';
+import UserLibrary from '../../pages/user/UserLibrary';
+import UserMedia from '../../pages/user/UserMedia';
+import UserCollections from '../../pages/user/UserCollections';
+import MyLibrary from '../../pages/user/MyLibrary';
 import UnauthorizedPage from '../../pages/UnauthorizedPage';
 import DashboardRedirect from './middleware/DashboardRedirect';
 import NotFoundPage from '../../pages/NotFoundPage';
@@ -60,7 +65,14 @@ export const route = createBrowserRouter([
       {
         path: '/user/',
         element: <UserLayout />,
-        children: [{ path: 'home', element: <UserHome /> }],
+        children: [
+          { path: 'home', element: <UserHome /> },
+          { path: 'library', element: <UserLibrary /> },
+          { path: 'media', element: <UserMedia /> },
+          { path: 'collections', element: <UserCollections /> },
+          { path: 'my-library', element: <MyLibrary /> },
+          { path: 'profile', element: <ProfileSettings /> },
+        ],
       },
     ],
   },

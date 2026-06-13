@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../app/services/reduxTollkit/asyncThunks/AuthThunk';
 
 const navItems = [
-  { label: 'Discover', href: '#discover', active: true },
-  { label: 'Library', href: '#library' },
-  { label: 'Media', href: '#media' },
-  { label: 'Collections', href: '#collections' },
-  { label: 'My Library', href: '#my-library' },
+  { label: 'Discover', to: '/user/home' },
+  { label: 'Library', to: '/user/library' },
+  { label: 'Media', to: '/user/media' },
+  { label: 'Collections', to: '/user/collections' },
+  { label: 'My Library', to: '/user/my-library' },
 ];
 
 const getInitials = (name) => {
@@ -72,14 +72,14 @@ export default function Navbar() {
 
       <nav className="user-navbar__nav" aria-label="Primary navigation">
         {navItems.map((item) => (
-          <a
+          <NavLink
             key={item.label}
-            href={item.href}
-            className={item.active ? 'is-active' : undefined}
-            aria-current={item.active ? 'page' : undefined}
+            to={item.to}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            end
           >
             {item.label}
-          </a>
+          </NavLink>
         ))}
       </nav>
 
@@ -105,15 +105,15 @@ export default function Navbar() {
               </div>
             </div>
 
-            <a href="#my-library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
+            <Link to="/user/my-library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
               My Library
-            </a>
-            <a href="#library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
+            </Link>
+            <Link to="/user/my-library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
               Reading History
-            </a>
-            <a href="#settings" role="menuitem" onClick={() => setIsProfileOpen(false)}>
+            </Link>
+            <Link to="/user/profile" role="menuitem" onClick={() => setIsProfileOpen(false)}>
               Profile Settings
-            </a>
+            </Link>
 
             <button type="button" role="menuitem" onClick={handleLogout} disabled={loading}>
               {loading ? 'Signing out...' : 'Logout'}

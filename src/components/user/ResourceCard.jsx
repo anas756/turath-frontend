@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function ResourceCard({ item, compact = false }) {
   const image = item.image || item.thumbnail || item.coverImage;
   const imagePosition = item.imagePosition || 'center';
@@ -6,6 +8,7 @@ export default function ResourceCard({ item, compact = false }) {
   const length = item.length || item.duration || item.pages || item.itemCount;
   const actionLabel = item.cta || item.actionLabel || 'Open';
   const href = item.href || `#${item.id}`;
+  const isInternalRoute = href.startsWith('/');
 
   return (
     <article className={`resource-card${compact ? ' is-compact' : ''}`}>
@@ -36,7 +39,11 @@ export default function ResourceCard({ item, compact = false }) {
 
         <div className="resource-card__footer">
           <span>{item.category}</span>
-          <a href={href}>{actionLabel}</a>
+          {isInternalRoute ? (
+            <Link to={href}>{actionLabel}</Link>
+          ) : (
+            <a href={href}>{actionLabel}</a>
+          )}
         </div>
       </div>
     </article>
