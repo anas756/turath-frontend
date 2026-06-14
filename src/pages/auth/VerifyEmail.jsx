@@ -50,7 +50,6 @@ export default function VerifyEmail() {
     setResendStatus('');
     try {
       const response = await api.resendConfirmation({ email });
-      console.log(response);
       if (response?.data?.success || response?.status === 200) {
         setResendStatus('success');
       } else {
@@ -131,7 +130,7 @@ export default function VerifyEmail() {
                 marginTop: '0.75rem',
               }}
             >
-              ✓ Verification email sent — check your inbox.
+              Verification email sent - check your inbox.
             </p>
           )}
           {resendStatus && resendStatus !== 'success' && (

@@ -99,7 +99,6 @@ export const UserSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        console.log('register : ', action);
         
         if (action.payload?.data) {
           const newUser = action.payload.data;
@@ -117,7 +116,6 @@ export const UserSlice = createSlice({
 
       // Update User
       .addCase(updateUser.pending, (state) => {
-         console.log('update user : ');
         state.loading = true;
       })
       .addCase(updateUser.fulfilled, (state, action) => {

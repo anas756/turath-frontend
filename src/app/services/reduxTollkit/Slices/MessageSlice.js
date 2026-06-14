@@ -8,7 +8,6 @@ import {
   deleteCategory,
 } from '../asyncThunks/LibraryThunk';
 import {
-  fetchMedia,
   fetchMediaById,
   createMedia,
   updateMediaTunk,

@@ -19,7 +19,7 @@ export default function App() {
     if (jwt_token) {
       dispatch(getProfile());
     }
-  }, [dispatch]);
+  }, [dispatch, jwt_token]);
 
   if (jwt_token && isLoading) {
     return <AdminLoading />;

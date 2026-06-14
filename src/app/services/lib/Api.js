@@ -61,8 +61,14 @@ export const api = {
 
   createMedia: (data) => customAxios.post('/media', data),
 
-  // FIX: Change to POST because of FormData + _method: 'PUT'
-  updateMedia: (id, data) => customAxios.post(`/media/${id}`, data),
+  updateMedia: (id, data) => {
+    if (data instanceof FormData) {
+      if (!data.has('_method')) data.append('_method', 'PUT');
+      return customAxios.post(`/media/${id}`, data);
+    }
+
+    return customAxios.put(`/media/${id}`, data);
+  },
 
   // FIX: Ensure ID is correctly interpolated
   deleteMedia: (id) => customAxios.delete(`/media/${id}`),

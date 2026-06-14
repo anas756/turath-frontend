@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -152,7 +152,7 @@ export default function SignUp() {
               <input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="********"
                 autoComplete="new-password"
                 {...register('password')}
               />
@@ -171,7 +171,7 @@ export default function SignUp() {
               <input
                 id="password_confirmation"
                 type="password"
-                placeholder="••••••••"
+                placeholder="********"
                 autoComplete="new-password"
                 {...register('password_confirmation')}
               />

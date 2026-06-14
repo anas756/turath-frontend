@@ -34,7 +34,6 @@ export const createDoc = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const res = await api.createDoc(data);
-      console.log(res);
       return res.data;
     } catch (error) {
       return rejectWithValue(

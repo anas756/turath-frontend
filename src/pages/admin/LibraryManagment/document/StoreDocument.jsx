@@ -48,7 +48,11 @@ const m = {
     justifyContent: 'center',
   },
   form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+    gap: '1.25rem',
+  },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
   label: {
     fontSize: '0.8rem',
@@ -99,6 +103,7 @@ export default function StoreDocument({ setShowStore }) {
     resolver: yupResolver(Schema),
     defaultValues: { description: '' },
   });
+
   const descriptionValue = useWatch({ control, name: 'description' }) || '';
 
   const onSubmit = async (data) => {
@@ -119,7 +124,6 @@ export default function StoreDocument({ setShowStore }) {
       });
     }
 
-    // 2. Safely handle file inputs (Ensure we grab the first File object)
     const fileInput = data.file?.[0];
     if (fileInput instanceof File) {
       formData.append('file_path', fileInput);
@@ -130,21 +134,13 @@ export default function StoreDocument({ setShowStore }) {
       formData.append('cover', coverInput);
     }
 
-    // 3. Debug before sending
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
     try {
       await dispatch(createDoc(formData)).unwrap();
       setShowStore(false);
     } catch (err) {
-      if (err.response && err.response.data.errors) {
-        console.table(err.response.data.errors); // This will show you exactly which field failed
-        alert('Validation failed: ' + JSON.stringify(err.response.data.errors));
-      } else {
-        console.error('Submission Error:', err);
-      }
+      const message = err?.response?.data?.message || err?.message || 'Failed to save document';
+      alert(message);
+      console.error('Submission Error:', err);
     }
   };
 
@@ -162,13 +158,12 @@ export default function StoreDocument({ setShowStore }) {
           onClick={() => setShowStore(false)}
           style={m.closeBtn}
         >
-          ✕
+          x
         </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} style={m.form}>
         <div style={m.grid}>
-          {/* Title - full width */}
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Document Title</label>
             <input {...register('title')} style={m.input} />
@@ -177,7 +172,6 @@ export default function StoreDocument({ setShowStore }) {
             )}
           </div>
 
-          {/* Authors */}
           <div style={m.inputGroup}>
             <label style={m.label}>Authors</label>
             <input
@@ -191,11 +185,10 @@ export default function StoreDocument({ setShowStore }) {
             )}
           </div>
 
-          {/* Category */}
           <div style={m.inputGroup}>
             <label style={m.label}>Category</label>
             <select {...register('categorie_id')} style={m.input}>
-              <option value="">Select category…</option>
+              <option value="">Select category...</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -207,7 +200,6 @@ export default function StoreDocument({ setShowStore }) {
             )}
           </div>
 
-          {/* Document File */}
           <div style={m.inputGroup}>
             <label style={m.label}>Document File (PDF)</label>
             <input
@@ -219,7 +211,6 @@ export default function StoreDocument({ setShowStore }) {
             {errors.file && <span style={m.error}>{errors.file.message}</span>}
           </div>
 
-          {/* Cover Image */}
           <div style={m.inputGroup}>
             <label style={m.label}>
               Cover Image <span style={m.optionalLabel}>(optional)</span>
@@ -232,7 +223,6 @@ export default function StoreDocument({ setShowStore }) {
             />
           </div>
 
-          {/* Source */}
           <div style={m.inputGroup}>
             <label style={m.label}>
               Source <span style={m.optionalLabel}>(optional)</span>
@@ -244,7 +234,6 @@ export default function StoreDocument({ setShowStore }) {
             />
           </div>
 
-          {/* Tags */}
           <div style={m.inputGroup}>
             <label style={m.label}>
               Tags <span style={m.optionalLabel}>(optional)</span>
@@ -257,7 +246,6 @@ export default function StoreDocument({ setShowStore }) {
             <span style={m.hint}>Comma-separated</span>
           </div>
 
-          {/* Description - full width */}
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
