@@ -45,18 +45,26 @@ export default function UserDocumentReader() {
           });
         }
       });
+    
 
     return () => {
       ignore = true;
     };
   }, [id, page]);
+  useEffect(() => {
+    document
+      .querySelector('.user-reader-content')
+      ?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [page]);
 
   const lastPage = state.pagination?.last_page || 1;
 
   return (
     <section className="user-detail-page user-reader-page">
       <div className="user-detail-shell">
-        <Link to={`/user/library/${id}`} className="user-back-link">Back to document</Link>
+        <Link to={`/user/library/${id}`} className="user-back-link">
+          Back to document
+        </Link>
 
         <div className="user-reader-card">
           <div className="user-reader-header">
@@ -72,19 +80,32 @@ export default function UserDocumentReader() {
               >
                 Previous
               </button>
-              <span>Page {page} of {lastPage}</span>
+              <span>
+                Page {page} of {lastPage}
+              </span>
               <button
                 type="button"
                 disabled={page >= lastPage || state.loading}
-                onClick={() => setPage((current) => Math.min(lastPage, current + 1))}
+                onClick={() =>
+                  setPage((current) => Math.min(lastPage, current + 1))
+                }
               >
                 Next
               </button>
             </div>
           </div>
-
+          {/* Add this right after the closing div of user-reader-header */}
+          <div className="user-reader-progress">
+            <div
+              className="user-reader-progress__fill"
+              style={{ width: `${(page / lastPage) * 100}%` }}
+            />
+          </div>
           {state.loading ? (
-            <EmptyState title="Loading page..." message="Fetching extracted content." />
+            <EmptyState
+              title="Loading page..."
+              message="Fetching extracted content."
+            />
           ) : state.error ? (
             <EmptyState title="Reader unavailable" message={state.error} />
           ) : state.content ? (
