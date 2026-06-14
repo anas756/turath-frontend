@@ -491,7 +491,7 @@ const DocumentsTable = ({
       <thead>
         <tr>
           <th>Document</th>
-          <th>Category</th>
+          <th style={styles.categoryColumn}>Category</th>
           <th data-admin-actions></th>
         </tr>
       </thead>
@@ -515,8 +515,8 @@ const DocumentsTable = ({
                   </div>
                 </div>
               </td>
-              <td data-label="Category">
-                <span style={styles.badge}>
+              <td data-label="Category" style={styles.categoryCell}>
+                <span style={styles.badge} title={doc.categorie?.name || '---'}>
                   {doc.categorie?.name || '---'}
                 </span>
               </td>
@@ -800,12 +800,25 @@ const styles = {
     fontWeight: 600,
   },
   badge: {
+    display: 'inline-block',
+    maxWidth: '170px',
     padding: '0.25rem 0.75rem',
     borderRadius: '9999px',
     fontSize: '0.7rem',
     backgroundColor: 'rgba(99,70,29,0.08)',
     color: 'var(--tertiary)',
     fontWeight: 600,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    verticalAlign: 'middle',
+    whiteSpace: 'nowrap',
+  },
+  categoryColumn: {
+    width: '220px',
+  },
+  categoryCell: {
+    width: '220px',
+    maxWidth: '220px',
   },
   categoryThumb: {
     width: '58px',

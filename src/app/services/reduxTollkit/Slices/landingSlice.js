@@ -11,6 +11,11 @@ const initialState = {
   documents: [],
   media: [],
   collections: { categories: [] },
+  pagination: {
+    documents: null,
+    media: null,
+    collections: null,
+  },
   loading: false,
   error: null,
 };
@@ -30,6 +35,7 @@ export const landingSlice = createSlice({
         state.documents = payload.documents || [];
         state.media = payload.media || [];
         state.collections = payload.collections || { categories: [] };
+        state.pagination = payload.pagination || initialState.pagination;
       })
       .addCase(fetchLandingPreview.rejected, (state, { payload }) => {
         state.loading = false;
@@ -74,6 +80,7 @@ export const landingSlice = createSlice({
 export const selectLandingDocuments = (state) => state.landing.documents;
 export const selectLandingMedia = (state) => state.landing.media;
 export const selectLandingCollections = (state) => state.landing.collections;
+export const selectLandingPagination = (state) => state.landing.pagination;
 export const selectLandingCollectionCategories = (state) =>
   state.landing.collections.categories || [];
 export const selectLandingLoading = (state) => state.landing.loading;

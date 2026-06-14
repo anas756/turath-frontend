@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
@@ -109,13 +109,13 @@ export default function StoreMedia({ setShowStore }) {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
     defaultValues: { status: 'active', description: '' },
   });
-  const descriptionValue = watch('description') || '';
+  const descriptionValue = useWatch({ control, name: 'description' }) || '';
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];

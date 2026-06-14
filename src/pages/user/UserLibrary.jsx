@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useSearchParams } from 'react-router-dom';
+import PaginationControls from '../../components/user/PaginationControls';
 import ResourceShelf from '../../components/user/ResourceShelf';
 import SectionHeader from '../../components/user/SectionHeader';
 import useUserArchiveData from '../../hooks/useUserArchiveData';
@@ -9,17 +10,25 @@ import { api } from '../../app/services/lib/Api';
 import {
   fallbackImage,
   getId,
-  matchesText,
   resolveAssetUrl,
 } from '../../utils/userResources';
 
 const typeFilters = ['All', 'Gutendex', 'Internet Archive', 'Google Books', 'Open Library', 'Document'];
+const sourceFilters = {
+  Gutendex: 'gutendex',
+  'Internet Archive': 'internet_archive',
+  'Google Books': 'google_books',
+  'Open Library': 'open_library',
+  Document: 'local',
+};
+const PAGE_SIZE = 9;
 
 export default function UserLibrary() {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const [typeFilter, setTypeFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [page, setPage] = useState(1);
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
   const [contentQuery, setContentQuery] = useState('');
@@ -30,22 +39,28 @@ export default function UserLibrary() {
     searched: false,
     message: '',
   });
+  const documentsParams = useMemo(() => ({
+    page,
+    per_page: PAGE_SIZE,
+    ...(query.trim() ? { search: query.trim() } : {}),
+    ...(categoryFilter ? { categorie_id: categoryFilter } : {}),
+    ...(sourceFilters[typeFilter] ? { source: sourceFilters[typeFilter] } : {}),
+  }), [categoryFilter, page, query, typeFilter]);
+  const categoriesParams = useMemo(() => ({ per_page: 100 }), []);
   const {
     categories,
     documentResources,
     favoriteDocuments,
     isDocumentFavorite,
+    documentsPagination,
     loading,
-  } = useUserArchiveData();
+  } = useUserArchiveData({
+    documentsParams,
+    categoriesParams,
+    loadMedia: false,
+  });
 
-  const filteredItems = useMemo(() => {
-    return documentResources.filter((item) => {
-      const matchesQuery = matchesText(item, query);
-      const matchesType = typeFilter === 'All' || item.type === typeFilter;
-      const matchesCategory = !categoryFilter || item.categorie_id === categoryFilter;
-      return matchesQuery && matchesType && matchesCategory;
-    });
-  }, [categoryFilter, documentResources, query, typeFilter]);
+  const filteredItems = documentResources;
 
   const items = filteredItems.map((item) => {
     const saved = isDocumentFavorite(item);
@@ -67,6 +82,7 @@ export default function UserLibrary() {
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setQuery(value);
+    setPage(1);
     const nextParams = new URLSearchParams(searchParams);
     if (value.trim()) nextParams.set('q', value);
     else nextParams.delete('q');
@@ -121,7 +137,7 @@ export default function UserLibrary() {
         <SectionHeader
           eyebrow="Library"
           title="Books, PDFs, documents, and manuscripts"
-          actionLabel={`${filteredItems.length} Results`}
+          actionLabel={`${documentsPagination?.total ?? filteredItems.length} Results`}
           actionHref="#library-results"
         />
 
@@ -134,7 +150,10 @@ export default function UserLibrary() {
           />
           <select
             value={categoryFilter}
-            onChange={(event) => setCategoryFilter(event.target.value)}
+            onChange={(event) => {
+              setCategoryFilter(event.target.value);
+              setPage(1);
+            }}
             className="user-toolbar-select"
           >
             <option value="">All categories</option>
@@ -150,7 +169,10 @@ export default function UserLibrary() {
                 type="button"
                 key={filter}
                 className={typeFilter === filter ? 'is-active' : undefined}
-                onClick={() => setTypeFilter(filter)}
+                onClick={() => {
+                  setTypeFilter(filter);
+                  setPage(1);
+                }}
               >
                 {filter}
               </button>
@@ -184,6 +206,11 @@ export default function UserLibrary() {
           <ResourceShelf
             items={items}
             compact={false}
+          />
+          <PaginationControls
+            pagination={documentsPagination}
+            onPageChange={setPage}
+            loading={loading}
           />
           {loading && !documentResources.length && (
             <p className="user-page-note">Loading your library...</p>

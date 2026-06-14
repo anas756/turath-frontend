@@ -41,6 +41,7 @@ const initialState = {
   documents: [],
   categories: [],
   documentsPagination: defaultPagination,
+  categoriesPagination: defaultPagination,
   documentsLoading: false,
   categoriesLoading: false,
 };
@@ -74,7 +75,11 @@ export const librarySlice = createSlice({
       })
       .addCase(getAllCategoris.fulfilled, (state, action) => {
         state.categoriesLoading = false;
-        state.categories = action.payload.data ?? action.payload ?? [];
+        state.categories = extractList(action.payload);
+        state.categoriesPagination = extractPagination(
+          action.payload,
+          state.categoriesPagination
+        );
       })
       .addCase(getAllCategoris.rejected, (state) => {
         state.categoriesLoading = false;

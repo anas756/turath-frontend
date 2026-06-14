@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
@@ -115,7 +115,7 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
@@ -125,7 +125,7 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
       icon: categorie?.icon || '',
     },
   });
-  const descriptionValue = watch('description') || '';
+  const descriptionValue = useWatch({ control, name: 'description' }) || '';
 
   const onSubmit = async (data) => {
     const payload = new FormData();

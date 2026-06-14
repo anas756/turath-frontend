@@ -25,7 +25,7 @@ export const api = {
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
 
   // --- Categories ---
-  getCategories: () => customAxios.get('/categories'),
+  getCategories: (params = {}) => customAxios.get('/categories', { params }),
   getCategorie: (id) => customAxios.get(`/categories/${id}`),
   createCategorie: (data) => customAxios.post('/categories', data),
   updateCategorie: (id, data) =>
@@ -82,5 +82,5 @@ export const api = {
   removeFavorite: (type, favorableId) =>
     customAxios.delete(`/favorites/${type}/${favorableId}`),
 
-  getLandingPreview: () => customAxios.get('/landing/preview'),
+  getLandingPreview: (params = {}) => customAxios.get('/landing/preview', { params }),
 };

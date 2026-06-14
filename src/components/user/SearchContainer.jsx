@@ -11,7 +11,7 @@ import {
 const TYPE_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'archive', label: 'Archive' },
-  { value: 'watch', label: 'Watch & View' },
+  { value: 'watch', label: 'Videos' },
 ];
 
 function SearchIcon() {

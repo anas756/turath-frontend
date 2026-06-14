@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
@@ -90,7 +90,7 @@ export default function UpdateDocument({ document, setShowUpdate }) {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
@@ -102,7 +102,7 @@ export default function UpdateDocument({ document, setShowUpdate }) {
       tags: document?.tags?.join(', ') || '',
     },
   });
-  const descriptionValue = watch('description') || '';
+  const descriptionValue = useWatch({ control, name: 'description' }) || '';
 
   const onSubmit = async (data) => {
     const payload = {};

@@ -13,33 +13,68 @@ import {
   mapMediaToResource,
 } from '../utils/userResources';
 
-export default function useUserArchiveData({ includeFavorites = true } = {}) {
+export default function useUserArchiveData({
+  includeFavorites = true,
+  loadDocuments = true,
+  loadCategories = true,
+  loadMedia = true,
+  documentsParams = null,
+  categoriesParams = null,
+  mediaParams = null,
+} = {}) {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const {
     documents = [],
     categories = [],
+    documentsPagination,
+    categoriesPagination,
     documentsLoading = false,
     categoriesLoading = false,
   } = useSelector((state) => state.library || {});
   const {
     media = [],
+    pagination: mediaPagination,
     mediaLoading = false,
   } = useSelector((state) => state.media || {});
   const favorite = useSelector((state) => state.favorite || {});
+  const documentsRequestKey = useMemo(() => JSON.stringify(documentsParams || {}), [documentsParams]);
+  const categoriesRequestKey = useMemo(() => JSON.stringify(categoriesParams || {}), [categoriesParams]);
+  const mediaRequestKey = useMemo(() => JSON.stringify(mediaParams || {}), [mediaParams]);
 
   useEffect(() => {
-    if (!documents.length) dispatch(getAllDocs());
-    if (!categories.length) dispatch(getAllCategoris());
-    if (!media.length) dispatch(fetchMedia({ status: 'active', per_page: 100 }));
+    if (loadDocuments) {
+      if (documentsParams) dispatch(getAllDocs(documentsParams));
+      else if (!documents.length) dispatch(getAllDocs());
+    }
+
+    if (loadCategories) {
+      if (categoriesParams) dispatch(getAllCategoris(categoriesParams));
+      else if (!categories.length) dispatch(getAllCategoris());
+    }
+
+    if (loadMedia) {
+      if (mediaParams) dispatch(fetchMedia(mediaParams));
+      else if (!media.length) dispatch(fetchMedia({ status: 'active', per_page: 100 }));
+    }
+
     if (includeFavorites && isAuthenticated) dispatch(fetchFavorites());
   }, [
     categories.length,
+    categoriesParams,
+    categoriesRequestKey,
     dispatch,
     documents.length,
+    documentsParams,
+    documentsRequestKey,
     includeFavorites,
     isAuthenticated,
+    loadCategories,
+    loadDocuments,
+    loadMedia,
     media.length,
+    mediaParams,
+    mediaRequestKey,
   ]);
 
   const documentResources = useMemo(
@@ -65,6 +100,9 @@ export default function useUserArchiveData({ includeFavorites = true } = {}) {
     documents,
     categories,
     media,
+    documentsPagination,
+    categoriesPagination,
+    mediaPagination,
     favorite,
     documentResources,
     mediaResources,

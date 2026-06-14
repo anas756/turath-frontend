@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
@@ -69,7 +69,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
   const dispatch = useDispatch();
   const currentType = media?.type?.toString().toLowerCase() || '';
 
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, control, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(Schema),
     defaultValues: {
       title:       media?.title       || '',
@@ -80,7 +80,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
       resolution:  media?.resolution  || '',
     },
   });
-  const descriptionValue = watch('description') || '';
+  const descriptionValue = useWatch({ control, name: 'description' }) || '';
 
   const onSubmit = async (data) => {
     const id = media?._id || media?.id;

@@ -17,9 +17,9 @@ export const getAllDocs = createAsyncThunk(
 
 export const getAllCategoris = createAsyncThunk(
   'library/categories/all',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const res = await api.getCategories();
+      const res = await api.getCategories(params);
       return res.data;
     } catch (error) {
       return rejectWithValue(

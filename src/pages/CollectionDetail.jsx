@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../app/services/lib/Api';
 import Footer from '../components/user/Footer';
+import PaginationControls from '../components/user/PaginationControls';
 import RichText from '../components/common/RichText';
 import { htmlToPlainText } from '../utils/richText';
 import '../styles/user.css';
@@ -15,6 +16,7 @@ const assetBaseUrl = (
   .replace(/\/$/, '');
 
 const imageFilePattern = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+const PAGE_SIZE = 9;
 
 function resolveAssetUrl(path) {
   const value = path?.toString().trim();
@@ -111,6 +113,7 @@ export default function CollectionDetail() {
     error: null,
     collection: null,
   });
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let ignore = false;
@@ -138,6 +141,18 @@ export default function CollectionDetail() {
 
   const collection = state.collection;
   const documents = collection?.documents || [];
+  const lastPage = Math.max(1, Math.ceil(documents.length / PAGE_SIZE));
+  const currentPage = Math.min(page, lastPage);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pagedDocuments = documents.slice(pageStart, pageStart + PAGE_SIZE);
+  const documentsPagination = {
+    current_page: currentPage,
+    last_page: lastPage,
+    per_page: PAGE_SIZE,
+    total: documents.length,
+    from: documents.length ? pageStart + 1 : null,
+    to: Math.min(pageStart + PAGE_SIZE, documents.length),
+  };
   const bannerUrl = resolveAssetUrl(collection?.banner);
   const heroStyle = bannerUrl
     ? {
@@ -180,11 +195,18 @@ export default function CollectionDetail() {
         {!state.loading && !state.error && (
           <section className="collection-detail-content">
             {documents.length > 0 ? (
-              <div className="collection-document-grid">
-                {documents.map((doc) => (
-                  <CollectionDocumentCard key={doc._id || doc.id} item={doc} />
-                ))}
-              </div>
+              <>
+                <div className="collection-document-grid">
+                  {pagedDocuments.map((doc) => (
+                    <CollectionDocumentCard key={doc._id || doc.id} item={doc} />
+                  ))}
+                </div>
+                <PaginationControls
+                  pagination={documentsPagination}
+                  onPageChange={setPage}
+                  loading={state.loading}
+                />
+              </>
             ) : (
               <div className="guest-media-empty">
                 <h3>This collection is empty</h3>

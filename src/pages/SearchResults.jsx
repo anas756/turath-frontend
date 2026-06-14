@@ -20,8 +20,10 @@ const videoFilePattern = /\.(m4v|mov|mp4|ogg|ogv|webm)(\?.*)?$/i;
 const TYPE_OPTIONS = [
   { value: 'all', label: 'All Results' },
   { value: 'archive', label: 'Archive' },
-  { value: 'watch', label: 'Watch & Listen' },
+  { value: 'watch', label: 'Videos' },
 ];
+
+const EMPTY_COUNTS = {};
 
 function resolveAssetUrl(path) {
   const value = path?.toString().trim();
@@ -81,6 +83,18 @@ function Cover({ src, title, label }) {
   }
 
   return <img src={imageSrc} alt={title} loading="lazy" onError={() => setFailed(true)} />;
+}
+
+function formatPublishedDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
 }
 
 function DocumentResultCard({ item }) {
@@ -166,6 +180,8 @@ function MediaResultCard({ item }) {
 }
 
 function YoutubeResultCard({ item }) {
+  const published = formatPublishedDate(item.published_at);
+
   return (
     <article className="youtube-result-card">
       <a href={item.url} target="_blank" rel="noreferrer" className="youtube-result-card__thumb">
@@ -177,8 +193,12 @@ function YoutubeResultCard({ item }) {
         <span className="youtube-result-card__play">Play</span>
       </a>
       <div className="youtube-result-card__body">
-        <span>{item.channel || 'YouTube'}</span>
+        <span>
+          {item.result_group || 'YouTube'}
+          {published ? ` / ${published}` : ''}
+        </span>
         <h3>{item.title}</h3>
+        {item.channel && <p className="search-result-card__byline">{item.channel}</p>}
         <p>{item.description || 'External video result related to Moroccan heritage.'}</p>
         <a href={item.url} target="_blank" rel="noreferrer">Watch on YouTube</a>
       </div>
@@ -198,7 +218,12 @@ export default function SearchResults() {
 
   useEffect(() => {
     let ignore = false;
-    setState((current) => ({ ...current, loading: true, error: null }));
+
+    queueMicrotask(() => {
+      if (!ignore) {
+        setState((current) => ({ ...current, loading: true, error: null }));
+      }
+    });
 
     api.searchPublic({ query, type })
       .then(({ data }) => {
@@ -224,7 +249,7 @@ export default function SearchResults() {
   const documents = state.data?.internal?.documents ?? [];
   const media = state.data?.internal?.media ?? [];
   const youtube = state.data?.external?.youtube ?? [];
-  const counts = state.data?.counts ?? {};
+  const counts = state.data?.counts ?? EMPTY_COUNTS;
   const hasInternal = documents.length > 0 || media.length > 0;
   const hasExternal = youtube.length > 0;
   const showExternalBlock = type !== 'archive';
@@ -248,8 +273,8 @@ export default function SearchResults() {
           <p className="user-section-eyebrow">Explore Turath</p>
           <h1>Search Moroccan heritage resources.</h1>
           <p>
-            Results are separated between the Turath database and external videos,
-            so guests can see what belongs to the archive and what comes from YouTube.
+            Results are separated between the Turath database and latest or popular
+            YouTube videos, so guests can see archive records and fresh external media.
           </p>
           <SearchContainer initialQuery={query} initialType={type} />
         </section>
@@ -329,7 +354,7 @@ export default function SearchResults() {
                   <p className="user-section-eyebrow">External Videos</p>
                   <h2>{counts.external ?? 0} YouTube result{counts.external === 1 ? '' : 's'}</h2>
                 </div>
-                <span>Moroccan heritage</span>
+                <span>{query}</span>
               </div>
 
               {state.data?.external?.youtube_message && (

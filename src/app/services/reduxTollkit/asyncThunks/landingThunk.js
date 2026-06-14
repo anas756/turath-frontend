@@ -3,9 +3,9 @@ import { api } from '../../lib/Api';
 
 export const fetchLandingPreview = createAsyncThunk(
   'landing/fetchPreview',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const { data } = await api.getLandingPreview();
+      const { data } = await api.getLandingPreview(params);
       return data.data; // { documents, media }
     } catch (err) {
       return rejectWithValue(

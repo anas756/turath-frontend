@@ -17,30 +17,26 @@ export default function RichDescriptionEditor({
 }) {
   const editorRef = useRef(null);
   const [mode, setMode] = useState('visual');
-  const [html, setHtml] = useState(() => sanitizeHtml(value));
+  const html = sanitizeHtml(value);
 
   useEffect(() => {
-    const clean = sanitizeHtml(value);
-    setHtml(clean);
-
-    if (editorRef.current && mode === 'visual' && editorRef.current.innerHTML !== clean) {
-      editorRef.current.innerHTML = clean;
+    if (editorRef.current && mode === 'visual' && editorRef.current.innerHTML !== html) {
+      editorRef.current.innerHTML = html;
     }
-  }, [mode, value]);
+  }, [html, mode]);
 
   const emitChange = (nextHtml) => {
     const clean = sanitizeHtml(nextHtml);
-    setHtml(clean);
     onChange?.(clean);
   };
 
-  const focusEditor = () => {
-    if (mode !== 'visual') setMode('visual');
-    window.requestAnimationFrame(() => editorRef.current?.focus());
-  };
-
   const runCommand = (command, argument = null) => {
-    focusEditor();
+    if (mode !== 'visual') {
+      setMode('visual');
+      return;
+    }
+
+    editorRef.current?.focus();
     document.execCommand(command, false, argument);
     emitChange(editorRef.current?.innerHTML || '');
   };

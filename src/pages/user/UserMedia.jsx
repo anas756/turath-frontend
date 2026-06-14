@@ -2,33 +2,42 @@ import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import EmptyState from '../../components/user/EmptyState';
 import { MediaFeature, MediaListItem } from '../../components/user/MediaFeature';
+import PaginationControls from '../../components/user/PaginationControls';
 import ResourceShelf from '../../components/user/ResourceShelf';
 import SectionHeader from '../../components/user/SectionHeader';
 import useUserArchiveData from '../../hooks/useUserArchiveData';
 import { addMediaFavorite, removeFavorite } from '../../app/services/reduxTollkit/asyncThunks/FavoriteThunk';
-import { getId, matchesText } from '../../utils/userResources';
+import { getId } from '../../utils/userResources';
 
 const mediaFilters = ['All', 'Video', 'Image'];
+const PAGE_SIZE = 9;
 
 export default function UserMedia() {
   const dispatch = useDispatch();
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [selectedId, setSelectedId] = useState(null);
+  const [page, setPage] = useState(1);
+  const mediaParams = useMemo(() => ({
+    page,
+    per_page: PAGE_SIZE,
+    status: 'active',
+    ...(query.trim() ? { search: query.trim() } : {}),
+    ...(typeFilter !== 'All' ? { type: typeFilter.toLowerCase() } : {}),
+  }), [page, query, typeFilter]);
   const {
     mediaResources,
     favoriteMedia,
     isMediaFavorite,
+    mediaPagination,
     loading,
-  } = useUserArchiveData();
+  } = useUserArchiveData({
+    loadDocuments: false,
+    loadCategories: false,
+    mediaParams,
+  });
 
-  const filteredMedia = useMemo(() => {
-    return mediaResources.filter((item) => {
-      const matchesQuery = matchesText(item, query, ['title', 'description', 'category', 'type', 'format']);
-      const matchesType = typeFilter === 'All' || item.type === typeFilter;
-      return matchesQuery && matchesType;
-    });
-  }, [mediaResources, query, typeFilter]);
+  const filteredMedia = mediaResources;
 
   const featuredMedia =
     filteredMedia.find((item) => getId(item) === selectedId) ||
@@ -62,7 +71,7 @@ export default function UserMedia() {
         <SectionHeader
           eyebrow="Media"
           title="Videos and images from the archive"
-          actionLabel={`${filteredMedia.length} Results`}
+          actionLabel={`${mediaPagination?.total ?? filteredMedia.length} Results`}
           actionHref="#media-results"
         />
 
@@ -71,7 +80,11 @@ export default function UserMedia() {
             type="search"
             placeholder="Search media..."
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+              setSelectedId(null);
+            }}
           />
           <div>
             {mediaFilters.map((filter) => (
@@ -79,7 +92,11 @@ export default function UserMedia() {
                 type="button"
                 key={filter}
                 className={typeFilter === filter ? 'is-active' : undefined}
-                onClick={() => setTypeFilter(filter)}
+                onClick={() => {
+                  setTypeFilter(filter);
+                  setPage(1);
+                  setSelectedId(null);
+                }}
               >
                 {filter}
               </button>
@@ -107,6 +124,14 @@ export default function UserMedia() {
             <div className="user-page-block" id="media-results">
               <SectionHeader eyebrow="All Media" title="Browse media records" />
               <ResourceShelf items={shelfItems} />
+              <PaginationControls
+                pagination={mediaPagination}
+                onPageChange={(nextPage) => {
+                  setPage(nextPage);
+                  setSelectedId(null);
+                }}
+                loading={loading}
+              />
               {favoriteMedia.length > 0 && (
                 <p className="user-page-note">{favoriteMedia.length} saved media items in your library.</p>
               )}

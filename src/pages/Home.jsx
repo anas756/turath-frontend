@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/user/Footer';
+import PaginationControls from '../components/user/PaginationControls';
 import SectionHeader from '../components/user/SectionHeader';
 import SearchContainer from '../components/user/SearchContainer';
 import {
@@ -16,6 +17,7 @@ import {
   selectLandingDocuments,
   selectLandingLoading,
   selectLandingMedia,
+  selectLandingPagination,
 } from '../app/services/reduxTollkit/Slices/landingSlice';
 import { htmlToPlainText } from '../utils/richText';
 
@@ -455,12 +457,23 @@ export default function Home() {
   const documents = useSelector(selectLandingDocuments);
   const media = useSelector(selectLandingMedia);
   const collectionCategories = useSelector(selectLandingCollectionCategories);
+  const pagination = useSelector(selectLandingPagination);
   const loading = useSelector(selectLandingLoading);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documentsPage, setDocumentsPage] = useState(1);
+  const [mediaPage, setMediaPage] = useState(1);
+  const [collectionsPage, setCollectionsPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchLandingPreview());
-  }, [dispatch]);
+    dispatch(fetchLandingPreview({
+      documents_page: documentsPage,
+      media_page: mediaPage,
+      collections_page: collectionsPage,
+      documents_per_page: 3,
+      media_per_page: 5,
+      collections_per_page: 4,
+    }));
+  }, [collectionsPage, dispatch, documentsPage, mediaPage]);
 
   return (
     <div className="guest-home" id="top">
@@ -529,6 +542,11 @@ export default function Home() {
               />
             ))}
         </div>
+        <PaginationControls
+          pagination={pagination?.documents}
+          onPageChange={setDocumentsPage}
+          loading={loading}
+        />
       </section>
 
       <section className="guest-section" id="media-preview">
@@ -537,6 +555,11 @@ export default function Home() {
           title="Videos and images from the archive"
         />
         <GuestMediaShowcase items={media} loading={loading} />
+        <PaginationControls
+          pagination={pagination?.media}
+          onPageChange={setMediaPage}
+          loading={loading}
+        />
       </section>
 
       <section className="guest-section guest-section-soft" id="collections-preview">
@@ -558,6 +581,11 @@ export default function Home() {
             </div>
           )}
         </div>
+        <PaginationControls
+          pagination={pagination?.collections}
+          onPageChange={setCollectionsPage}
+          loading={loading}
+        />
       </section>
 
       <section className="guest-cta">
