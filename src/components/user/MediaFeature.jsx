@@ -55,6 +55,7 @@ export function MediaFeature({ exhibit }) {
 export function MediaListItem({ item, onSelect, isActive = false }) {
   const image = item.image || item.thumbnail || item.coverImage;
   const duration = item.duration || item.length;
+  const canPreviewVideo = item.isVideo && item.mediaUrl;
 
   return (
     <button
@@ -63,11 +64,22 @@ export function MediaListItem({ item, onSelect, isActive = false }) {
       onClick={onSelect}
     >
       <div className="media-list-item__thumb">
-        <img
-          src={image}
-          alt=""
-          style={{ objectPosition: item.imagePosition || 'center' }}
-        />
+        {canPreviewVideo ? (
+          <video
+            src={item.mediaUrl}
+            poster={item.hasGeneratedThumbnail ? image : undefined}
+            muted
+            playsInline
+            preload="metadata"
+            aria-label={`${item.title} video preview`}
+          />
+        ) : (
+          <img
+            src={image}
+            alt=""
+            style={{ objectPosition: item.imagePosition || 'center' }}
+          />
+        )}
         {item.isVideo && (
           <span
             className="media-play media-play--small"

@@ -10,6 +10,7 @@ import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
 import CuratorAvatar from '../../../components/admin/CuratorAvatar';
 import PaginationControls from '../../../components/admin/PaginationControls';
+import { getMediaFiles } from '../../../utils/userResources';
 import StoreMedia from './StoreMedia';
 import UpdateMedia from './UpdateMedia';
 import ShowMediaDetails from './ShowMediaDetails';
@@ -315,7 +316,7 @@ export default function MediaLibrary() {
                     <th>Title</th>
                     <th>Type</th>
                     <th>Format</th>
-                    <th>Resolution</th>
+                    <th>Files</th>
                     <th>Size</th>
                     <th>Curator</th>
                     <th>Date Added</th>
@@ -326,6 +327,7 @@ export default function MediaLibrary() {
                 <tbody>
                   {media.map((item) => {
                     const id = item._id || item.id;
+                    const files = getMediaFiles(item);
                     return (
                       <tr key={id}>
                         <td data-label="Title">
@@ -354,8 +356,8 @@ export default function MediaLibrary() {
                         <td data-label="Format" className="date-text">
                           {item.format?.toUpperCase()}
                         </td>
-                        <td data-label="Resolution" className="date-text">
-                          {item.resolution || 'N/A'}
+                        <td data-label="Files" className="date-text">
+                          {files.length || 0}
                         </td>
                         <td data-label="Size" className="date-text">
                           {formatFileSize(item.size)}

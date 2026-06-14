@@ -67,6 +67,65 @@ export function isImageFile(path) {
   return imageFilePattern.test(path || '');
 }
 
+export function getMediaFiles(media) {
+  const files = Array.isArray(media?.files)
+    ? media.files
+    : [];
+
+  const normalizedFiles = files
+    .map((file) => {
+      const path = file?.path || file?.file_path || file?.url;
+      const url = resolveAssetUrl(file?.url || path);
+      const thumbnailUrl = resolveAssetUrl(file?.thumbnail_url || file?.thumbnail_path);
+      if (!path && !url) return null;
+
+      const type = file?.type || (isVideoFile(url || path) ? 'video' : isImageFile(url || path) ? 'image' : media?.type);
+
+      return {
+        ...file,
+        id: file?.id || path || url,
+        path,
+        url,
+        type,
+        format: file?.format || getFileExtension(path || url),
+        size: file?.size,
+        resolution: file?.resolution,
+        thumbnail_path: file?.thumbnail_path,
+        thumbnail_url: thumbnailUrl,
+        thumbnailUrl,
+        original_name: file?.original_name || file?.name || getFileExtension(path || url),
+      };
+    })
+    .filter(Boolean);
+
+  if (normalizedFiles.length > 0) {
+    return normalizedFiles;
+  }
+
+  const legacyUrl = resolveAssetUrl(media?.file_path);
+  if (!legacyUrl) {
+    return [];
+  }
+
+  return [{
+    id: media?.file_path,
+    path: media?.file_path,
+    url: legacyUrl,
+    type: media?.type || (isVideoFile(legacyUrl) ? 'video' : isImageFile(legacyUrl) ? 'image' : 'media'),
+    format: media?.format || getFileExtension(media?.file_path),
+    size: media?.size,
+    resolution: media?.resolution,
+    thumbnail_path: null,
+    thumbnail_url: null,
+    thumbnailUrl: null,
+    original_name: getFileExtension(media?.file_path),
+  }];
+}
+
+export function getPrimaryMediaFile(media) {
+  return getMediaFiles(media)[0] || null;
+}
+
 export function categoryNameFor(document, categories = []) {
   const categoryId = document?.categorie_id || document?.categorie?.id || document?.categorie?._id;
   const category = categories.find((item) => getId(item) === categoryId);
@@ -116,24 +175,29 @@ export function mapDocumentToResource(document, categories = []) {
 
 export function mapMediaToResource(media) {
   const id = getId(media);
-  const fileUrl = resolveAssetUrl(media.file_path);
-  const type = media.type || (isVideoFile(fileUrl) ? 'video' : isImageFile(fileUrl) ? 'image' : 'media');
+  const files = getMediaFiles(media);
+  const primaryFile = files[0] || null;
+  const fileUrl = primaryFile?.url || resolveAssetUrl(media.file_path);
+  const type = primaryFile?.type || media.type || (isVideoFile(fileUrl) ? 'video' : isImageFile(fileUrl) ? 'image' : 'media');
   const isImage = type?.toLowerCase() === 'image' || isImageFile(fileUrl);
   const isVideo = type?.toLowerCase() === 'video' || isVideoFile(fileUrl);
   const normalizedType = type ? `${type.charAt(0).toUpperCase()}${type.slice(1).toLowerCase()}` : 'Media';
   const displayType = isVideo ? 'Video' : isImage ? 'Image' : normalizedType;
   const size = formatFileSize(media.size);
+  const videoThumbnail = primaryFile?.thumbnailUrl || primaryFile?.thumbnail_url;
 
   return {
     ...media,
     id,
     source: 'media',
+    files,
     type: displayType,
-    format: media.format || getFileExtension(media.file_path) || 'Media',
+    format: media.format || primaryFile?.format || getFileExtension(media.file_path) || 'Media',
     category: media.curator || 'Turath media',
     title: media.title || 'Untitled media',
     description: htmlToPlainText(media.description) || media.curator || 'A media record from the Turath archive.',
-    thumbnail: isImage && fileUrl ? fileUrl : fallbackImage,
+    thumbnail: isImage && fileUrl ? fileUrl : videoThumbnail || fallbackImage,
+    hasGeneratedThumbnail: Boolean(videoThumbnail),
     mediaUrl: fileUrl,
     isVideo,
     isImage,

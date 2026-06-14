@@ -12,13 +12,20 @@ import {
   mapMediaToResource,
 } from '../../utils/userResources';
 
-function MediaPlayer({ resource }) {
-  if (resource.isVideo && resource.mediaUrl) {
-    return <video src={resource.mediaUrl} controls playsInline preload="metadata" />;
+function isVideoFile(file) {
+  return file?.type?.toString().toLowerCase() === 'video' || file?.mime_type?.startsWith('video/');
+}
+
+function MediaPlayer({ file, resource }) {
+  const fileUrl = file?.url || resource.mediaUrl;
+  const isVideo = file ? isVideoFile(file) : resource.isVideo;
+
+  if (isVideo && fileUrl) {
+    return <video src={fileUrl} controls playsInline preload="metadata" />;
   }
 
-  if (resource.mediaUrl && resource.type === 'Image') {
-    return <img src={resource.mediaUrl} alt="" />;
+  if (fileUrl) {
+    return <img src={fileUrl} alt="" />;
   }
 
   return <img src={resource.thumbnail} alt="" />;
@@ -33,6 +40,7 @@ export default function UserMediaDetail() {
     error: null,
     media: null,
   });
+  const [selectedFileId, setSelectedFileId] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -62,6 +70,8 @@ export default function UserMediaDetail() {
     () => state.media ? mapMediaToResource(state.media) : null,
     [state.media]
   );
+  const files = resource?.files?.length ? resource.files : [];
+  const selectedFile = files.find((file) => file.id === selectedFileId) || files[0] || null;
 
   if (state.loading) {
     return (
@@ -95,7 +105,28 @@ export default function UserMediaDetail() {
 
         <article className="user-media-detail">
           <div className="user-media-player">
-            <MediaPlayer resource={resource} />
+            <MediaPlayer file={selectedFile} resource={resource} />
+            {files.length > 1 && (
+              <div className="user-media-file-strip" aria-label="Media files">
+                {files.map((file, index) => {
+                  const active = (selectedFile?.id || '') === file.id;
+                  return (
+                    <button
+                      type="button"
+                      key={file.id || file.path || index}
+                      className={active ? 'is-active' : undefined}
+                      onClick={() => setSelectedFileId(file.id)}
+                    >
+                      {isVideoFile(file) ? (
+                        <span>Video {index + 1}</span>
+                      ) : (
+                        <img src={file.url} alt="" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="user-detail-body">
@@ -108,14 +139,15 @@ export default function UserMediaDetail() {
 
             <div className="user-detail-meta">
               <span>{resource.format}</span>
-              {state.media.resolution && <span>{state.media.resolution}</span>}
-              {state.media.size && <span>{formatFileSize(state.media.size)}</span>}
+              {(selectedFile?.resolution || state.media.resolution) && <span>{selectedFile?.resolution || state.media.resolution}</span>}
+              {(selectedFile?.size || state.media.size) && <span>{formatFileSize(selectedFile?.size || state.media.size)}</span>}
+              {files.length > 1 && <span>{files.length} files</span>}
               {state.media.curator && <span>{state.media.curator}</span>}
             </div>
 
             <div className="user-detail-actions">
-              {resource.mediaUrl && (
-                <a href={resource.mediaUrl} target="_blank" rel="noreferrer">
+              {(selectedFile?.url || resource.mediaUrl) && (
+                <a href={selectedFile?.url || resource.mediaUrl} target="_blank" rel="noreferrer">
                   Open original media
                 </a>
               )}

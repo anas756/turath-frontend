@@ -10,16 +10,30 @@ export default function ResourceCard({ item, compact = false }) {
   const actionLabel = item.cta || item.actionLabel || 'Open';
   const href = item.href || `#${item.id}`;
   const isInternalRoute = href.startsWith('/');
+  const canPreviewVideo = item.isVideo && item.mediaUrl;
+  const videoPoster = item.hasGeneratedThumbnail ? image : undefined;
 
   return (
     <article className={`resource-card${compact ? ' is-compact' : ''}`}>
       <div className="resource-card__image-wrap">
-        <img
-          src={image}
-          alt=""
-          className="resource-card__image"
-          style={{ objectPosition: imagePosition }}
-        />
+        {canPreviewVideo ? (
+          <video
+            className="resource-card__image"
+            src={item.mediaUrl}
+            poster={videoPoster}
+            muted
+            playsInline
+            preload="metadata"
+            aria-label={`${item.title} video preview`}
+          />
+        ) : (
+          <img
+            src={image}
+            alt=""
+            className="resource-card__image"
+            style={{ objectPosition: imagePosition }}
+          />
+        )}
         <span className="resource-card__type">{type}</span>
       </div>
 

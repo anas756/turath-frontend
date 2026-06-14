@@ -20,6 +20,7 @@ import {
   selectLandingPagination,
 } from '../app/services/reduxTollkit/Slices/landingSlice';
 import { htmlToPlainText } from '../utils/richText';
+import { getMediaFiles } from '../utils/userResources';
 
 const assetBaseUrl = (
   import.meta.env.VITE_BACK_END_URL_IMAGE ||
@@ -83,7 +84,9 @@ function getMediaType(item) {
 }
 
 function isVideoMedia(item) {
-  const fileUrl = resolveAssetUrl(item?.file_path);
+  const primaryFile = getMediaFiles(item)[0];
+  const fileUrl = primaryFile?.url || resolveAssetUrl(item?.file_path);
+  if (primaryFile?.type) return primaryFile.type === 'video';
   return getMediaType(item) === 'video' || videoFilePattern.test(fileUrl || '');
 }
 
@@ -92,7 +95,12 @@ function getItemId(item) {
 }
 
 function mediaMeta(item) {
-  return [item.type || 'Media', item.format].filter(Boolean).join(' / ');
+  const files = getMediaFiles(item);
+  return [
+    item.type || 'Media',
+    item.format,
+    files.length > 1 ? `${files.length} files` : '',
+  ].filter(Boolean).join(' / ');
 }
 
 function formatFileSize(size) {
@@ -117,9 +125,10 @@ function formatDate(value) {
 
 function MediaPoster({ item, compact = false }) {
   const [failedMediaKey, setFailedMediaKey] = useState(null);
-  const fileUrl = resolveAssetUrl(item?.file_path);
+  const primaryFile = getMediaFiles(item)[0];
+  const fileUrl = primaryFile?.url || resolveAssetUrl(item?.file_path);
   const isVideo = isVideoMedia(item);
-  const mediaKey = `${item?.file_path || ''}:${item?.type || ''}`;
+  const mediaKey = `${primaryFile?.id || item?.file_path || ''}:${item?.type || ''}`;
   const failed = failedMediaKey === mediaKey;
 
   if (isVideo && fileUrl && !failed) {
@@ -137,7 +146,7 @@ function MediaPoster({ item, compact = false }) {
   }
   return (
     <PreviewImage
-      src={item?.file_path}
+      src={fileUrl || item?.file_path}
       title={item?.title || 'Media preview'}
       label={item?.type || 'Media'}
       mediaType={item?.type}

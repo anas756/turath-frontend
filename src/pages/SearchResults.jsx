@@ -4,6 +4,7 @@ import { api } from '../app/services/lib/Api';
 import Footer from '../components/user/Footer';
 import SearchContainer from '../components/user/SearchContainer';
 import { htmlToPlainText } from '../utils/richText';
+import { getMediaFiles } from '../utils/userResources';
 import '../styles/user.css';
 
 const assetBaseUrl = (
@@ -126,9 +127,14 @@ function DocumentResultCard({ item }) {
 
 function MediaPreview({ item }) {
   const [failed, setFailed] = useState(false);
-  const fileUrl = resolveAssetUrl(item.file_path);
-  const isVideo = item.type?.toLowerCase() === 'video' || videoFilePattern.test(fileUrl || '');
-  const isImage = item.type?.toLowerCase() === 'image' || imageFilePattern.test(fileUrl || '');
+  const primaryFile = getMediaFiles(item)[0];
+  const fileUrl = primaryFile?.url || resolveAssetUrl(item.file_path);
+  const isVideo = primaryFile?.type
+    ? primaryFile.type === 'video'
+    : item.type?.toLowerCase() === 'video' || videoFilePattern.test(fileUrl || '');
+  const isImage = primaryFile?.type
+    ? primaryFile.type === 'image'
+    : item.type?.toLowerCase() === 'image' || imageFilePattern.test(fileUrl || '');
 
   if (isVideo && fileUrl && !failed) {
     return (
@@ -165,6 +171,7 @@ function MediaResultCard({ item }) {
         <div className="search-result-card__meta">
           <span>{item.type || 'Media'}</span>
           {item.format && <span>{item.format}</span>}
+          {Array.isArray(item.files) && item.files.length > 1 && <span>{item.files.length} files</span>}
         </div>
         <h3>{item.title}</h3>
         {item.curator && <p className="search-result-card__byline">Curated by {item.curator}</p>}
