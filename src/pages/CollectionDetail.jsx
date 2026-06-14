@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../app/services/lib/Api';
 import Footer from '../components/user/Footer';
+import RichText from '../components/common/RichText';
+import { htmlToPlainText } from '../utils/richText';
 import '../styles/user.css';
 
 const assetBaseUrl = (
@@ -90,7 +92,7 @@ function CollectionDocumentCard({ item }) {
         </div>
         <h3>{item.title}</h3>
         {authors && <p className="collection-document-card__authors">{authors}</p>}
-        <p>{item.description || 'Login to read this full archive item.'}</p>
+        <p>{htmlToPlainText(item.description) || 'Login to read this full archive item.'}</p>
         {tags.length > 0 && (
           <div className="guest-document-modal__tags">
             {tags.map((tag) => <span key={tag}>{tag}</span>)}
@@ -112,8 +114,6 @@ export default function CollectionDetail() {
 
   useEffect(() => {
     let ignore = false;
-
-    setState((current) => ({ ...current, loading: true, error: null }));
 
     api.getCategorie(id)
       .then(({ data }) => {
@@ -138,21 +138,28 @@ export default function CollectionDetail() {
 
   const collection = state.collection;
   const documents = collection?.documents || [];
+  const bannerUrl = resolveAssetUrl(collection?.banner);
+  const heroStyle = bannerUrl
+    ? {
+        backgroundImage: `linear-gradient(180deg, rgba(0, 78, 138, 0.78), rgba(21, 21, 18, 0.68)), url("${bannerUrl.replace(/"/g, '\\"')}")`,
+      }
+    : undefined;
 
   return (
     <div className="guest-home collection-detail-page">
       <CollectionNav />
 
       <main>
-        <section className="collection-detail-hero">
+        <section className="collection-detail-hero" style={heroStyle}>
           <Link to="/home#collections-preview">Back to collections</Link>
           <p className="user-section-eyebrow">Collection</p>
           <h1>{collection?.name || 'Loading collection'}</h1>
-          <p>
-            {collection?.description ||
-              'Browse the documents grouped under this heritage category.'}
-          </p>
-          <div>
+          <RichText
+            html={collection?.description}
+            className="rich-text collection-detail-hero__description"
+            fallback={<p>Browse the documents grouped under this heritage category.</p>}
+          />
+          <div className="collection-detail-hero__count">
             <span>{documents.length}</span>
             <small>{documents.length === 1 ? 'document' : 'documents'}</small>
           </div>

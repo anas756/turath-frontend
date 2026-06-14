@@ -9,6 +9,26 @@ import {
   updateMediaStatus,
 } from '../asyncThunks/MediaThunk'; // Update path as needed
 
+const extractMediaList = (payload) => {
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload)) return payload;
+  return [];
+};
+
+const extractPagination = (payload, fallback) =>
+  payload?.pagination ??
+  (payload?.data?.current_page
+    ? {
+        current_page: payload.data.current_page,
+        last_page: payload.data.last_page,
+        per_page: payload.data.per_page,
+        total: payload.data.total,
+        from: payload.data.from,
+        to: payload.data.to,
+      }
+    : fallback);
+
 const initialState = {
   media: [],
   currentMedia: null,
@@ -19,6 +39,7 @@ const initialState = {
     total: 0,
   },
   mediaLoading: false,
+  loading: false,
 };
 
 export const MediaSlice = createSlice({
@@ -30,16 +51,17 @@ export const MediaSlice = createSlice({
       // --- Fetch All Media ---
       .addCase(fetchMedia.pending, (state) => {
         state.mediaLoading = true;
+        state.loading = true;
       })
       .addCase(fetchMedia.fulfilled, (state, action) => {
         state.mediaLoading = false;
-        const payload = action.payload.data ?? action.payload;
-        // Adjusting based on if your API returns { data: [], pagination: {} }
-        state.media = payload.data ?? payload;
-        state.pagination = action.payload.pagination ?? state.pagination;
+        state.loading = false;
+        state.media = extractMediaList(action.payload);
+        state.pagination = extractPagination(action.payload, state.pagination);
       })
       .addCase(fetchMedia.rejected, (state) => {
         state.mediaLoading = false;
+        state.loading = false;
       })
 
       // --- Fetch Single Media ---

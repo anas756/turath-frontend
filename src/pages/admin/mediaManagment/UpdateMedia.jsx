@@ -4,18 +4,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { updateMediaTunk as updateMedia } from '../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
+import RichDescriptionEditor from '../../../components/admin/RichDescriptionEditor';
 
 
 const Schema = yup.object().shape({
   title:       yup.string().min(3).optional(),
   description: yup.string().max(6000, 'Description is too long').optional(),
   tags:        yup.string().optional(),
-  type:        yup.string().oneOf(['', 'image', 'video', 'audio']).optional(),
+  type:        yup.string().oneOf(['', 'image', 'video']).optional(),
   format:      yup.string().optional(),
   resolution:  yup.string().optional(),
 });
 
-const mediaTypes = ['image', 'video', 'audio'];
+const mediaTypes = ['image', 'video'];
 
 const m = {
   container: { padding: 'clamp(1rem, 4vw, 2rem)' },
@@ -68,7 +69,7 @@ export default function UpdateMedia({ media, setShowUpdate }) {
   const dispatch = useDispatch();
   const currentType = media?.type?.toString().toLowerCase() || '';
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: yupResolver(Schema),
     defaultValues: {
       title:       media?.title       || '',
@@ -79,12 +80,15 @@ export default function UpdateMedia({ media, setShowUpdate }) {
       resolution:  media?.resolution  || '',
     },
   });
+  const descriptionValue = watch('description') || '';
 
   const onSubmit = async (data) => {
     const id = media?._id || media?.id;
     const payload = {};
     if (data.title)       payload.title       = data.title;
-    if (data.description) payload.description = data.description;
+    if ((data.description || '') !== (media?.description || '')) {
+      payload.description = data.description || '';
+    }
     if (data.type)        payload.type        = data.type;
     if (data.format)      payload.format      = data.format;
     if (data.resolution)  payload.resolution  = data.resolution;
@@ -129,7 +133,6 @@ export default function UpdateMedia({ media, setShowUpdate }) {
               <option value="">Select type…</option>
               <option value="image">Image</option>
               <option value="video">Video</option>
-              <option value="audio">Audio</option>
             </select>
             {errors.type && <span style={m.error}>{errors.type.message}</span>}
           </div>
@@ -164,14 +167,14 @@ export default function UpdateMedia({ media, setShowUpdate }) {
           {/* Description — full width */}
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
-              Description HTML <span style={m.optionalLabel}>(optional)</span>
+              Description <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea
-              {...register('description')}
-              style={{ ...m.input, ...m.textarea }}
-              placeholder="<h3>About this item</h3><p>Add a rich description with <strong>important details</strong>.</p>"
+            <RichDescriptionEditor
+              value={descriptionValue}
+              onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+              placeholder="Design the media description with headings, bold text, lists, links, or custom HTML."
             />
-            <span style={m.hint}>Allowed: headings, paragraphs, bold, italic, lists, and links.</span>
+            <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
             {errors.description && <span style={m.error}>{errors.description.message}</span>}
           </div>
 

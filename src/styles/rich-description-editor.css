@@ -1,0 +1,82 @@
+.rich-description-editor {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.rich-description-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(28, 28, 24, 0.1);
+  border-radius: 0.5rem;
+  background: var(--surface-low, #f5f2ed);
+}
+
+.rich-description-editor__toolbar button,
+.rich-description-editor__toolbar select {
+  min-height: 32px;
+  border: 0;
+  border-radius: 0.35rem;
+  background: var(--surface-white, #fff);
+  color: var(--on-surface, #111);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.62rem;
+}
+
+.rich-description-editor__toolbar button:hover,
+.rich-description-editor__toolbar button.is-active,
+.rich-description-editor__toolbar select:hover {
+  background: var(--primary, #004e8a);
+  color: #fff;
+}
+
+.rich-description-editor__surface,
+.rich-description-editor__code {
+  min-height: 170px;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid rgba(28, 28, 24, 0.1);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--on-surface, #111);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.7;
+  outline: none;
+  padding: 0.9rem 1rem;
+}
+
+.rich-description-editor__surface:empty::before {
+  content: attr(data-placeholder);
+  color: var(--on-surface-muted, #777);
+}
+
+.rich-description-editor__code {
+  resize: vertical;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.rich-description-editor__preview {
+  border: 1px dashed rgba(0, 78, 138, 0.22);
+  border-radius: 0.5rem;
+  background: rgba(0, 78, 138, 0.04);
+  padding: 0.85rem 1rem;
+}
+
+.rich-description-editor__preview > span {
+  display: inline-flex;
+  margin-bottom: 0.5rem;
+  color: var(--primary, #004e8a);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

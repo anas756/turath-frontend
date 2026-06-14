@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import EmptyState from '../../components/user/EmptyState';
 import SectionHeader from '../../components/user/SectionHeader';
+import RichText from '../../components/common/RichText';
 import { api } from '../../app/services/lib/Api';
 import { addDocumentFavorite, removeFavorite } from '../../app/services/reduxTollkit/asyncThunks/FavoriteThunk';
 import useUserArchiveData from '../../hooks/useUserArchiveData';
@@ -17,6 +18,7 @@ export default function UserDocumentDetail() {
   const dispatch = useDispatch();
   const { categories, isDocumentFavorite } = useUserArchiveData();
   const [state, setState] = useState({
+    requestedId: id,
     loading: true,
     error: null,
     document: null,
@@ -25,17 +27,16 @@ export default function UserDocumentDetail() {
   useEffect(() => {
     let ignore = false;
 
-    setState({ loading: true, error: null, document: null });
-
     api.getDoc(id)
       .then(({ data }) => {
         if (!ignore) {
-          setState({ loading: false, error: null, document: data.data });
+          setState({ requestedId: id, loading: false, error: null, document: data.data });
         }
       })
       .catch((error) => {
         if (!ignore) {
           setState({
+            requestedId: id,
             loading: false,
             error: error.response?.data?.message || 'Failed to load this document.',
             document: null,
@@ -52,8 +53,9 @@ export default function UserDocumentDetail() {
     () => state.document ? mapDocumentToResource(state.document, categories) : null,
     [categories, state.document]
   );
+  const isLoading = state.loading || state.requestedId !== id;
 
-  if (state.loading) {
+  if (isLoading) {
     return (
       <section className="user-detail-page">
         <EmptyState title="Loading document..." message="Fetching the archive record." />
@@ -71,6 +73,7 @@ export default function UserDocumentDetail() {
 
   const saved = isDocumentFavorite(resource);
   const originalFile = resolveAssetUrl(state.document.file_path);
+  const sourceLink = state.document.source_url || state.document.preview_url;
 
   const handleFavorite = () => {
     if (saved) {
@@ -93,12 +96,16 @@ export default function UserDocumentDetail() {
             <p className="user-section-eyebrow">{resource.category}</p>
             <h1>{resource.title}</h1>
             {resource.authors && <p className="user-detail-author">{resource.authors}</p>}
-            <p>{resource.description}</p>
+            <RichText
+              html={state.document.description}
+              className="rich-text rich-text--user-detail"
+              fallback={<p>{resource.description}</p>}
+            />
 
             <div className="user-detail-meta">
               <span>{resource.type}</span>
               <span>{resource.format}</span>
-              {state.document.source && <span>{state.document.source}</span>}
+              {state.document.has_full_text && <span>Readable in Turath</span>}
             </div>
 
             <div className="user-detail-actions">
@@ -106,6 +113,11 @@ export default function UserDocumentDetail() {
               {originalFile && (
                 <a href={originalFile} target="_blank" rel="noreferrer">
                   Open original file
+                </a>
+              )}
+              {sourceLink && (
+                <a href={sourceLink} target="_blank" rel="noreferrer">
+                  Open source page
                 </a>
               )}
               <button type="button" onClick={handleFavorite}>
@@ -128,7 +140,7 @@ export default function UserDocumentDetail() {
             </div>
             <div>
               <span>Source</span>
-              <strong>{state.document.source || 'Local archive'}</strong>
+              <strong>{resource.type || 'Local archive'}</strong>
             </div>
           </div>
         </div>

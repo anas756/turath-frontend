@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateDoc } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import RichDescriptionEditor from '../../../../components/admin/RichDescriptionEditor';
 
 const Schema = yup.object().shape({
   title: yup.string().min(3).optional(),
@@ -88,6 +89,8 @@ export default function UpdateDocument({ document, setShowUpdate }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
@@ -99,12 +102,15 @@ export default function UpdateDocument({ document, setShowUpdate }) {
       tags: document?.tags?.join(', ') || '',
     },
   });
+  const descriptionValue = watch('description') || '';
 
   const onSubmit = async (data) => {
     const payload = {};
 
     if (data.title) payload.title = data.title;
-    if (data.description) payload.description = data.description;
+    if ((data.description || '') !== (document?.description || '')) {
+      payload.description = data.description || '';
+    }
     if (data.categorie_id) payload.categorie_id = data.categorie_id;
 
     if (data.authors) {
@@ -205,10 +211,12 @@ export default function UpdateDocument({ document, setShowUpdate }) {
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea
-              {...register('description')}
-              style={{ ...m.input, minHeight: '80px' }}
+            <RichDescriptionEditor
+              value={descriptionValue}
+              onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+              placeholder="Design the document description with headings, lists, links, or custom HTML."
             />
+            <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
           </div>
         </div>
 

@@ -1293,6 +1293,187 @@ body { font-family: var(--sans); background: var(--surface-low); color: var(--on
   min-width: 0;
 }
 
+.admin-table-shell {
+  background: var(--surface-white);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lift);
+  padding-bottom: 0;
+}
+
+.admin-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-data-table thead {
+  background: var(--surface-low);
+}
+
+.admin-data-table th {
+  padding: 1rem;
+  color: var(--on-surface-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-data-table td {
+  padding: 1rem;
+  color: var(--on-surface);
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.admin-data-table tbody tr {
+  border-top: 1px solid var(--surface-low);
+  transition: background 0.12s ease;
+}
+
+.admin-data-table tbody tr:hover {
+  background: var(--surface-low);
+}
+
+.admin-data-table td[data-label="Actions"],
+.admin-data-table th[data-admin-actions] {
+  width: 72px;
+  text-align: center;
+}
+
+.admin-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.admin-data-table .curator-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+}
+
+.admin-data-table .curator-wrap {
+  gap: 0.75rem;
+}
+
+.admin-data-table .curator-wrap span {
+  color: var(--on-surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-row-title {
+  color: var(--on-surface);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.admin-row-subtitle {
+  margin-top: 0.18rem;
+  color: var(--on-surface-muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.admin-cell-muted {
+  color: var(--on-surface-muted);
+  font-size: 0.85rem;
+}
+
+.admin-cell-clamp {
+  max-width: 280px;
+  color: var(--on-surface-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-table-empty {
+  padding: 3rem;
+  color: var(--on-surface-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.admin-result-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  background: var(--surface-high);
+  color: var(--on-surface-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-filter-select {
+  min-height: 40px;
+  min-width: min(100%, 180px);
+  border: 0;
+  border-radius: 9999px;
+  background: var(--surface-high);
+  color: var(--on-surface-muted);
+  cursor: pointer;
+  font: 500 0.85rem var(--sans);
+  outline: none;
+  padding: 0 1rem;
+}
+
+.admin-clear-filter {
+  min-height: 40px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--on-surface-muted);
+  cursor: pointer;
+  font: 600 0.8rem var(--sans);
+  padding: 0 0.9rem;
+}
+
+.admin-clear-filter:hover {
+  background: var(--surface-high);
+  color: var(--primary);
+}
+
+.admin-action-menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  z-index: 20;
+  min-width: 150px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--surface-white);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.admin-action-menu button {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--on-surface);
+  cursor: pointer;
+  font: 500 0.82rem var(--sans);
+  padding: 0.5rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-action-menu button:hover {
+  background: var(--surface-low);
+}
+
+.admin-action-menu button.is-danger {
+  color: var(--secondary);
+}
+
 .modal-box {
   width: min(460px, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);

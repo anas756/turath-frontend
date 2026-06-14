@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getAllDocs,
@@ -6,19 +6,71 @@ import {
   deleteDoc,
   deleteCategory,
 } from '../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import { setErrorMessage, setSuccessMessage } from '../../../app/services/reduxTollkit/Slices/MessageSlice';
 import PageHeader from '../../../components/admin/PageHeader';
-import AdminLoading from '../../../components/admin/AdminLoading';
+import PaginationControls from '../../../components/admin/PaginationControls';
 import StoreDocument from './document/StoreDocument';
 import StoreCategories from './categories/StoreCategories';
 import UpdateDocument from './document/UpdateDocument';
 import UpdateCategorie from './categories/UpdateCategoei';
 import ShowDocumentDetailes from './document/ShowDocumentDetailes';
 
+const PAGE_SIZE = 10;
+
+const assetBaseUrl = (
+  import.meta.env.VITE_BACK_END_URL_IMAGE ||
+  import.meta.env.VITE_BACK_END_URL ||
+  ''
+)
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
+
+function resolveAssetUrl(path) {
+  const value = path?.toString().trim();
+  if (!value || value === 'null') return null;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+    return value;
+  }
+
+  const cleanPath = value.replace(/^\/+/, '');
+  const publicPath = cleanPath.startsWith('storage/') ? cleanPath : `storage/${cleanPath}`;
+  return `${assetBaseUrl}/${publicPath}`;
+}
+
+function formatAuthors(authors) {
+  if (Array.isArray(authors)) return authors.filter(Boolean).join(', ');
+  return authors || 'Unknown author';
+}
+
+function documentSourceLabel(doc) {
+  switch (doc?.source) {
+    case 'gutendex':
+      return 'Gutendex';
+    case 'google_books':
+      return 'Google Books';
+    case 'internet_archive':
+      return 'Internet Archive';
+    case 'open_library':
+      return 'Open Library';
+    default:
+      return doc?.open_library_key ? 'Open Library' : '';
+  }
+}
+
+function isActiveImport(status) {
+  return ['queued', 'importing'].includes(status);
+}
+
+function isFinishedImport(status) {
+  return ['completed', 'failed'].includes(status);
+}
+
 export default function DigitalLibrary() {
   const dispatch = useDispatch();
   const {
     documents = [],
     categories = [],
+    documentsPagination,
     documentsLoading = false,
     categoriesLoading = false,
   } = useSelector((state) => state.library || {});
@@ -33,28 +85,116 @@ export default function DigitalLibrary() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [documentsPage, setDocumentsPage] = useState(1);
   const [loadingRows, setLoadingRows] = useState({});
   const [activeMenuId, setActiveMenuId] = useState(null);
+  const importStatusRef = useRef(new Map());
+  const importHydratedRef = useRef(false);
 
-  useEffect(() => {
-    fetchData();
-    const handleOutsideClick = () => setActiveMenuId(null);
-    window.addEventListener('click', handleOutsideClick);
-    return () => window.removeEventListener('click', handleOutsideClick);
-  }, []);
+  const buildDocumentParams = useCallback((page = documentsPage) => {
+    const params = {
+      page,
+      per_page: PAGE_SIZE,
+    };
+
+    if (search.trim()) params.search = search.trim();
+    if (categoryFilter) params.categorie_id = categoryFilter;
+
+    return params;
+  }, [categoryFilter, documentsPage, search]);
 
   const fetchData = (forceRefresh = false) => {
-    if (!forceRefresh && documents.length && categories.length) return;
-    dispatch(getAllDocs());
-    dispatch(getAllCategoris());
+    dispatch(getAllDocs(buildDocumentParams(documentsPage)));
+    if (forceRefresh || !categories.length) dispatch(getAllCategoris());
   };
+
+  useEffect(() => {
+    if (!categories.length) dispatch(getAllCategoris());
+
+    const handleOutsideClick = (event) => {
+      if (
+        event.target.closest('.action-btn') ||
+        event.target.closest('.admin-action-menu')
+      ) {
+        return;
+      }
+      setActiveMenuId(null);
+    };
+
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, [categories.length, dispatch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(getAllDocs(buildDocumentParams(documentsPage)));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [buildDocumentParams, dispatch, documentsPage]);
+
+  useEffect(() => {
+    const activeImports = categories.filter((category) => isActiveImport(category.import_status));
+
+    if (!activeImports.length) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      dispatch(getAllCategoris());
+      dispatch(getAllDocs(buildDocumentParams(documentsPage)));
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [buildDocumentParams, categories, dispatch, documentsPage]);
+
+  useEffect(() => {
+    const previousStatuses = importStatusRef.current;
+    const nextStatuses = new Map();
+
+    categories.forEach((category) => {
+      const id = category._id || category.id;
+      if (!id) return;
+
+      const status = category.import_status || '';
+      const previousStatus = previousStatuses.get(id);
+      nextStatuses.set(id, status);
+
+      if (
+        importHydratedRef.current &&
+        isActiveImport(previousStatus) &&
+        isFinishedImport(status)
+      ) {
+        const message = category.import_message || (
+          status === 'completed'
+            ? `Book import finished for ${category.name}.`
+            : `Book import failed for ${category.name}.`
+        );
+
+        if (status === 'completed') {
+          dispatch(setSuccessMessage(message));
+          dispatch(getAllDocs(buildDocumentParams(documentsPage)));
+        } else {
+          dispatch(setErrorMessage(message));
+        }
+      }
+    });
+
+    importStatusRef.current = nextStatuses;
+
+    if (!categoriesLoading) {
+      importHydratedRef.current = true;
+    }
+  }, [buildDocumentParams, categories, categoriesLoading, dispatch, documentsPage]);
 
   const handleDeleteDoc = async (doc) => {
     const id = doc._id || doc.id;
     if (!window.confirm(`Delete "${doc.title}"?`)) return;
+
     setLoadingRows((prev) => ({ ...prev, [id]: true }));
     try {
       await dispatch(deleteDoc(id)).unwrap();
+      dispatch(getAllDocs(buildDocumentParams(documentsPage)));
     } catch (err) {
       alert(err?.message || 'Failed to delete document');
     } finally {
@@ -63,12 +203,15 @@ export default function DigitalLibrary() {
     }
   };
 
-  const handleDeleteCategory = async (cat) => {
-    const id = cat._id || cat.id;
-    if (!window.confirm(`Delete "${cat.name}"?`)) return;
+  const handleDeleteCategory = async (category) => {
+    const id = category._id || category.id;
+    if (!window.confirm(`Delete "${category.name}"?`)) return;
+
     setLoadingRows((prev) => ({ ...prev, [id]: true }));
     try {
       await dispatch(deleteCategory(id)).unwrap();
+      dispatch(getAllCategoris());
+      dispatch(getAllDocs(buildDocumentParams(documentsPage)));
     } catch (err) {
       alert(err?.message || 'Failed to delete category');
     } finally {
@@ -77,103 +220,159 @@ export default function DigitalLibrary() {
     }
   };
 
-  const filteredDocuments = documents.filter((d) => {
-    const matchSearch = d.title.toLowerCase().includes(search.toLowerCase());
-    const matchCat =
-      !categoryFilter ||
-      d.categorie_id === categoryFilter ||
-      d.categorie?._id === categoryFilter ||
-      d.categorie?.id === categoryFilter;
-    return matchSearch && matchCat;
-  });
-
   return (
-    <div style={{ padding: 'clamp(0rem, 2vw, 2rem)' }}>
+    <div className="turath-admin-table-page">
       <PageHeader
         title="Digital Library"
         subtitle="Manage heritage documents and categories"
         action={
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={styles.pageActions}>
             <button
               onClick={() => setShowStoreCategory(true)}
               style={styles.btnSecondary}
             >
-              + Add Category
+              Add Category
             </button>
             <button
               onClick={() => setShowStore(true)}
               style={styles.btnPrimary}
             >
-              + Add Document
+              Add Document
             </button>
           </div>
         }
       />
 
-      <div style={styles.tabsContainer}>
-        <button
-          onClick={() => setActiveTab('documents')}
-          style={activeTab === 'documents' ? styles.activeTab : styles.tab}
-        >
-          Documents
-        </button>
-        <button
-          onClick={() => setActiveTab('categories')}
-          style={activeTab === 'categories' ? styles.activeTab : styles.tab}
-        >
-          Categories
-        </button>
+      <div
+        className="admin-filter-row"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '2rem',
+        }}
+      >
+        <div className="filter-chips" style={{ display: 'flex', gap: '0.5rem' }}>
+          {['documents', 'categories'].map((tab) => (
+            <button
+              key={tab}
+              className={`filter-chip ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(tab);
+                setActiveMenuId(null);
+              }}
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: '9999px',
+                fontSize: '0.85rem',
+                fontWeight: 500,
+                backgroundColor:
+                  activeTab === tab ? 'var(--primary)' : 'var(--surface-high)',
+                color:
+                  activeTab === tab ? 'white' : 'var(--on-surface-muted)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textTransform: 'capitalize',
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'documents' ? (
+          <div style={styles.filterActions}>
+            <div className="admin-search-pill" style={styles.searchPill}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ color: 'var(--tertiary)' }}>
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search documents..."
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setDocumentsPage(1);
+                }}
+                style={styles.searchInput}
+              />
+            </div>
+            <select
+              className="admin-filter-select"
+              value={categoryFilter}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value);
+                setDocumentsPage(1);
+              }}
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => (
+                <option key={category._id || category.id} value={category._id || category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {(search || categoryFilter) && (
+              <button
+                className="admin-clear-filter"
+                onClick={() => {
+                  setSearch('');
+                  setCategoryFilter('');
+                  setDocumentsPage(1);
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="admin-result-count">{categories.length} Categories</div>
+        )}
       </div>
 
-      {activeTab === 'documents' ? (
-        documentsLoading && !documents.length ? (
-          <AdminLoading />
-        ) : (
-          <div className="admin-table-shell" style={styles.tableContainer}>
-            <DocumentsTable
-              data={filteredDocuments}
-              search={search}
-              setSearch={setSearch}
-              categoryFilter={categoryFilter}
-              setCategoryFilter={setCategoryFilter}
-              categories={categories}
-              loadingRows={loadingRows}
-              activeMenuId={activeMenuId}
-              setActiveMenuId={setActiveMenuId}
-              onDetails={(doc) => {
-                setSelectedDoc(doc);
-                setShowDetails(true);
-                setActiveMenuId(null);
-              }}
-              onUpdate={(doc) => {
-                setSelectedDoc(doc);
-                setShowUpdate(true);
-                setActiveMenuId(null);
-              }}
-              onDelete={handleDeleteDoc}
-            />
-          </div>
-        )
-      ) : categoriesLoading && !categories.length ? (
-        <AdminLoading />
-      ) : (
-        <div className="admin-table-shell" style={styles.tableContainer}>
-          <CategoriesTable
-            data={categories}
+      <div className="admin-table-shell">
+        {activeTab === 'documents' ? (
+          <DocumentsTable
+            data={documents}
+            pagination={documentsPagination}
+            loading={documentsLoading}
+            onPageChange={setDocumentsPage}
             loadingRows={loadingRows}
             activeMenuId={activeMenuId}
             setActiveMenuId={setActiveMenuId}
-            onUpdate={(cat) => {
-              setSelectedCategory(cat);
+            onDetails={(doc) => {
+              setSelectedDoc(doc);
+              setShowDetails(true);
+              setActiveMenuId(null);
+            }}
+            onUpdate={(doc) => {
+              setSelectedDoc(doc);
+              setShowUpdate(true);
+              setActiveMenuId(null);
+            }}
+            onDelete={handleDeleteDoc}
+          />
+        ) : (
+          <CategoriesTable
+            data={categories}
+            loading={categoriesLoading}
+            loadingRows={loadingRows}
+            activeMenuId={activeMenuId}
+            setActiveMenuId={setActiveMenuId}
+            onUpdate={(category) => {
+              setSelectedCategory(category);
               setShowUpdateCategory(true);
               setActiveMenuId(null);
             }}
             onDelete={handleDeleteCategory}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* — Doc Modals — */}
       {showStore && (
         <Modal
           onClose={() => {
@@ -182,9 +381,9 @@ export default function DigitalLibrary() {
           }}
         >
           <StoreDocument
-            setShowStore={(val) => {
-              setShowStore(val);
-              if (!val) fetchData(true);
+            setShowStore={(value) => {
+              setShowStore(value);
+              if (!value) fetchData(true);
             }}
           />
         </Modal>
@@ -212,7 +411,6 @@ export default function DigitalLibrary() {
         </Modal>
       )}
 
-      {/* ✅ Update Document Modal — wired */}
       {showUpdate && selectedDoc && (
         <Modal
           onClose={() => {
@@ -222,16 +420,15 @@ export default function DigitalLibrary() {
         >
           <UpdateDocument
             document={selectedDoc}
-            setShowUpdate={(val) => {
-              setShowUpdate(val);
+            setShowUpdate={(value) => {
+              setShowUpdate(value);
               setSelectedDoc(null);
-              if (!val) fetchData(true);
+              if (!value) fetchData(true);
             }}
           />
         </Modal>
       )}
 
-      {/* — Category Modals — */}
       {showStoreCategory && (
         <Modal
           onClose={() => {
@@ -240,15 +437,14 @@ export default function DigitalLibrary() {
           }}
         >
           <StoreCategories
-            setShowStore={(val) => {
-              setShowStoreCategory(val);
-              if (!val) fetchData(true);
+            setShowStore={(value) => {
+              setShowStoreCategory(value);
+              if (!value) fetchData(true);
             }}
           />
         </Modal>
       )}
 
-      {/* ✅ Update Category Modal — wired */}
       {showUpdateCategory && selectedCategory && (
         <Modal
           onClose={() => {
@@ -258,10 +454,10 @@ export default function DigitalLibrary() {
         >
           <UpdateCategorie
             categorie={selectedCategory}
-            setShowUpdate={(val) => {
-              setShowUpdateCategory(val);
+            setShowUpdate={(value) => {
+              setShowUpdateCategory(value);
               setSelectedCategory(null);
-              if (!val) fetchData(true);
+              if (!value) fetchData(true);
             }}
           />
         </Modal>
@@ -270,23 +466,19 @@ export default function DigitalLibrary() {
   );
 }
 
-// --- MODAL WRAPPER ---
 const Modal = ({ children, onClose }) => (
   <div style={styles.modalOverlay} onClick={onClose}>
-    <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+    <div style={styles.modalContent} onClick={(event) => event.stopPropagation()}>
       {children}
     </div>
   </div>
 );
 
-// --- DOCUMENTS TABLE ---
 const DocumentsTable = ({
   data,
-  search,
-  setSearch,
-  categoryFilter,
-  setCategoryFilter,
-  categories,
+  pagination,
+  loading,
+  onPageChange,
   loadingRows,
   activeMenuId,
   setActiveMenuId,
@@ -295,129 +487,88 @@ const DocumentsTable = ({
   onDelete,
 }) => (
   <>
-    <div style={styles.filterBar}>
-      <input
-        placeholder="Search documents..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ ...styles.filterInput }}
-      />
-      <select
-        value={categoryFilter}
-        onChange={(e) => setCategoryFilter(e.target.value)}
-        style={{ ...styles.filterSelect }}
-      >
-        <option value="">All categories</option>
-        {categories.map((cat) => (
-          <option key={cat._id || cat.id} value={cat._id || cat.id}>
-            {cat.name}
-          </option>
-        ))}
-      </select>
-      {(search || categoryFilter) && (
-        <button
-          onClick={() => {
-            setSearch('');
-            setCategoryFilter('');
-          }}
-          style={styles.clearBtn}
-        >
-          ✕ Clear
-        </button>
-      )}
-    </div>
+    <table className="admin-data-table" style={styles.table}>
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th>Category</th>
+          <th data-admin-actions></th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((doc) => {
+          const id = doc._id || doc.id;
+          const isFromOpenLibrary = !!doc.open_library_key;
+          const sourceLabel = documentSourceLabel(doc);
 
-    {data.length === 0 ? (
-      <div style={styles.empty}>No documents found.</div>
-    ) : (
-      <table className="admin-data-table" style={styles.table}>
-        <thead style={{ backgroundColor: 'var(--surface-low)' }}>
-          <tr>
-            <th style={styles.th}>Document</th>
-            <th style={styles.th}>Category</th>
-            <th style={styles.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((doc) => {
-            const id = doc._id || doc.id;
-            const isFromOpenLibrary = !!doc.open_library_key;
-            return (
-              <tr key={id} style={styles.tr}>
-                <td data-label="Document" style={styles.td}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.85rem',
-                    }}
-                  >
-                    <div style={styles.docIcon}>📄</div>
-                    <div>
-                      <div style={{ fontWeight: 600 }}>{doc.title}</div>
-                      <div
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--on-surface-muted)',
-                        }}
-                      >
-                        {Array.isArray(doc.authors)
-                          ? doc.authors.join(', ')
-                          : doc.authors}
-                      </div>
-                      {isFromOpenLibrary && (
-                        <span style={styles.openLibBadge}>Open Library</span>
-                      )}
-                    </div>
+          return (
+            <tr key={id}>
+              <td data-label="Document">
+                <div className="admin-row-main">
+                  <div style={styles.docIcon}>DOC</div>
+                  <div>
+                    <div className="admin-row-title">{doc.title}</div>
+                    <div className="admin-row-subtitle">{formatAuthors(doc.authors)}</div>
+                    {sourceLabel && (
+                      <span style={styles.openLibBadge}>{sourceLabel}</span>
+                    )}
                   </div>
-                </td>
-                <td data-label="Category" style={styles.td}>
-                  <span style={styles.badge}>
-                    {doc.categorie?.name || '---'}
-                  </span>
-                </td>
-                <td data-label="Actions" style={{ ...styles.td, position: 'relative' }}>
-                  <button
-                    className="action-btn"
-                    disabled={!!loadingRows[id]}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveMenuId(activeMenuId === id ? null : id);
-                    }}
-                    style={styles.menuBtn}
-                  >
-                    {loadingRows[id] ? <Spinner /> : <MenuDots />}
-                  </button>
-                  {activeMenuId === id && (
-                    <div style={styles.dropdown}>
-                      <DropdownItem onClick={() => onDetails(doc)}>
-                        👁 View Details
-                      </DropdownItem>
-                      {!isFromOpenLibrary && (
-                        <>
-                          <DropdownItem onClick={() => onUpdate(doc)}>
-                            ✏️ Edit
-                          </DropdownItem>
-                          <DropdownItem onClick={() => onDelete(doc)} danger>
-                            🗑️ Delete
-                          </DropdownItem>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </div>
+              </td>
+              <td data-label="Category">
+                <span style={styles.badge}>
+                  {doc.categorie?.name || '---'}
+                </span>
+              </td>
+              <td data-label="Actions" style={{ position: 'relative' }}>
+                <button
+                  className="action-btn"
+                  disabled={!!loadingRows[id]}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setActiveMenuId(activeMenuId === id ? null : id);
+                  }}
+                  style={styles.menuBtn}
+                >
+                  {loadingRows[id] ? <Spinner /> : <MenuDots />}
+                </button>
+                {activeMenuId === id && (
+                  <div className="admin-action-menu">
+                    <DropdownItem onClick={() => onDetails(doc)}>
+                      View Details
+                    </DropdownItem>
+                    {!isFromOpenLibrary && (
+                      <>
+                        <DropdownItem onClick={() => onUpdate(doc)}>
+                          Edit
+                        </DropdownItem>
+                        <DropdownItem onClick={() => onDelete(doc)} danger>
+                          Delete
+                        </DropdownItem>
+                      </>
+                    )}
+                  </div>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+    {!loading && data.length === 0 && (
+      <div className="admin-table-empty">No documents found.</div>
     )}
+    <PaginationControls
+      pagination={pagination}
+      onPageChange={onPageChange}
+      loading={loading}
+    />
   </>
 );
 
-// --- CATEGORIES TABLE ---
 const CategoriesTable = ({
   data,
+  loading,
   loadingRows,
   activeMenuId,
   setActiveMenuId,
@@ -425,73 +576,111 @@ const CategoriesTable = ({
   onDelete,
 }) => (
   <>
-    {data.length === 0 ? (
-      <div style={styles.empty}>No categories found.</div>
-    ) : (
-      <table className="admin-data-table" style={styles.table}>
-        <thead style={{ backgroundColor: 'var(--surface-low)' }}>
-          <tr>
-            <th style={styles.th}>Name</th>
-            <th style={styles.th}>Slug</th>
-            <th style={styles.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((cat) => {
-            const id = cat._id || cat.id;
-            return (
-              <tr key={id} style={styles.tr}>
-                <td data-label="Name" style={styles.td}>{cat.name}</td>
-                <td data-label="Slug" style={styles.td}>{cat.slug}</td>
-                <td data-label="Actions" style={{ ...styles.td, position: 'relative' }}>
-                  <button
-                    className="action-btn"
-                    disabled={!!loadingRows[id]}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveMenuId(activeMenuId === id ? null : id);
-                    }}
-                    style={styles.menuBtn}
-                  >
-                    {loadingRows[id] ? <Spinner /> : <MenuDots />}
-                  </button>
-                  {activeMenuId === id && (
-                    <div style={styles.dropdown}>
-                      <DropdownItem onClick={() => onUpdate(cat)}>
-                        ✏️ Edit
-                      </DropdownItem>
-                      <DropdownItem onClick={() => onDelete(cat)} danger>
-                        🗑️ Delete
-                      </DropdownItem>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <table className="admin-data-table" style={styles.table}>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Slug</th>
+          <th>Import</th>
+          <th data-admin-actions></th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((category) => {
+          const id = category._id || category.id;
+          const banner = resolveAssetUrl(category.banner);
+
+          return (
+            <tr key={id}>
+              <td data-label="Image">
+                {banner ? (
+                  <img src={banner} alt="" style={styles.categoryThumb} />
+                ) : (
+                  <span style={styles.emptyThumb}>No image</span>
+                )}
+              </td>
+              <td data-label="Name">
+                <div className="admin-row-title">{category.name}</div>
+              </td>
+              <td data-label="Slug" className="admin-cell-muted">
+                {category.slug}
+              </td>
+              <td data-label="Import">
+                <ImportStatus category={category} />
+              </td>
+              <td data-label="Actions" style={{ position: 'relative' }}>
+                <button
+                  className="action-btn"
+                  disabled={!!loadingRows[id]}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setActiveMenuId(activeMenuId === id ? null : id);
+                  }}
+                  style={styles.menuBtn}
+                >
+                  {loadingRows[id] ? <Spinner /> : <MenuDots />}
+                </button>
+                {activeMenuId === id && (
+                  <div className="admin-action-menu">
+                    <DropdownItem onClick={() => onUpdate(category)}>
+                      Edit
+                    </DropdownItem>
+                    <DropdownItem onClick={() => onDelete(category)} danger>
+                      Delete
+                    </DropdownItem>
+                  </div>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+    {!loading && data.length === 0 && (
+      <div className="admin-table-empty">No categories found.</div>
     )}
   </>
 );
 
-// --- HELPERS ---
+const ImportStatus = ({ category }) => {
+  const status = category.import_status;
+
+  if (!status) {
+    return <span className="admin-cell-muted">Not started</span>;
+  }
+
+  const summary = category.import_summary || {};
+  const count = Number(summary.created || 0) + Number(summary.updated || 0);
+  const label = status === 'queued'
+    ? 'Queued'
+    : status === 'importing'
+      ? 'Importing'
+      : status === 'completed'
+        ? 'Finished'
+        : 'Failed';
+
+  return (
+    <div style={styles.importStatusWrap}>
+      <span style={{
+        ...styles.importStatusBadge,
+        ...(status === 'completed' ? styles.importStatusDone : {}),
+        ...(status === 'failed' ? styles.importStatusFailed : {}),
+      }}>
+        {label}
+      </span>
+      {status === 'completed' && (
+        <small style={styles.importStatusMeta}>{count} matched</small>
+      )}
+      {status === 'failed' && category.import_message && (
+        <small style={styles.importStatusMeta}>{category.import_message}</small>
+      )}
+    </div>
+  );
+};
+
 const DropdownItem = ({ children, onClick, danger }) => (
-  <button
-    onClick={onClick}
-    style={{
-      display: 'block',
-      width: '100%',
-      padding: '0.5rem 1rem',
-      textAlign: 'left',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '0.82rem',
-      color: danger ? 'var(--secondary)' : 'var(--on-surface)',
-      whiteSpace: 'nowrap',
-    }}
-  >
+  <button onClick={onClick} className={danger ? 'is-danger' : undefined}>
     {children}
   </button>
 );
@@ -527,96 +716,88 @@ const MenuDots = () => (
   </svg>
 );
 
-// --- STYLES ---
 const styles = {
-  tableContainer: {
-    backgroundColor: 'var(--surface-white)',
-    borderRadius: '1rem',
-    boxShadow: 'var(--shadow-lift)',
-    padding: 'clamp(0.85rem, 2vw, 1rem)',
-    overflowX: 'auto',
-    WebkitOverflowScrolling: 'touch',
-  },
-  tabsContainer: {
+  pageActions: {
     display: 'flex',
-    gap: 'clamp(1rem, 4vw, 2rem)',
     flexWrap: 'wrap',
-    marginBottom: '2rem',
-    borderBottom: '1px solid var(--surface-high)',
+    gap: '10px',
   },
-  tab: {
-    padding: '0.5rem 0',
-    background: 'none',
+  btnPrimary: {
+    background: 'var(--primary-gradient)',
     border: 'none',
-    color: 'var(--on-surface-muted)',
-    cursor: 'pointer',
+    padding: '8px 20px',
+    borderRadius: '0.375rem',
     fontWeight: 600,
-  },
-  activeTab: {
-    padding: '0.5rem 0',
-    background: 'none',
-    border: 'none',
-    borderBottom: '2px solid var(--primary)',
-    color: 'var(--primary)',
-    cursor: 'pointer',
-    fontWeight: 600,
-  },
-  filterBar: {
-    display: 'flex',
-    gap: '8px',
+    fontSize: '0.85rem',
+    color: 'white',
+    display: 'inline-flex',
     alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+  },
+  btnSecondary: {
+    background: 'var(--surface-high)',
+    border: 'none',
+    padding: '8px 20px',
+    borderRadius: '0.375rem',
+    fontWeight: 600,
+    fontSize: '0.85rem',
+    color: 'var(--on-surface)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+  },
+  filterActions: {
+    display: 'flex',
     flexWrap: 'wrap',
-    marginBottom: '1rem',
+    alignItems: 'center',
+    gap: '0.75rem',
   },
-  filterInput: {
-    flex: 1,
-    minWidth: '180px',
-    padding: '0.6rem 0.85rem',
-    borderRadius: '0.5rem',
-    border: '1px solid var(--surface-low)',
-    backgroundColor: 'var(--surface-low)',
-    outline: 'none',
-    fontSize: '0.85rem',
+  searchPill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    backgroundColor: 'var(--surface-high)',
+    borderRadius: '9999px',
+    padding: '0.25rem 1rem',
   },
-  filterSelect: {
-    padding: '0.6rem 0.85rem',
-    borderRadius: '0.5rem',
-    border: '1px solid var(--surface-low)',
-    backgroundColor: 'var(--surface-low)',
-    outline: 'none',
-    fontSize: '0.85rem',
-    minWidth: '170px',
-    cursor: 'pointer',
-  },
-  clearBtn: {
-    padding: '0.55rem 0.9rem',
-    borderRadius: '0.5rem',
-    border: '1px solid var(--surface-high)',
+  searchInput: {
     background: 'transparent',
-    color: 'var(--on-surface-muted)',
-    fontSize: '0.8rem',
-    cursor: 'pointer',
+    border: 'none',
+    outline: 'none',
+    padding: '0.5rem 0',
+    fontSize: '0.85rem',
+    width: '200px',
   },
-  table: { width: '100%', minWidth: '640px', borderCollapse: 'collapse' },
-  th: {
-    padding: '1rem',
-    textAlign: 'left',
-    fontSize: '0.7rem',
-    textTransform: 'uppercase',
-    color: 'var(--on-surface-muted)',
+  table: {
+    width: '100%',
+    minWidth: '700px',
+    borderCollapse: 'collapse',
   },
-  tr: { borderTop: '1px solid var(--surface-low)' },
-  td: { padding: '1rem', fontSize: '0.85rem' },
   docIcon: {
-    width: '38px',
-    height: '38px',
+    width: '36px',
+    height: '36px',
+    flex: '0 0 auto',
     borderRadius: '0.5rem',
-    background:
-      'linear-gradient(135deg, var(--primary), var(--primary-container))',
+    background: 'linear-gradient(135deg, var(--primary), var(--primary-container))',
+    color: 'white',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'white',
+    fontSize: '0.64rem',
+    fontWeight: 800,
+    letterSpacing: '0.06em',
+  },
+  openLibBadge: {
+    display: 'inline-block',
+    marginTop: '0.24rem',
+    padding: '0.1rem 0.5rem',
+    borderRadius: '9999px',
+    fontSize: '0.65rem',
+    backgroundColor: 'rgba(0,78,138,0.08)',
+    color: 'var(--primary)',
+    fontWeight: 600,
   },
   badge: {
     padding: '0.25rem 0.75rem',
@@ -626,22 +807,62 @@ const styles = {
     color: 'var(--tertiary)',
     fontWeight: 600,
   },
-  openLibBadge: {
-    display: 'inline-block',
-    marginTop: '0.2rem',
-    padding: '0.1rem 0.5rem',
-    borderRadius: '9999px',
-    fontSize: '0.65rem',
-    backgroundColor: 'rgba(0,78,138,0.08)',
-    color: 'var(--primary)',
+  categoryThumb: {
+    width: '58px',
+    height: '42px',
+    borderRadius: '0.45rem',
+    objectFit: 'cover',
+    display: 'block',
+  },
+  emptyThumb: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '58px',
+    minHeight: '42px',
+    borderRadius: '0.45rem',
+    background: 'var(--surface-low)',
+    color: 'var(--on-surface-muted)',
+    fontSize: '0.68rem',
     fontWeight: 600,
+  },
+  importStatusWrap: {
+    display: 'inline-flex',
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    gap: '0.22rem',
+  },
+  importStatusBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    minHeight: '24px',
+    padding: '0 0.65rem',
+    borderRadius: '9999px',
+    background: 'rgba(0,78,138,0.08)',
+    color: 'var(--primary)',
+    fontSize: '0.68rem',
+    fontWeight: 700,
+  },
+  importStatusDone: {
+    background: 'rgba(46,125,79,0.1)',
+    color: '#2e7d4f',
+  },
+  importStatusFailed: {
+    background: 'rgba(159,64,45,0.1)',
+    color: 'var(--secondary)',
+  },
+  importStatusMeta: {
+    color: 'var(--on-surface-muted)',
+    fontSize: '0.68rem',
+    lineHeight: 1.35,
+    maxWidth: '160px',
   },
   menuBtn: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    width: '34px',
-    height: '34px',
+    width: '32px',
+    height: '32px',
     padding: 0,
     borderRadius: '0.375rem',
     color: 'var(--on-surface-muted)',
@@ -649,48 +870,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     lineHeight: 1,
-  },
-  dropdown: {
-    position: 'absolute',
-    right: 0,
-    top: '40px',
-    backgroundColor: 'var(--surface-white)',
-    borderRadius: '0.5rem',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-    minWidth: '150px',
-    zIndex: 20,
-    overflow: 'hidden',
-  },
-  btnPrimary: {
-    background: 'var(--primary-gradient)',
-    color: 'white',
-    border: 'none',
-    padding: '8px 20px',
-    borderRadius: '0.375rem',
-    cursor: 'pointer',
-  },
-  btnSecondary: {
-    background: 'var(--surface-high)',
-    color: 'var(--on-surface)',
-    border: 'none',
-    padding: '8px 20px',
-    borderRadius: '0.375rem',
-    cursor: 'pointer',
-  },
-  input: {
-    padding: '0.6rem',
-    marginBottom: '1rem',
-    width: '100%',
-    borderRadius: '0.5rem',
-    border: '1px solid var(--surface-low)',
-    backgroundColor: 'var(--surface-low)',
-    outline: 'none',
-  },
-  empty: {
-    padding: 'clamp(1.25rem, 5vw, 2rem)',
-    textAlign: 'center',
-    color: 'var(--on-surface-muted)',
-    fontSize: '0.85rem',
   },
   modalOverlay: {
     position: 'fixed',
@@ -711,5 +890,6 @@ const styles = {
     maxWidth: '650px',
     maxHeight: '85vh',
     overflow: 'auto',
+    boxShadow: 'var(--shadow-lift)',
   },
 };

@@ -34,19 +34,13 @@ export function MediaFeature({ exhibit }) {
           preload="metadata"
           aria-label={`${title} video`}
         />
-      ) : exhibit.isAudio && exhibit.mediaUrl ? (
-        <div className="media-feature__audio">
-          <PlayIcon />
-          <audio src={exhibit.mediaUrl} controls preload="metadata" />
-        </div>
       ) : (
-        <button
-          type="button"
-          className="media-play media-play--large"
-          aria-label={`Open ${title}`}
-        >
-          <PlayIcon />
-        </button>
+        <img
+          className="media-feature__image"
+          src={image}
+          alt=""
+          style={{ objectPosition: exhibit.imagePosition || 'center' }}
+        />
       )}
 
       <div className="media-feature__caption">
@@ -74,12 +68,14 @@ export function MediaListItem({ item, onSelect, isActive = false }) {
           alt=""
           style={{ objectPosition: item.imagePosition || 'center' }}
         />
-        <span
-          className="media-play media-play--small"
-          aria-hidden="true"
-        >
-          <PlayIcon />
-        </span>
+        {item.isVideo && (
+          <span
+            className="media-play media-play--small"
+            aria-hidden="true"
+          >
+            <PlayIcon />
+          </span>
+        )}
       </div>
 
       <div>

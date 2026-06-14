@@ -3,9 +3,9 @@ import { api } from '../../lib/Api';
 
 export const getAllDocs = createAsyncThunk(
   'library/docs/all',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const res = await api.getDocs();
+      const res = await api.getDocs(params);
       return res.data;
     } catch (error) {
       return rejectWithValue(

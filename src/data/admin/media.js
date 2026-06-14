@@ -26,13 +26,13 @@ export const mediaItems = [
   {
     id: 3,
     title: 'Gnawa Music — Marrakech 1987',
-    type: 'Audio',
-    format: 'MP3',
+    type: 'Image',
+    format: 'JPG',
     resolution: '—',
-    size: '42.7 MB',
+    size: '8.7 MB',
     dateAdded: 'Sep 28, 2023',
     curator: { name: 'Youssef A.', initials: 'YA' },
-    tags: ['Music', 'Gnawa', 'Oral Heritage'],
+    tags: ['Music', 'Gnawa', 'Festival'],
     status: 'Active',
   },
   {

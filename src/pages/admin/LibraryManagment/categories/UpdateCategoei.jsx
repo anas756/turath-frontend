@@ -4,13 +4,34 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { updateCategory } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import RichDescriptionEditor from '../../../../components/admin/RichDescriptionEditor';
 
 const Schema = yup.object().shape({
   name: yup.string().max(255).optional(),
-  description: yup.string().max(1000).optional(),
+  description: yup.string().max(6000).optional(),
   icon: yup.string().max(255).optional(),
-  banner: yup.string().max(255).optional(),
+  banner: yup.mixed().optional(),
 });
+
+const assetBaseUrl = (
+  import.meta.env.VITE_BACK_END_URL_IMAGE ||
+  import.meta.env.VITE_BACK_END_URL ||
+  ''
+)
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
+
+function resolveAssetUrl(path) {
+  const value = path?.toString().trim();
+  if (!value || value === 'null') return null;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+    return value;
+  }
+
+  const cleanPath = value.replace(/^\/+/, '');
+  const publicPath = cleanPath.startsWith('storage/') ? cleanPath : `storage/${cleanPath}`;
+  return `${assetBaseUrl}/${publicPath}`;
+}
 
 const m = {
   container: { padding: 'clamp(1rem, 4vw, 2rem)' },
@@ -70,6 +91,13 @@ const m = {
     marginTop: '0.15rem',
   },
   error: { color: 'var(--secondary)', fontSize: '0.72rem' },
+  preview: {
+    width: 'min(100%, 180px)',
+    aspectRatio: '16 / 9',
+    objectFit: 'cover',
+    borderRadius: '0.5rem',
+    marginTop: '0.5rem',
+  },
   submitBtn: {
     padding: '0.6rem 1.5rem',
     borderRadius: '9999px',
@@ -86,6 +114,8 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
@@ -93,17 +123,24 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
       name: categorie?.name || '',
       description: categorie?.description || '',
       icon: categorie?.icon || '',
-      banner: categorie?.banner || '',
     },
   });
+  const descriptionValue = watch('description') || '';
 
   const onSubmit = async (data) => {
-    const payload = {};
+    const payload = new FormData();
+    payload.append('_method', 'PUT');
 
-    if (data.name) payload.name = data.name;
-    if (data.description) payload.description = data.description;
-    if (data.icon) payload.icon = data.icon;
-    if (data.banner) payload.banner = data.banner;
+    if (data.name && data.name !== categorie?.name) payload.append('name', data.name);
+    if ((data.description || '') !== (categorie?.description || '')) {
+      payload.append('description', data.description || '');
+    }
+    if (data.icon && data.icon !== categorie?.icon) payload.append('icon', data.icon);
+
+    const banner = data.banner?.[0];
+    if (banner instanceof File) {
+      payload.append('banner', banner);
+    }
 
     try {
       await dispatch(
@@ -164,14 +201,22 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
           {/* Banner */}
           <div style={m.inputGroup}>
             <label style={m.label}>
-              Banner <span style={m.optionalLabel}>(optional)</span>
+              Category Image <span style={m.optionalLabel}>(optional)</span>
             </label>
             <input
+              type="file"
+              accept="image/*"
               {...register('banner')}
               style={m.input}
-              placeholder="e.g. https://..."
             />
-            <span style={m.hint}>Banner image URL</span>
+            <span style={m.hint}>Shown on guest and user collection cards.</span>
+            {resolveAssetUrl(categorie?.banner) && (
+              <img
+                src={resolveAssetUrl(categorie.banner)}
+                alt={`${categorie.name || 'Category'} current banner`}
+                style={m.preview}
+              />
+            )}
             {errors.banner && (
               <span style={m.error}>{errors.banner.message}</span>
             )}
@@ -182,11 +227,12 @@ export default function UpdateCategorie({ categorie, setShowUpdate }) {
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea
-              {...register('description')}
-              style={{ ...m.input, minHeight: '80px' }}
-              placeholder="A brief description of this category..."
+            <RichDescriptionEditor
+              value={descriptionValue}
+              onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+              placeholder="Design the category description with headings, lists, links, or custom HTML."
             />
+            <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
             {errors.description && (
               <span style={m.error}>{errors.description.message}</span>
             )}

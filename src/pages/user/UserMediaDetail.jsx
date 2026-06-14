@@ -17,10 +17,6 @@ function MediaPlayer({ resource }) {
     return <video src={resource.mediaUrl} controls playsInline preload="metadata" />;
   }
 
-  if (resource.isAudio && resource.mediaUrl) {
-    return <audio src={resource.mediaUrl} controls preload="metadata" />;
-  }
-
   if (resource.mediaUrl && resource.type === 'Image') {
     return <img src={resource.mediaUrl} alt="" />;
   }
@@ -40,8 +36,6 @@ export default function UserMediaDetail() {
 
   useEffect(() => {
     let ignore = false;
-
-    setState({ loading: true, error: null, media: null });
 
     api.getMediaById(id)
       .then(({ data }) => {
@@ -77,7 +71,7 @@ export default function UserMediaDetail() {
     );
   }
 
-  if (state.error || !resource) {
+  if (state.error || !resource || !['Image', 'Video'].includes(resource.type)) {
     return (
       <section className="user-detail-page">
         <EmptyState title="Media unavailable" message={state.error || 'This media item could not be found.'} />

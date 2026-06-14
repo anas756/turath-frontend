@@ -108,9 +108,6 @@ export default function Navbar() {
             <Link to="/user/my-library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
               My Library
             </Link>
-            <Link to="/user/my-library" role="menuitem" onClick={() => setIsProfileOpen(false)}>
-              Reading History
-            </Link>
             <Link to="/user/profile" role="menuitem" onClick={() => setIsProfileOpen(false)}>
               Profile Settings
             </Link>

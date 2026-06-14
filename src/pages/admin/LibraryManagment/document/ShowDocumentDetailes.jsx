@@ -1,4 +1,5 @@
 import React from 'react';
+import RichText from '../../../../components/common/RichText';
 
 const formatDate = (str) => {
   if (!str) return null;
@@ -361,7 +362,7 @@ export default function ShowDocumentDetailes({ doc, onClose, onEdit }) {
         <p style={m.secLabel}>Description</p>
 
         {doc.description ? (
-          <p style={m.descText}>{doc.description}</p>
+          <RichText html={doc.description} className="rich-text rich-text--admin" style={m.descText} />
         ) : (
           <span style={m.descMuted}>No description provided</span>
         )}

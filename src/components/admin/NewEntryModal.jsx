@@ -19,7 +19,7 @@ const ENTRY_TYPES = [
   {
     id: 'media',
     label: 'Media Asset',
-    description: 'Upload an image, audio recording or video',
+    description: 'Upload an image or video',
     path: '/admin/media/new',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">

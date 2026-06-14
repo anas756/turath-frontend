@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import EmptyState from '../../components/user/EmptyState';
 import { api } from '../../app/services/lib/Api';
 
 export default function UserDocumentReader() {
   const { id } = useParams();
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = Math.max(1, Number(searchParams.get('page')) || 1);
+  const [page, setPage] = useState(initialPage);
+  const requestKey = `${id}:${page}`;
   const [state, setState] = useState({
     loading: true,
     error: null,
     title: '',
     content: null,
     pagination: null,
+    availability: null,
+    loadedKey: null,
   });
 
   useEffect(() => {
     let ignore = false;
-
-    setState((current) => ({ ...current, loading: true, error: null }));
 
     Promise.all([
       api.getDoc(id),
@@ -32,6 +35,8 @@ export default function UserDocumentReader() {
           title: documentResponse.data.data?.title || 'Document reader',
           content: payload?.data?.[0] || null,
           pagination: payload || null,
+          availability: contentResponse.data.meta || null,
+          loadedKey: requestKey,
         });
       })
       .catch((error) => {
@@ -42,6 +47,8 @@ export default function UserDocumentReader() {
             title: '',
             content: null,
             pagination: null,
+            availability: null,
+            loadedKey: requestKey,
           });
         }
       });
@@ -50,7 +57,8 @@ export default function UserDocumentReader() {
     return () => {
       ignore = true;
     };
-  }, [id, page]);
+  }, [id, page, requestKey]);
+
   useEffect(() => {
     document
       .querySelector('.user-reader-content')
@@ -58,6 +66,18 @@ export default function UserDocumentReader() {
   }, [page]);
 
   const lastPage = state.pagination?.last_page || 1;
+  const isLoading = state.loading || state.loadedKey !== requestKey;
+  const isPreviewOnly = state.availability?.is_open_library_preview_only ||
+    state.content?.type === 'open_library_metadata';
+  const previewMessage = state.availability?.message ||
+    'Only Open Library preview metadata is available for this book. Full readable text was not provided by the source.';
+
+  const goToPage = (nextPage) => {
+    const safePage = Math.min(Math.max(1, nextPage), lastPage);
+    setState((current) => ({ ...current, loading: true, error: null }));
+    setPage(safePage);
+    setSearchParams({ page: String(safePage) }, { replace: true });
+  };
 
   return (
     <section className="user-detail-page user-reader-page">
@@ -75,8 +95,8 @@ export default function UserDocumentReader() {
             <div className="user-reader-controls">
               <button
                 type="button"
-                disabled={page <= 1 || state.loading}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page <= 1 || isLoading}
+                onClick={() => goToPage(page - 1)}
               >
                 Previous
               </button>
@@ -85,10 +105,8 @@ export default function UserDocumentReader() {
               </span>
               <button
                 type="button"
-                disabled={page >= lastPage || state.loading}
-                onClick={() =>
-                  setPage((current) => Math.min(lastPage, current + 1))
-                }
+                disabled={page >= lastPage || isLoading}
+                onClick={() => goToPage(page + 1)}
               >
                 Next
               </button>
@@ -101,7 +119,13 @@ export default function UserDocumentReader() {
               style={{ width: `${(page / lastPage) * 100}%` }}
             />
           </div>
-          {state.loading ? (
+          {!isLoading && isPreviewOnly && (
+            <div className="user-reader-notice">
+              <strong>Preview only</strong>
+              <p>{previewMessage}</p>
+            </div>
+          )}
+          {isLoading ? (
             <EmptyState
               title="Loading page..."
               message="Fetching extracted content."

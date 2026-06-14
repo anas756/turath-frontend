@@ -9,6 +9,14 @@ import {
 const initialState = {
   users: [],
   currentUserSelect: null,
+  pagination: {
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+    from: null,
+    to: null,
+  },
   loading: false,
 };
 
@@ -38,6 +46,26 @@ const extractUpdatedUser = (payload) =>
     payload,
   ].find(isUserLike) || null;
 
+const extractUsers = (payload) => {
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload)) return payload;
+  return [];
+};
+
+const extractPagination = (payload, fallback) =>
+  payload?.pagination ??
+  (payload?.data?.current_page
+    ? {
+        current_page: payload.data.current_page,
+        last_page: payload.data.last_page,
+        per_page: payload.data.per_page,
+        total: payload.data.total,
+        from: payload.data.from,
+        to: payload.data.to,
+      }
+    : fallback);
+
 
 export const UserSlice = createSlice({
   name: 'user',
@@ -54,11 +82,12 @@ export const UserSlice = createSlice({
       })
       .addCase(getAllusers.fulfilled, (state, action) => {
         state.loading = false;
-        const rawUsers = action.payload?.data || [];
+        const rawUsers = extractUsers(action.payload);
         state.users = rawUsers.map(user => ({
           ...user,
           id: user.id || user._id 
         }));
+        state.pagination = extractPagination(action.payload, state.pagination);
       })
       .addCase(getAllusers.rejected, (state) => {
         state.loading = false;

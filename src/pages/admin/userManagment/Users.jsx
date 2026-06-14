@@ -1,5 +1,5 @@
 // src/pages/admin/userManagement/Users.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   deleteUser,
@@ -8,16 +8,17 @@ import {
 } from '../../../app/services/reduxTollkit/asyncThunks/UserThunk';
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
-import AdminLoading from '../../../components/admin/AdminLoading';
+import PaginationControls from '../../../components/admin/PaginationControls';
 import UpdateUser from './UpdateUser';
 import StoreUser from './StoreUser';
 import ShowUserDetails from './ShowUserDetails';
 
 const ROLES = ['All', 'Admin', 'User'];
+const PAGE_SIZE = 10;
 
 export default function Users() {
   const dispatch = useDispatch();
-  const { users = [], loading } = useSelector((state) => state.users);
+  const { users = [], loading, pagination } = useSelector((state) => state.users);
   const [showStore, setShowStore] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -25,16 +26,32 @@ export default function Users() {
   const [loadingRows, setLoadingRows] = useState({});
   const [search, setSearch] = useState('');
   const [activeRole, setActiveRole] = useState('All');
+  const [usersPage, setUsersPage] = useState(1);
   const [activeMenuId, setActiveMenuId] = useState(null);
 
-useEffect(() => {
-  fetchUsers(); 
-}, []); 
+  const buildUserParams = useCallback((page = usersPage) => {
+    const params = {
+      page,
+      per_page: PAGE_SIZE,
+    };
 
-const fetchUsers = (forceRefresh = false) => {
-  if (!forceRefresh && users?.length) return;
-  dispatch(getAllusers());
-};
+    if (search.trim()) params.search = search.trim();
+    if (activeRole !== 'All') params.role = activeRole;
+
+    return params;
+  }, [activeRole, search, usersPage]);
+
+  const fetchUsers = (page = usersPage) => {
+    dispatch(getAllusers(buildUserParams(page)));
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(getAllusers(buildUserParams(usersPage)));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [buildUserParams, dispatch, usersPage]);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -75,8 +92,9 @@ const fetchUsers = (forceRefresh = false) => {
       setLoadingRows((prev) => ({ ...prev, [userId]: 'deleting' }));
       try {
         await dispatch(deleteUser(userId));
+        fetchUsers();
         setActiveMenuId(null);
-      } catch (err) {
+      } catch {
         alert('Delete failed');
       } finally {
         setLoadingRows((prev) => ({ ...prev, [userId]: false }));
@@ -89,26 +107,19 @@ const fetchUsers = (forceRefresh = false) => {
       await dispatch(updateUser({ id: userId, data: updatedData }));
       setShowUpdate(false);
       setUserTransform(null);
-    } catch (err) {
-      throw err;
     } finally {
       setLoadingRows((prev) => ({ ...prev, [userId]: false }));
     }
   };
-  const handleStoreClose = () => setShowStore(false);
+  const handleStoreClose = () => {
+    setShowStore(false);
+    setUsersPage(1);
+    fetchUsers(1);
+  };
   const handleDetailsClose = () => {
     setShowDetails(false);
     setUserTransform(null);
   };
-
-  const filteredUsers = users.filter((u) => {
-    const matchRole = activeRole === 'All' || u.role?.toLowerCase() === activeRole.toLowerCase();
-    const matchSearch =
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase()) ||
-      u.userName?.toLowerCase().includes(search.toLowerCase());
-    return matchRole && matchSearch;
-  });
 
   return (
     <div className="turath-user-management">
@@ -143,17 +154,17 @@ const fetchUsers = (forceRefresh = false) => {
         }
       />
 
-      {loading ? (
-        <AdminLoading />
-      ) : (
-        <>
+      <>
           {/* Filter Bar - using flex with gap */}
           <div className="admin-filter-row" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
             <div className="filter-chips" style={{ display: 'flex', gap: '0.5rem' }}>
               {ROLES.map((r) => (
                 <button
                   key={r}
-                  onClick={() => setActiveRole(r)}
+                  onClick={() => {
+                    setActiveRole(r);
+                    setUsersPage(1);
+                  }}
                   style={{
                     padding: '0.5rem 1.25rem',
                     borderRadius: '9999px',
@@ -179,7 +190,10 @@ const fetchUsers = (forceRefresh = false) => {
                 type="text"
                 placeholder="Search users…"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setUsersPage(1);
+                }}
                 style={{ background: 'transparent', border: 'none', outline: 'none', padding: '0.5rem 0', fontSize: '0.85rem', width: '200px' }}
               />
             </div>
@@ -200,7 +214,7 @@ const fetchUsers = (forceRefresh = false) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => {
+                {users.map((user) => {
                   const id = user._id || user.id;
                   return (
                     <tr key={id} style={{ borderTop: '1px solid var(--surface-low)' }}>
@@ -275,9 +289,18 @@ const fetchUsers = (forceRefresh = false) => {
                 })}
               </tbody>
             </table>
+            {!loading && users.length === 0 && (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--on-surface-muted)' }}>
+                No users found
+              </div>
+            )}
+            <PaginationControls
+              pagination={pagination}
+              onPageChange={setUsersPage}
+              loading={loading}
+            />
           </div>
-        </>
-      )}
+      </>
 
       {/* Modals - ensure they don't inherit old modal styles */}
       {showStore && (

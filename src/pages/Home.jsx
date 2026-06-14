@@ -114,13 +114,11 @@ function formatDate(value) {
 }
 
 function MediaPoster({ item, compact = false }) {
-  const [failed, setFailed] = useState(false);
+  const [failedMediaKey, setFailedMediaKey] = useState(null);
   const fileUrl = resolveAssetUrl(item?.file_path);
   const isVideo = isVideoMedia(item);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [item?.file_path, item?.type]);
+  const mediaKey = `${item?.file_path || ''}:${item?.type || ''}`;
+  const failed = failedMediaKey === mediaKey;
 
   if (isVideo && fileUrl && !failed) {
     return (
@@ -131,7 +129,7 @@ function MediaPoster({ item, compact = false }) {
         playsInline
         preload="metadata"
         aria-label={`${item.title} video preview`}
-        onError={() => setFailed(true)}
+        onError={() => setFailedMediaKey(mediaKey)}
       />
     );
   }
@@ -170,6 +168,21 @@ function GuestNavbar() {
 function listText(value) {
   if (Array.isArray(value)) return value.filter(Boolean).join(', ');
   return value || '';
+}
+
+function documentSourceLabel(document) {
+  switch (document?.source) {
+    case 'gutendex':
+      return 'Gutendex';
+    case 'google_books':
+      return 'Google Books';
+    case 'internet_archive':
+      return 'Internet Archive';
+    case 'open_library':
+      return 'Open Library';
+    default:
+      return document?.open_library_key ? 'Open Library' : 'Local archive';
+  }
 }
 
 function DocumentCard({ item, onSelect }) {
@@ -250,8 +263,9 @@ function DocumentDetailsModal({ document, onClose }) {
           )}
 
           <div className="guest-document-modal__meta">
-            {document.source && <span>Source: {document.source}</span>}
+            <span>Source: {documentSourceLabel(document)}</span>
             {document.open_library_key && <span>Open Library record</span>}
+            {document.has_full_text && <span>Readable text available</span>}
           </div>
 
           <Link to="/login" className="guest-document-modal__cta">
@@ -267,10 +281,14 @@ function CollectionPreviewCard({ item }) {
   const id = item._id || item.id;
   const documents = item.documents || [];
   const previewNames = documents.slice(0, 3).map((doc) => doc.title).filter(Boolean);
+  const banner = resolveAssetUrl(item.banner);
 
   return (
     <Link to={`/collections/${id}`} className="guest-collection-link">
-      <div>
+      <div
+        className={banner ? 'guest-collection-link__image' : undefined}
+        style={banner ? { backgroundImage: `linear-gradient(180deg, rgba(21, 21, 18, 0.08), rgba(21, 21, 18, 0.58)), url(${banner})` } : undefined}
+      >
         <span>{documents.length}</span>
         <small>{documents.length === 1 ? 'item' : 'items'}</small>
       </div>
@@ -291,18 +309,6 @@ function CollectionPreviewCard({ item }) {
 function GuestMediaShowcase({ items = [], loading }) {
   const defaultFeatured = items.find((item) => isVideoMedia(item)) || items[0];
   const [selectedMediaId, setSelectedMediaId] = useState(null);
-
-  useEffect(() => {
-    if (!items.length) {
-      setSelectedMediaId(null);
-      return;
-    }
-
-    const hasSelectedItem = items.some((item) => getItemId(item) === selectedMediaId);
-    if (!selectedMediaId || !hasSelectedItem) {
-      setSelectedMediaId(getItemId(defaultFeatured));
-    }
-  }, [items, selectedMediaId, defaultFeatured]);
 
   if (loading) {
     return (
@@ -330,7 +336,7 @@ function GuestMediaShowcase({ items = [], loading }) {
       <div className="guest-media-empty">
         <PlayIcon />
         <h3>No media previews yet</h3>
-        <p>Videos, audio, and image records will appear here after they are added.</p>
+        <p>Videos and image records will appear here after they are added.</p>
       </div>
     );
   }
@@ -352,8 +358,8 @@ function GuestMediaShowcase({ items = [], loading }) {
         <div className="guest-media-feature__stage">
           <MediaPoster item={featured} />
           <span className="guest-media-feature__pill">
-            <PlayIcon />
-            {featuredIsVideo ? 'Playable preview' : 'Media preview'}
+            {featuredIsVideo && <PlayIcon />}
+            {featuredIsVideo ? 'Playable preview' : 'Image preview'}
           </span>
         </div>
         <div className="guest-media-feature__body">
@@ -528,7 +534,7 @@ export default function Home() {
       <section className="guest-section" id="media-preview">
         <SectionHeader
           eyebrow="Media Preview"
-          title="Videos, audio, images, and oral histories"
+          title="Videos and images from the archive"
         />
         <GuestMediaShowcase items={media} loading={loading} />
       </section>

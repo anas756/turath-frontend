@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createMedia } from './../../../app/services/reduxTollkit/asyncThunks/MediaThunk';
+import RichDescriptionEditor from '../../../components/admin/RichDescriptionEditor';
 
 const MAX_MEDIA_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -12,7 +13,7 @@ const Schema = yup.object().shape({
   type: yup
     .string()
     .required('Type is required')
-    .oneOf(['image', 'video', 'audio']),
+    .oneOf(['image', 'video']),
   description: yup.string().max(6000, 'Description is too long').optional(),
   status: yup.string().optional(),
   curator: yup.string().optional(),
@@ -108,11 +109,13 @@ export default function StoreMedia({ setShowStore }) {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
-    defaultValues: { status: 'active' },
+    defaultValues: { status: 'active', description: '' },
   });
+  const descriptionValue = watch('description') || '';
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -185,7 +188,6 @@ export default function StoreMedia({ setShowStore }) {
               <option value="">Select type…</option>
               <option value="image">Image</option>
               <option value="video">Video</option>
-              <option value="audio">Audio</option>
             </select>
             {errors.type && <span style={m.error}>{errors.type.message}</span>}
           </div>
@@ -201,14 +203,14 @@ export default function StoreMedia({ setShowStore }) {
 
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>
-              Description HTML <span style={m.optionalLabel}>(optional)</span>
+              Description <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea
-              {...register('description')}
-              style={{ ...m.input, ...m.textarea }}
-              placeholder="<h3>About this item</h3><p>Add a rich description with <strong>important details</strong>.</p>"
+            <RichDescriptionEditor
+              value={descriptionValue}
+              onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+              placeholder="Design the media description with headings, bold text, lists, links, or custom HTML."
             />
-            <span style={m.hint}>Allowed: headings, paragraphs, bold, italic, lists, and links.</span>
+            <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
             {errors.description && (
               <span style={m.error}>{errors.description.message}</span>
             )}
@@ -216,11 +218,11 @@ export default function StoreMedia({ setShowStore }) {
 
           <div style={{ gridColumn: '1 / -1', ...m.inputGroup }}>
             <label style={m.label}>Media File</label>
-            <input type="file" accept="image/*,video/*,audio/*" onChange={handleFileChange} style={m.input} />
+            <input type="file" accept="image/*,video/*" onChange={handleFileChange} style={m.input} />
             {filePreview && (
               <img src={filePreview} alt="Preview" style={m.preview} />
             )}
-            <span style={m.hint}>Image, video, or audio - max 100MB</span>
+            <span style={m.hint}>Image or video - max 100MB</span>
             {errors.file_path && (
               <span style={m.error}>{errors.file_path.message}</span>
             )}

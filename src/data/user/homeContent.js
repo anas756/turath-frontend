@@ -7,7 +7,7 @@ export const heroContent = {
   title: 'Find books, documents, and media about',
   accent: 'Moroccan culture',
   subtitle:
-    'Search curated PDFs, manuscripts, articles, videos, images, and oral histories in one focused heritage library.',
+    'Search curated PDFs, manuscripts, articles, videos, and images in one focused heritage library.',
   placeholder: 'Search books, PDFs, videos, manuscripts...',
   image: heroImage,
   stats: [
@@ -22,7 +22,6 @@ export const contentFilters = [
   'PDFs',
   'Manuscripts',
   'Videos',
-  'Audio',
   'Images',
   'Articles',
 ];
@@ -109,15 +108,15 @@ export const mediaItems = [
   {
     id: 'media-atlas-voices',
     source: 'media',
-    type: 'Audio',
-    format: 'Recording',
-    duration: '12:30',
-    category: 'Oral Traditions',
-    title: 'Echoes From the Atlas: Berber Oral History',
-    description: 'Recorded oral histories preserving stories, language, and place.',
+    type: 'Image',
+    format: 'Photo',
+    duration: 'Archive image',
+    category: 'Amazigh Culture',
+    title: 'Atlas Valley Portrait Archive',
+    description: 'A visual archive preserving people, place, and material culture.',
     thumbnail: carvedImage,
     imagePosition: '12% 50%',
-    actionLabel: 'Listen',
+    actionLabel: 'Open',
     href: '/user/media',
   },
   {
@@ -152,7 +151,7 @@ export const collectionItems = [
   {
     id: 'collection-amazigh-culture',
     title: 'Amazigh Culture',
-    description: 'Language, jewelry, patterns, songs, mountain life, and oral memory.',
+    description: 'Language, jewelry, patterns, mountain life, and visual memory.',
     itemCount: '188 resources',
     libraryCount: 113,
     mediaCount: 75,
@@ -222,7 +221,7 @@ export const quickAccessItems = [
     id: 'media',
     to: '/user/media',
     label: 'Media',
-    description: 'Videos, images, recordings, documentaries, and oral history.',
+    description: 'Videos, images, documentaries, and visual heritage records.',
     count: '860 assets',
   },
   {

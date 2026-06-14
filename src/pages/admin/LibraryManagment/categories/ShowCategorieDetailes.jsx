@@ -1,6 +1,28 @@
 import React from 'react';
 
+const assetBaseUrl = (
+  import.meta.env.VITE_BACK_END_URL_IMAGE ||
+  import.meta.env.VITE_BACK_END_URL ||
+  ''
+)
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
+
+function resolveAssetUrl(path) {
+  const value = path?.toString().trim();
+  if (!value || value === 'null') return null;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+    return value;
+  }
+
+  const cleanPath = value.replace(/^\/+/, '');
+  const publicPath = cleanPath.startsWith('storage/') ? cleanPath : `storage/${cleanPath}`;
+  return `${assetBaseUrl}/${publicPath}`;
+}
+
 export default function ShowCategorieDetails({ categorie, onClose }) {
+  const banner = resolveAssetUrl(categorie?.banner);
+
   return (
     <div style={m.container}>
       <div style={m.header}>
@@ -15,7 +37,14 @@ export default function ShowCategorieDetails({ categorie, onClose }) {
         <Row label="Slug" value={categorie?.slug || '---'} />
         <Row label="Description" value={categorie?.description || '---'} />
         <Row label="Icon" value={categorie?.icon || '---'} />
-        <Row label="Banner" value={categorie?.banner || '---'} />
+        <div style={m.row}>
+          <span style={m.label}>Image</span>
+          {banner ? (
+            <img src={banner} alt="" style={m.preview} />
+          ) : (
+            <span style={m.value}>---</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -66,4 +95,10 @@ const m = {
     minWidth: '120px',
   },
   value: { color: 'var(--on-surface)', minWidth: 0, overflowWrap: 'break-word' },
+  preview: {
+    width: 'min(100%, 220px)',
+    aspectRatio: '16 / 9',
+    objectFit: 'cover',
+    borderRadius: '0.5rem',
+  },
 };

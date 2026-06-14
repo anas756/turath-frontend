@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,7 +11,7 @@ import {
 const TYPE_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'archive', label: 'Archive' },
-  { value: 'watch', label: 'Watch & Listen' },
+  { value: 'watch', label: 'Watch & View' },
 ];
 
 function SearchIcon() {
@@ -31,16 +31,6 @@ export default function SearchContainer({ initialQuery, initialType }) {
   const storedType = useSelector(selectSearchType);
   const [localQuery, setLocalQuery] = useState(initialQuery ?? storedQuery ?? '');
   const [localType, setLocalType] = useState(initialType ?? storedType ?? 'all');
-
-  useEffect(() => {
-    if (initialQuery !== undefined) {
-      setLocalQuery(initialQuery);
-    }
-
-    if (initialType !== undefined) {
-      setLocalType(initialType);
-    }
-  }, [initialQuery, initialType]);
 
   const handleTypeChange = (type) => {
     setLocalType(type);
@@ -92,7 +82,7 @@ export default function SearchContainer({ initialQuery, initialType }) {
             localType === 'archive'
               ? 'Search books, PDFs, manuscripts...'
               : localType === 'watch'
-                ? 'Search videos, audio, recordings...'
+                ? 'Search videos and images...'
                 : 'Search documents, videos, and Moroccan heritage...'
           }
           aria-label="Search the archive"

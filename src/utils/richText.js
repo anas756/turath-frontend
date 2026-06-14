@@ -3,22 +3,68 @@ const allowedTags = new Set([
   'B',
   'BLOCKQUOTE',
   'BR',
+  'CODE',
+  'DIV',
   'EM',
   'H2',
   'H3',
   'H4',
+  'HR',
   'I',
   'LI',
+  'MARK',
   'OL',
   'P',
+  'PRE',
+  'SMALL',
   'SPAN',
   'STRONG',
+  'SUB',
+  'SUP',
+  'TABLE',
+  'TBODY',
+  'TD',
+  'TFOOT',
+  'TH',
+  'THEAD',
+  'TR',
   'U',
   'UL',
 ]);
 
 const linkProtocols = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 const blockedTags = new Set(['EMBED', 'IFRAME', 'LINK', 'META', 'OBJECT', 'SCRIPT', 'STYLE']);
+const allowedStyleProperties = new Set([
+  'background',
+  'background-color',
+  'border',
+  'border-bottom',
+  'border-left',
+  'border-radius',
+  'border-right',
+  'border-top',
+  'color',
+  'font-family',
+  'font-size',
+  'font-style',
+  'font-weight',
+  'line-height',
+  'list-style-type',
+  'margin',
+  'margin-bottom',
+  'margin-left',
+  'margin-right',
+  'margin-top',
+  'max-width',
+  'padding',
+  'padding-bottom',
+  'padding-left',
+  'padding-right',
+  'padding-top',
+  'text-align',
+  'text-decoration',
+]);
+const unsafeCssPattern = /(url\s*\(|expression\s*\(|javascript:|vbscript:|behavior\s*:|@import|<|>)/i;
 
 function removeUnsafeNode(node) {
   const parent = node.parentNode;
@@ -49,6 +95,24 @@ function sanitizeNode(node) {
         return;
       }
 
+      if (name === 'dir' && ['rtl', 'ltr', 'auto'].includes(attribute.value.toLowerCase())) {
+        return;
+      }
+
+      if (name === 'style') {
+        const cleanStyle = sanitizeStyle(attribute.value);
+        if (cleanStyle) child.setAttribute('style', cleanStyle);
+        else child.removeAttribute(attribute.name);
+        return;
+      }
+
+      if (['TD', 'TH'].includes(child.tagName) && ['colspan', 'rowspan'].includes(name)) {
+        const number = Number(attribute.value);
+        if (Number.isInteger(number) && number > 0 && number <= 12) {
+          return;
+        }
+      }
+
       child.removeAttribute(attribute.name);
     });
 
@@ -72,6 +136,28 @@ function sanitizeNode(node) {
 
     sanitizeNode(child);
   });
+}
+
+function sanitizeStyle(value) {
+  return value
+    .split(';')
+    .map((rule) => {
+      const [property, ...rawParts] = rule.split(':');
+      const normalizedProperty = property?.trim().toLowerCase();
+      const rawValue = rawParts.join(':').trim();
+
+      if (!normalizedProperty || !rawValue || !allowedStyleProperties.has(normalizedProperty)) {
+        return null;
+      }
+
+      if (unsafeCssPattern.test(rawValue)) {
+        return null;
+      }
+
+      return `${normalizedProperty}: ${rawValue}`;
+    })
+    .filter(Boolean)
+    .join('; ');
 }
 
 export function sanitizeHtml(value) {

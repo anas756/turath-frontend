@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { createDoc } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import RichDescriptionEditor from '../../../../components/admin/RichDescriptionEditor';
 
 const Schema = yup.object().shape({
   title: yup.string().required('Title is required').min(3),
@@ -91,10 +92,14 @@ export default function StoreDocument({ setShowStore }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(Schema),
+    defaultValues: { description: '' },
   });
+  const descriptionValue = watch('description') || '';
 
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -257,10 +262,12 @@ export default function StoreDocument({ setShowStore }) {
             <label style={m.label}>
               Description <span style={m.optionalLabel}>(optional)</span>
             </label>
-            <textarea
-              {...register('description')}
-              style={{ ...m.input, minHeight: '80px' }}
+            <RichDescriptionEditor
+              value={descriptionValue}
+              onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+              placeholder="Design the document description with headings, lists, links, or custom HTML."
             />
+            <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
           </div>
         </div>
 

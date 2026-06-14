@@ -19,7 +19,7 @@ export const api = {
   updatePassword: (data) => customAxios.post('/auth/reset-password', data),
 
   // --- Users ---
-  getAllUsers: () => customAxios.get('/users'),
+  getAllUsers: (params = {}) => customAxios.get('/users', { params }),
   getUser: (id) => customAxios.get(`/users/${id}`),
   updateUser: ({ id, data }) => customAxios.put(`/users/${id}`, data),
   deleteUser: (id) => customAxios.delete(`/users/${id}`),
@@ -28,11 +28,14 @@ export const api = {
   getCategories: () => customAxios.get('/categories'),
   getCategorie: (id) => customAxios.get(`/categories/${id}`),
   createCategorie: (data) => customAxios.post('/categories', data),
-  updateCategorie: (id, data) => customAxios.put(`/categories/${id}`, data),
+  updateCategorie: (id, data) =>
+    data instanceof FormData
+      ? customAxios.post(`/categories/${id}`, data)
+      : customAxios.put(`/categories/${id}`, data),
   deleteCategorie: (id) => customAxios.delete(`/categories/${id}`),
 
   // --- Books (Fixed routes) ---
-  getDocs: () => customAxios.get('/library/docs'),
+  getDocs: (params = {}) => customAxios.get('/library/docs', { params }),
   getDoc: (id) => customAxios.get(`/library/docs/${id}`),
   createDoc: (data) => customAxios.post('/library/docs', data),
   updateDoc: (id, data) => customAxios.put(`/library/docs/${id}`, data),
@@ -45,8 +48,10 @@ export const api = {
     customAxios.get(`/library/docs/${id}/search`, {
       params: { key_word: keyWord },
     }),
-  searchAbookUsingWord: (keyWord) =>
-    customAxios.get('/search/library', { params: { key_word: keyWord } }),
+  searchAbookUsingWord: (keyWord, params = {}) =>
+    customAxios.get('/search/library', {
+      params: { key_word: keyWord, ...params },
+    }),
   searchPublic: ({ query, type = 'all' }) =>
     customAxios.get('/search/public', { params: { q: query, type } }),
 

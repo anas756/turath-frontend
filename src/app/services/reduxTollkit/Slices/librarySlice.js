@@ -8,9 +8,39 @@ import {
   deleteCategory, 
 } from '../asyncThunks/LibraryThunk';
 
+const defaultPagination = {
+  current_page: 1,
+  last_page: 1,
+  per_page: 10,
+  total: 0,
+  from: null,
+  to: null,
+};
+
+const extractList = (payload) => {
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload)) return payload;
+  return [];
+};
+
+const extractPagination = (payload, fallback) =>
+  payload?.pagination ??
+  (payload?.data?.current_page
+    ? {
+        current_page: payload.data.current_page,
+        last_page: payload.data.last_page,
+        per_page: payload.data.per_page,
+        total: payload.data.total,
+        from: payload.data.from,
+        to: payload.data.to,
+      }
+    : fallback);
+
 const initialState = {
   documents: [],
   categories: [],
+  documentsPagination: defaultPagination,
   documentsLoading: false,
   categoriesLoading: false,
 };
@@ -27,7 +57,11 @@ export const librarySlice = createSlice({
       })
       .addCase(getAllDocs.fulfilled, (state, action) => {
         state.documentsLoading = false;
-        state.documents = action.payload.data ?? action.payload ?? [];
+        state.documents = extractList(action.payload);
+        state.documentsPagination = extractPagination(
+          action.payload,
+          state.documentsPagination
+        );
       })
       .addCase(getAllDocs.rejected, (state) => {
         state.documentsLoading = false;

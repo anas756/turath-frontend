@@ -1,13 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import ResourceShelf from '../../components/user/ResourceShelf';
 import SectionHeader from '../../components/user/SectionHeader';
 import useUserArchiveData from '../../hooks/useUserArchiveData';
 import { addDocumentFavorite, removeFavorite } from '../../app/services/reduxTollkit/asyncThunks/FavoriteThunk';
-import { getId, matchesText } from '../../utils/userResources';
+import { api } from '../../app/services/lib/Api';
+import {
+  fallbackImage,
+  getId,
+  matchesText,
+  resolveAssetUrl,
+} from '../../utils/userResources';
 
-const typeFilters = ['All', 'Open Library', 'Document'];
+const typeFilters = ['All', 'Gutendex', 'Internet Archive', 'Google Books', 'Open Library', 'Document'];
 
 export default function UserLibrary() {
   const dispatch = useDispatch();
@@ -16,6 +22,14 @@ export default function UserLibrary() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
+  const [contentQuery, setContentQuery] = useState('');
+  const [contentSearch, setContentSearch] = useState({
+    loading: false,
+    error: null,
+    results: [],
+    searched: false,
+    message: '',
+  });
   const {
     categories,
     documentResources,
@@ -57,6 +71,48 @@ export default function UserLibrary() {
     if (value.trim()) nextParams.set('q', value);
     else nextParams.delete('q');
     setSearchParams(nextParams, { replace: true });
+  };
+
+  const handleContentSearch = async (event) => {
+    event.preventDefault();
+    const value = contentQuery.trim();
+
+    if (!value) {
+      setContentSearch({
+        loading: false,
+        error: null,
+        results: [],
+        searched: false,
+        message: '',
+      });
+      return;
+    }
+
+    setContentSearch((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+      searched: true,
+    }));
+
+    try {
+      const { data } = await api.searchAbookUsingWord(value, { limit: 10 });
+      setContentSearch({
+        loading: false,
+        error: null,
+        results: data.data || [],
+        searched: true,
+        message: data.message || '',
+      });
+    } catch (error) {
+      setContentSearch({
+        loading: false,
+        error: error.response?.data?.message || 'Search inside books failed.',
+        results: [],
+        searched: true,
+        message: '',
+      });
+    }
   };
 
   return (
@@ -102,6 +158,28 @@ export default function UserLibrary() {
           </div>
         </div>
 
+        <form className="library-content-search" onSubmit={handleContentSearch}>
+          <div>
+            <span>Search inside readable books</span>
+            <input
+              type="search"
+              placeholder="Search by a word or sentence from any book..."
+              value={contentQuery}
+              onChange={(event) => setContentQuery(event.target.value)}
+            />
+          </div>
+          <button type="submit" disabled={contentSearch.loading}>
+            {contentSearch.loading ? 'Searching...' : 'Search text'}
+          </button>
+        </form>
+        <p className="library-content-search__hint">
+          This searches extracted readable text stored in Turath. Preview-only records are skipped until full text is available.
+        </p>
+
+        {contentSearch.searched && (
+          <ContentSearchResults search={contentSearch} />
+        )}
+
         <div id="library-results">
           <ResourceShelf
             items={items}
@@ -116,5 +194,69 @@ export default function UserLibrary() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ContentSearchResults({ search }) {
+  if (search.loading) {
+    return (
+      <div className="library-content-results">
+        <p className="user-page-note">Searching readable book text...</p>
+      </div>
+    );
+  }
+
+  if (search.error) {
+    return (
+      <div className="library-content-results is-error">
+        <h3>Search unavailable</h3>
+        <p>{search.error}</p>
+      </div>
+    );
+  }
+
+  if (!search.results.length) {
+    return (
+      <div className="library-content-results">
+        <h3>No text matches found</h3>
+        <p>
+          Try another word or sentence. Some provider records only have preview metadata, not full readable text.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="library-content-results">
+      <div className="library-content-results__header">
+        <h3>Text matches</h3>
+        <span>{search.results.length} books</span>
+      </div>
+      {search.message && <p className="library-content-results__note">{search.message}</p>}
+      <div className="library-content-results__list">
+        {search.results.map((result) => {
+          const firstMatch = result.matches?.[0];
+          const cover = resolveAssetUrl(result.cover_url) || fallbackImage;
+          const readerHref = firstMatch?.page_number
+            ? `/user/library/${result.document_id}/read?page=${firstMatch.page_number}`
+            : `/user/library/${result.document_id}`;
+
+          return (
+            <article className="library-content-match" key={result.document_id}>
+              <img src={cover} alt="" />
+              <div>
+                <h4>{result.title || 'Untitled document'}</h4>
+                {result.matches?.slice(0, 3).map((match) => (
+                  <p key={`${result.document_id}-${match.page_number}`}>
+                    <strong>Page {match.page_number}:</strong> {match.snippet}
+                  </p>
+                ))}
+                <Link to={readerHref}>Open matching page</Link>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
   );
 }

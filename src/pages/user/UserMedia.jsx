@@ -8,7 +8,7 @@ import useUserArchiveData from '../../hooks/useUserArchiveData';
 import { addMediaFavorite, removeFavorite } from '../../app/services/reduxTollkit/asyncThunks/FavoriteThunk';
 import { getId, matchesText } from '../../utils/userResources';
 
-const mediaFilters = ['All', 'Video', 'Audio', 'Image', 'Document'];
+const mediaFilters = ['All', 'Video', 'Image'];
 
 export default function UserMedia() {
   const dispatch = useDispatch();
@@ -61,7 +61,7 @@ export default function UserMedia() {
       <div className="user-page-shell">
         <SectionHeader
           eyebrow="Media"
-          title="Videos, audio, images, and oral histories"
+          title="Videos and images from the archive"
           actionLabel={`${filteredMedia.length} Results`}
           actionHref="#media-results"
         />

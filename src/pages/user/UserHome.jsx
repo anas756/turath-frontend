@@ -54,7 +54,7 @@ export default function UserHome() {
       id: 'media',
       to: '/user/media',
       label: 'Media',
-      description: 'Videos, images, recordings, documentaries, and oral history.',
+      description: 'Videos, images, documentaries, and visual heritage records.',
       count: `${mediaResources.length} assets`,
     },
     {

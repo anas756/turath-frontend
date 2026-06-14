@@ -17,9 +17,9 @@ export const registerUser = createAsyncThunk(
 
 export const getAllusers = createAsyncThunk(
   'user/all',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const res = await api.getAllUsers();
+      const res = await api.getAllUsers(params);
             console.log('users', res);
 
       return res.data;

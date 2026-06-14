@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchMedia,
@@ -9,12 +9,13 @@ import {
 import PageHeader from '../../../components/admin/PageHeader';
 import StatusBadge from '../../../components/admin/StatusBadge';
 import CuratorAvatar from '../../../components/admin/CuratorAvatar';
-import AdminLoading from '../../../components/admin/AdminLoading';
+import PaginationControls from '../../../components/admin/PaginationControls';
 import StoreMedia from './StoreMedia';
 import UpdateMedia from './UpdateMedia';
 import ShowMediaDetails from './ShowMediaDetails';
 
-const TYPES = ['All', 'image', 'audio', 'video'];
+const TYPES = ['All', 'image', 'video'];
+const PAGE_SIZE = 10;
 
 const TYPE_ICONS = {
   image: (
@@ -29,20 +30,6 @@ const TYPE_ICONS = {
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <polyline points="21 15 16 10 5 21" />
-    </svg>
-  ),
-  audio: (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M9 18V5l12-2v13" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="18" cy="16" r="3" />
     </svg>
   ),
   video: (
@@ -62,7 +49,11 @@ const TYPE_ICONS = {
 
 export default function MediaLibrary() {
   const dispatch = useDispatch();
-  const { media = [], loading } = useSelector((state) => state.media);
+  const {
+    media = [],
+    mediaLoading = false,
+    pagination,
+  } = useSelector((state) => state.media);
   const [showStore, setShowStore] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -70,16 +61,32 @@ export default function MediaLibrary() {
   const [loadingRows, setLoadingRows] = useState({});
   const [search, setSearch] = useState('');
   const [activeType, setActiveType] = useState('All');
+  const [mediaPage, setMediaPage] = useState(1);
   const [activeMenuId, setActiveMenuId] = useState(null);
 
-  useEffect(() => {
-    fetchMediaData();
-  }, []);
+  const buildMediaParams = useCallback((page = mediaPage) => {
+    const params = {
+      page,
+      per_page: PAGE_SIZE,
+    };
 
-  const fetchMediaData = (forceRefresh = false) => {
-    if (!forceRefresh && media?.length) return;
-    dispatch(fetchMedia());
+    if (activeType !== 'All') params.type = activeType;
+    if (search.trim()) params.search = search.trim();
+
+    return params;
+  }, [activeType, mediaPage, search]);
+
+  const fetchMediaData = () => {
+    dispatch(fetchMedia(buildMediaParams()));
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(fetchMedia(buildMediaParams(mediaPage)));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [buildMediaParams, dispatch, mediaPage]);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -159,8 +166,6 @@ export default function MediaLibrary() {
       setShowUpdate(false);
       setSelectedMedia(null);
       fetchMediaData(true);
-    } catch (err) {
-      throw err;
     } finally {
       setLoadingRows((prev) => ({ ...prev, [mediaId]: false }));
     }
@@ -176,20 +181,11 @@ export default function MediaLibrary() {
     setSelectedMedia(null);
   };
 
-  const filteredMedia = (media || []).filter((item) => {
-    const matchType = activeType === 'All' || item.type === activeType;
-    const matchSearch =
-      item.title?.toLowerCase().includes(search.toLowerCase()) ||
-      item.curator?.toLowerCase().includes(search.toLowerCase()) ||
-      item.format?.toLowerCase().includes(search.toLowerCase());
-    return matchType && matchSearch;
-  });
-
   return (
-    <>
+    <div className="turath-admin-table-page">
       <PageHeader
         title="Media Library"
-        subtitle="Images, audio recordings and video assets of Moroccan heritage."
+        subtitle="Images and video assets of Moroccan heritage."
         action={
           <button
             onClick={() => setShowStore(true)}
@@ -224,10 +220,6 @@ export default function MediaLibrary() {
         }
       />
 
-      {loading ? (
-        <AdminLoading />
-      ) : (
-        <>
           {/* Filter Bar */}
           <div
             className="admin-filter-row"
@@ -248,7 +240,10 @@ export default function MediaLibrary() {
                 <button
                   key={t}
                   className={`filter-chip ${activeType === t ? 'active' : ''}`}
-                  onClick={() => setActiveType(t)}
+                  onClick={() => {
+                    setActiveType(t);
+                    setMediaPage(1);
+                  }}
                   style={{
                     padding: '0.5rem 1.25rem',
                     borderRadius: '9999px',
@@ -294,9 +289,12 @@ export default function MediaLibrary() {
               </svg>
               <input
                 type="text"
-                placeholder="Search media…"
+                placeholder="Search media..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setMediaPage(1);
+                }}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -310,12 +308,8 @@ export default function MediaLibrary() {
           </div>
 
           {/* Table Container */}
-          <div className="section-card">
-            <div className="section-header">
-              <h2 className="section-title">{filteredMedia.length} Assets</h2>
-            </div>
-            <div className="admin-table-shell" style={{ overflowX: 'auto' }}>
-              <table className="content-table admin-data-table" style={{ minWidth: '900px' }}>
+          <div className="admin-table-shell">
+              <table className="admin-data-table" style={{ minWidth: '900px' }}>
                 <thead>
                   <tr>
                     <th>Title</th>
@@ -326,24 +320,19 @@ export default function MediaLibrary() {
                     <th>Curator</th>
                     <th>Date Added</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th data-admin-actions></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMedia.map((item) => {
+                  {media.map((item) => {
                     const id = item._id || item.id;
                     return (
                       <tr key={id}>
                         <td data-label="Title">
-                          <div style={{ fontWeight: 500 }}>{item.title}</div>
+                          <div className="admin-row-title">{item.title}</div>
                           {item.tags && item.tags.length > 0 && (
-                            <div
-                              style={{
-                                fontSize: '0.72rem',
-                                color: 'var(--on-surface-muted)',
-                              }}
-                            >
-                              {item.tags.join(' · ')}
+                            <div className="admin-row-subtitle">
+                              {item.tags.join(' / ')}
                             </div>
                           )}
                         </td>
@@ -439,19 +428,7 @@ export default function MediaLibrary() {
                             )}
                           </button>
                           {activeMenuId === id && !loadingRows[id] && (
-                            <div
-                              style={{
-                                position: 'absolute',
-                                right: '0',
-                                top: '40px',
-                                backgroundColor: 'white',
-                                borderRadius: '0.5rem',
-                                boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-                                minWidth: '140px',
-                                zIndex: 20,
-                                overflow: 'hidden',
-                              }}
-                            >
+                            <div className="admin-action-menu">
                               <button
                                 onClick={() => handleShowDetails(item)}
                                 style={{
@@ -464,7 +441,7 @@ export default function MediaLibrary() {
                                   cursor: 'pointer',
                                 }}
                               >
-                                👁️ View Details
+                                View Details
                               </button>
                               <button
                                 onClick={() => handleUpdateMedia(item)}
@@ -478,7 +455,7 @@ export default function MediaLibrary() {
                                   cursor: 'pointer',
                                 }}
                               >
-                                ✏️ Edit
+                                Edit
                               </button>
                               {item.status !== 'archived' && (
                                 <button
@@ -495,7 +472,7 @@ export default function MediaLibrary() {
                                     cursor: 'pointer',
                                   }}
                                 >
-                                  📦 Archive
+                                  Archive
                                 </button>
                               )}
                               {item.status === 'archived' && (
@@ -513,7 +490,7 @@ export default function MediaLibrary() {
                                     cursor: 'pointer',
                                   }}
                                 >
-                                  🔄 Restore
+                                  Restore
                                 </button>
                               )}
                               <button
@@ -529,7 +506,7 @@ export default function MediaLibrary() {
                                   color: 'var(--secondary)',
                                 }}
                               >
-                                🗑️ Delete
+                                Delete
                               </button>
                             </div>
                           )}
@@ -539,21 +516,19 @@ export default function MediaLibrary() {
                   })}
                 </tbody>
               </table>
-              {filteredMedia.length === 0 && (
+              {!mediaLoading && media.length === 0 && (
                 <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '3rem',
-                    color: 'var(--on-surface-muted)',
-                  }}
+                  className="admin-table-empty"
                 >
                   No media assets found
                 </div>
               )}
-            </div>
+              <PaginationControls
+                pagination={pagination}
+                onPageChange={setMediaPage}
+                loading={mediaLoading}
+              />
           </div>
-        </>
-      )}
 
       {/* Modals */}
       {showStore && (
@@ -663,6 +638,6 @@ export default function MediaLibrary() {
           }
         `}
       </style>
-    </>
+    </div>
   );
 }

@@ -4,29 +4,40 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createCategory } from '../../../../app/services/reduxTollkit/asyncThunks/LibraryThunk';
+import RichDescriptionEditor from '../../../../components/admin/RichDescriptionEditor';
 
 const schema = yup.object().shape({
   name: yup.string().required('Category name is required').min(3, 'Too short!'),
-  slug: yup
-    .string()
-    .required('Slug is required')
-    .matches(/^[a-z0-9-]+$/, 'Must be lowercase and dash-separated'),
-  description: yup.string().max(255, 'Description too long'),
+  description: yup.string().max(6000, 'Description too long'),
+  banner: yup.mixed().optional(),
 });
 
 export default function StoreCategories({ setShowStore }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: { description: '' },
   });
   const dispatch = useDispatch();
+  const descriptionValue = watch('description') || '';
 
   const onSubmit = async (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+
+    const banner = data.banner?.[0];
+    if (banner instanceof File) {
+      formData.append('banner', banner);
+    }
+
     try {
-      await dispatch(createCategory(data)).unwrap();
+      await dispatch(createCategory(formData)).unwrap();
       setShowStore(false);
     } catch (err) {
       alert(err?.message || 'Failed to create category');
@@ -38,7 +49,9 @@ export default function StoreCategories({ setShowStore }) {
       <div style={m.header}>
         <div>
           <h2 style={m.title}>Add New Category</h2>
-          <p style={m.subtitle}>Create a new category for your documents</p>
+          <p style={m.subtitle}>
+            Create a category and Turath will fetch matching books automatically.
+          </p>
         </div>
         <button onClick={() => setShowStore(false)} style={m.closeBtn}>
           ×
@@ -54,28 +67,37 @@ export default function StoreCategories({ setShowStore }) {
               style={m.input}
               placeholder="e.g. History"
             />
+            <span style={m.hint}>
+              We will search this name across Gutendex, Google Books, and Internet Archive.
+            </span>
             {errors.name && <span style={m.error}>{errors.name.message}</span>}
-          </div>
-
-          <div style={m.inputGroup}>
-            <label style={m.label}>Slug</label>
-            <input
-              {...register('slug')}
-              style={m.input}
-              placeholder="e.g. history-docs"
-            />
-            {errors.slug && <span style={m.error}>{errors.slug.message}</span>}
           </div>
         </div>
 
         <div style={m.inputGroup}>
           <label style={m.label}>Description</label>
-          <textarea
-            {...register('description')}
-            style={{ ...m.input, height: '100px' }}
+          <RichDescriptionEditor
+            value={descriptionValue}
+            onChange={(html) => setValue('description', html, { shouldDirty: true, shouldValidate: true })}
+            placeholder="Design the category description with headings, lists, links, or custom HTML."
           />
+          <span style={m.hint}>Use the toolbar or switch to HTML for custom designed text.</span>
           {errors.description && (
             <span style={m.error}>{errors.description.message}</span>
+          )}
+        </div>
+
+        <div style={m.inputGroup}>
+          <label style={m.label}>Category Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            {...register('banner')}
+            style={m.input}
+          />
+          <span style={m.hint}>Shown on guest and user collection cards.</span>
+          {errors.banner && (
+            <span style={m.error}>{errors.banner.message}</span>
           )}
         </div>
 
@@ -88,7 +110,7 @@ export default function StoreCategories({ setShowStore }) {
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
           }}
         >
-          {isSubmitting ? 'Saving...' : 'Save Category'}
+          {isSubmitting ? 'Starting import...' : 'Save Category & Fetch Books'}
         </button>
       </form>
     </div>
@@ -143,6 +165,11 @@ const m = {
     width: '100%',
   },
   error: { color: 'var(--secondary)', fontSize: '0.72rem' },
+  hint: {
+    fontSize: '0.7rem',
+    color: 'var(--on-surface-muted)',
+    marginTop: '0.15rem',
+  },
   submitBtn: {
     padding: '0.6rem 1.5rem',
     borderRadius: '9999px',
