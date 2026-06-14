@@ -123,14 +123,6 @@ export const MessageSlice = createSlice({
       })
 
       // ========== MEDIA ==========
-      // Fetch Media
-      .addCase(fetchMedia.fulfilled, (state, action) => {
-        state.success =
-          action.payload?.message || 'Media retrieved successfully';
-      })
-      .addCase(fetchMedia.rejected, (state, action) => {
-        state.error = action.payload?.message || 'Failed to fetch media';
-      })
 
       // Fetch Media By ID
       .addCase(fetchMediaById.fulfilled, (state, action) => {
