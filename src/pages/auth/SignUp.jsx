@@ -66,6 +66,9 @@ export default function SignUp() {
 
   return (
     <div className="auth-page">
+      <Link to="/home" className="auth-home-link">
+        Home
+      </Link>
       <LanguageSwitcher />
       <div
         className="auth-photo"

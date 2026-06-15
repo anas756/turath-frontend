@@ -10,6 +10,33 @@ html, body, #root { height: 100%; }
   background: #f5f2ed;
 }
 
+.auth-home-link {
+  position: fixed;
+  top: 1.2rem;
+  left: 1.5rem;
+  z-index: 101;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 15px;
+  border: 1px solid #e2ddd6;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.92);
+  color: #1e4d8c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.auth-home-link:hover {
+  border-color: #1e4d8c;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(30,77,140,0.1);
+}
+
 /* Photo panel */
 .auth-photo {
   flex: 1.1;

@@ -57,6 +57,9 @@ export default function Login() {
   return (
     // Zidna dark:bg-neutral-900 hna bach l-page t-wlli dark
     <div className="auth-page dark:bg-neutral-900 transition-colors duration-300">
+      <Link to="/home" className="auth-home-link">
+        Home
+      </Link>
       <div className="absolute top-6 right-6">
         <LanguageSwitcher />
       </div>
